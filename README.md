@@ -68,7 +68,7 @@ We state these plainly because they matter for how the output should be read.
 
 ## Team
 
-Green Sapiens — four first-year undergraduates.
+Green Sapiens — four undergraduates.
 
 ## Acknowledgements
 
