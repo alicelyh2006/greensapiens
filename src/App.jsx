@@ -3,6 +3,8 @@
  *
  * Holds the selected location and the risk result, and wires the four lanes
  * together. Keep feature logic in features/; this file just composes.
+ *
+ * Test edit for git push verification.
  */
 import { useState } from 'react'
 import MapView from './features/map/MapView.jsx'
