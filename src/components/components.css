@@ -1,0 +1,120 @@
+/* Shared components. Colours come from tokens only — never a hex code here. */
+
+/* --- Button --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--surface);
+}
+.btn--primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  background: var(--accent);
+}
+
+/* --- Panel --- */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  box-shadow: var(--shadow);
+}
+.panel__title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+/* --- Card --- */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+}
+.card__label {
+  font-size: var(--text-sm);
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* --- RiskPill ---
+   N4: risk is never colour alone. The label is always present. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pill__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+.pill--low {
+  color: var(--risk-low);
+  background: var(--risk-low-bg);
+}
+.pill--moderate {
+  color: var(--risk-moderate);
+  background: var(--risk-moderate-bg);
+}
+.pill--high {
+  color: var(--risk-high);
+  background: var(--risk-high-bg);
+}
+.pill--unknown {
+  color: var(--text-faint);
+  background: var(--surface-2);
+}
+
+/* --- EmptyState --- */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--text-dim);
+}
+.empty__title {
+  font-weight: 600;
+  color: var(--text);
+}
+.empty__body {
+  font-size: var(--text-sm);
+  max-width: 34ch;
+}

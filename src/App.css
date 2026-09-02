@@ -1,0 +1,59 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.app__title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.app__tagline {
+  font-size: var(--text-sm);
+  color: var(--text-dim);
+}
+
+.app__body {
+  display: grid;
+  grid-template-columns: 1fr minmax(20rem, 24rem);
+  flex: 1;
+  min-height: 0;
+}
+
+.app__map {
+  min-height: 0;
+}
+
+.app__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  overflow-y: auto;
+  border-left: 1px solid var(--line);
+  background: var(--ground);
+}
+
+/* N3 — mobile. Map on top, panel below. */
+@media (max-width: 48rem) {
+  .app__body {
+    grid-template-columns: 1fr;
+    grid-template-rows: 55vh auto;
+  }
+
+  .app__side {
+    border-left: none;
+    border-top: 1px solid var(--line);
+  }
+}

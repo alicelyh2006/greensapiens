@@ -1,0 +1,120 @@
+/* ============================================================
+   Nightjar design tokens — the shared constraint.
+
+   THE RULE: no component defines its own colour.
+   If you need a hue that isn't here, add a token and tell the team.
+   Never put a hex code in a component file.
+   ============================================================ */
+
+:root {
+  /* --- surfaces & text (light) --- */
+  --ground: #f4f6f9;
+  --surface: #ffffff;
+  --surface-2: #e8ecf2;
+  --line: #d3dae3;
+  --text: #161c26;
+  --text-dim: #4f5a6b;
+  --text-faint: #7c8696;
+
+  /* --- accent --- */
+  --accent: #a2600f;
+  --accent-soft: #f0dcc0;
+
+  /* --- semantic risk (NEVER the only signal — always pair with a label) --- */
+  --risk-low: #2f7a4e;
+  --risk-low-bg: #dcefe3;
+  --risk-moderate: #9a6412;
+  --risk-moderate-bg: #f6e6c9;
+  --risk-high: #a33a3a;
+  --risk-high-bg: #f6dada;
+
+  /* --- map layers --- */
+  --habitat: #4c8c5a;
+  --habitat-fill: rgba(76, 140, 90, 0.22);
+  --lamp-warm: #e8913a;
+  --lamp-neutral: #c9cfd8;
+  --lamp-cool: #6b9fe0;
+
+  /* --- type scale (4 sizes, stay on it) --- */
+  --text-sm: 0.8125rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", monospace;
+
+  /* --- spacing scale --- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  /* --- one radius --- */
+  --radius: 6px;
+
+  --shadow: 0 1px 3px rgba(16, 22, 32, 0.12), 0 4px 12px rgba(16, 22, 32, 0.08);
+
+  color-scheme: light dark;
+}
+
+/* --- dark: redefine tokens only, never components --- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ground: #0e131c;
+    --surface: #161d29;
+    --surface-2: #1f2836;
+    --line: #2c3648;
+    --text: #e6e8ec;
+    --text-dim: #9aa3b2;
+    --text-faint: #6b7484;
+
+    --accent: #e8a24f;
+    --accent-soft: #4a3418;
+
+    --risk-low: #6fbf8b;
+    --risk-low-bg: #1a3327;
+    --risk-moderate: #e0a94a;
+    --risk-moderate-bg: #3a2e15;
+    --risk-high: #e07272;
+    --risk-high-bg: #3a1d1d;
+
+    --habitat: #6fae7d;
+    --habitat-fill: rgba(111, 174, 125, 0.2);
+    --lamp-warm: #e8913a;
+    --lamp-neutral: #98a2b0;
+    --lamp-cool: #7fb2ff;
+
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme='dark'] {
+  --ground: #0e131c;
+  --surface: #161d29;
+  --surface-2: #1f2836;
+  --line: #2c3648;
+  --text: #e6e8ec;
+  --text-dim: #9aa3b2;
+  --text-faint: #6b7484;
+
+  --accent: #e8a24f;
+  --accent-soft: #4a3418;
+
+  --risk-low: #6fbf8b;
+  --risk-low-bg: #1a3327;
+  --risk-moderate: #e0a94a;
+  --risk-moderate-bg: #3a2e15;
+  --risk-high: #e07272;
+  --risk-high-bg: #3a1d1d;
+
+  --habitat: #6fae7d;
+  --habitat-fill: rgba(111, 174, 125, 0.2);
+  --lamp-warm: #e8913a;
+  --lamp-neutral: #98a2b0;
+  --lamp-cool: #7fb2ff;
+
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.35);
+}
