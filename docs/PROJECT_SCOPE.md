@@ -28,7 +28,7 @@ We didn't discover any of this. We're turning a published academic finding into 
 
 ## 2. Scope reality check
 
-We are four first-year undergraduates with about **ten days and classes**. Realistic team capacity is roughly 45 hours total.
+We are four undergraduates — three in their first year — with about **eight build days and classes**. Realistic team capacity is roughly 45 hours total.
 
 That rules out — and we are not building — any of:
 
