@@ -1,55 +1,47 @@
-/**
- * F5 score display · F6 recommendations · F7 seasonal context
- * OWNER: L3 (Result & Guidance)
- *
- * Turns a RiskResult into something a person can act on. Builds against the
- * mock scoreLocation — needs nothing from any other lane.
- */
 import { Panel, Card, RiskPill, EmptyState } from '../../components/index.jsx'
 import { getRecommendations, isPeakSeason } from '../../lib/recommendations.js'
 
+const LABELS = { habitat: 'Habitat', density: 'Building density', light: 'Blue-light exposure' }
+
+function pct(value) { return `${Math.round(value * 100)}%` }
+
 export default function ResultPanel({ risk, location }) {
   if (!risk) {
-    return (
-      <Panel>
-        <EmptyState
-          title="Pick a place on the map"
-          body="Tap anywhere in Singapore to see how likely bird-building collisions are there, and what would reduce them."
-        />
-      </Panel>
-    )
+    return <Panel><EmptyState title="Pick a place on the map" body="Search for an address or tap a location on Singapore land to see its estimated collision risk." /></Panel>
+  }
+
+  if (risk.unavailable) {
+    return <Panel title="No risk assessment"><RiskPill band="unknown" /><p className="result__notice">Nightjar does not calculate or display risk for this location because it is outside the Singapore land boundary or has no usable land-use data.</p></Panel>
   }
 
   const recommendations = getRecommendations(risk)
+  const measuredLight = risk.factors.light.confidence === 'measured'
 
-  return (
-    <Panel title="Collision risk">
+  return <Panel title="Collision risk">
+    <div className="result-score">
+      <strong className="result-score__value">{risk.total}</strong><span className="result-score__scale">/100</span>
       <RiskPill band={risk.band} />
+    </div>
 
-      {risk.isMock && (
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-faint)' }}>
-          Placeholder data — the scoring model is not implemented yet.
-        </p>
-      )}
+    <p className="result__notice">Estimated risk index, not a probability of collision. The model combines published Singapore collision drivers with the project's current static datasets.</p>
 
-      {/* TODO(L3 · F5): show each factor with its value, weight and note */}
-      <Card label="Why">
-        <p style={{ fontSize: 'var(--text-sm)' }}>Factor breakdown not built yet.</p>
-      </Card>
+    <Card label="Why">
+      <div className="factor-list">
+        {Object.entries(risk.factors).map(([key, factor]) => <div className="factor" key={key}>
+          <div className="factor__top"><span>{LABELS[key]}</span><strong>{pct(factor.value)}</strong></div>
+          <div className="factor__bar"><span style={{ width: `${Math.round(factor.value * 100)}%` }} /></div>
+          <div className="factor__meta">Weight {Math.round(factor.weight * 100)}% · {factor.note}</div>
+        </div>)}
+      </div>
+    </Card>
 
-      {/* TODO(L3 · F7): make Oct–Nov salient rather than showing risk as constant */}
-      {isPeakSeason() && (
-        <Card label="Season">
-          <p style={{ fontSize: 'var(--text-sm)' }}>
-            Peak migration period — collisions are most frequent in October and November.
-          </p>
-        </Card>
-      )}
+    <Card label="Data quality">
+      <p className="result__notice">Habitat: NParks green-space polygons. Building density: URA Master Plan land-use zoning used as a proxy for built density. Light: {measuredLight ? `${risk.factors.light.sampleCount} nearby surveyed lamps` : 'estimated because there are not enough surveyed lamps nearby'}.</p>
+    </Card>
 
-      {/* TODO(L3 · F6): render real recommendations with action, why and owner */}
-      <Card label="What would help">
-        <p style={{ fontSize: 'var(--text-sm)' }}>{recommendations[0].action}</p>
-      </Card>
-    </Panel>
-  )
+    {isPeakSeason() && <Card label="Season"><p className="result__notice">October–November is the project's peak migration window; collision risk can be more consequential during this period.</p></Card>}
+
+    <Card label="What would help"><p className="result__notice">{recommendations[0].action}</p></Card>
+    {location?.label && <p className="result__location">{location.label}</p>}
+  </Panel>
 }
