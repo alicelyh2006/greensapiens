@@ -1,72 +1,304 @@
 /**
  * F5 — the risk model.  OWNER: L1 (Data & Model)
  *
- * ⚠️ THIS IS A MOCK. It returns plausible-looking values so L2, L3 and L4 can
- * build against the real contract from day one. L1 replaces the internals.
- * Do not change the SHAPE of the return value without telling the team —
- * three other lanes depend on it.
- */
-
-import { WEIGHTS, BANDS } from './config.js'
-
-/**
- * @typedef {Object} Factor
- * @property {number} value   0–1, this factor's contribution before weighting
- * @property {number} weight  from WEIGHTS
- * @property {string} note    plain-language explanation for the user
+ * `scoreLocation` is SYNCHRONOUS and must stay that way — three other lanes
+ * call it directly. Datasets are fetched once by `initScoring()` at startup
+ * and held in module state.
  *
- * @typedef {Object} RiskResult
- * @property {number} total                  0–100
- * @property {'low'|'moderate'|'high'} band
- * @property {{habitat: Factor, light: Factor, density: Factor}} factors
- * @property {boolean} isMock                remove once L1 lands the real model
+ * The model, in one line:
+ *
+ *   habitat (are birds here?) x density (is there anything to hit?) x light
+ *
+ * We deliberately do NOT hard-code "risk peaks at the park edge". Habitat is
+ * highest in and near green space; density is ~0 inside a reserve. Multiply
+ * them and the peak falls on the edge by itself, because that is the only
+ * place both are non-zero. The edge result is a prediction of the model, not
+ * an assumption baked into it.
  */
 
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
+import polygonToLine from '@turf/polygon-to-line'
+import nearestPointOnLine from '@turf/nearest-point-on-line'
+import distance from '@turf/distance'
+import { point } from '@turf/helpers'
+
+import {
+  WEIGHTS,
+  HABITAT,
+  SIZE_WEIGHT,
+  BANDS,
+  ZONE_DENSITY,
+  DENSITY_FALLBACK,
+  DATA,
+} from './config.js'
+
+// --- module state, populated once by initScoring() --------------------------
+let greenSpaces = null
+let zoning = null
+
+export function getDataStatus() {
+  return {
+    greenSpaces: greenSpaces !== null,
+    zoning: zoning !== null,
+    light: false, // TODO(L1): no light dataset yet — see lightAt()
+  }
+}
+
 /**
- * @param {number} lat
- * @param {number} lng
- * @returns {RiskResult}
+ * Load every static dataset and precompute bounding boxes.
+ * Call once, await it, then render. Safe to call twice.
+ *
+ * A missing dataset is not fatal: the matching factor falls back to a
+ * placeholder and says so in its `note`, so the app still runs.
+ */
+export async function initScoring() {
+  const [gs, zn] = await Promise.all([
+    loadGeoJson(DATA.greenSpaces),
+    loadGeoJson(DATA.zoning),
+  ])
+  greenSpaces = gs
+  zoning = zn
+  return getDataStatus()
+}
+
+async function loadGeoJson(url) {
+  try {
+    const res = await fetch(url)
+    if (!res.ok) return null
+    const gj = await res.json()
+    for (const f of gj.features) f._bbox = bboxOf(f.geometry.coordinates)
+    return gj.features
+  } catch {
+    return null // dataset not committed yet — caller degrades gracefully
+  }
+}
+
+function bboxOf(coords) {
+  let minX = 180, minY = 90, maxX = -180, maxY = -90
+  const walk = (c) => {
+    if (typeof c[0] === 'number') {
+      if (c[0] < minX) minX = c[0]
+      if (c[0] > maxX) maxX = c[0]
+      if (c[1] < minY) minY = c[1]
+      if (c[1] > maxY) maxY = c[1]
+    } else c.forEach(walk)
+  }
+  walk(coords)
+  return [minX, minY, maxX, maxY]
+}
+
+/** Cheap metres-to-bbox. 0 when inside. Used to skip expensive line maths. */
+function bboxDistance(lng, lat, [minX, minY, maxX, maxY]) {
+  const dx = Math.max(minX - lng, 0, lng - maxX)
+  const dy = Math.max(minY - lat, 0, lat - maxY)
+  return Math.hypot(dx * 111000 * Math.cos((lat * Math.PI) / 180), dy * 111000)
+}
+
+const clamp01 = (n) => Math.min(1, Math.max(0, n))
+
+// ---------------------------------------------------------------------------
+// HABITAT — are birds likely to be here?
+// ---------------------------------------------------------------------------
+
+/**
+ * Nearest green space, with signed edge distance.
+ * Naive scan of all 461 polygons is ~13.6 ms; the bbox prefilter makes it
+ * ~0.3 ms. This runs on every map click, so keep the prefilter.
+ */
+export function nearestGreenSpace(lat, lng) {
+  if (!greenSpaces) return null
+  const pt = point([lng, lat])
+
+  const candidates = greenSpaces
+    .map((f) => ({ f, d: bboxDistance(lng, lat, f._bbox) }))
+    .sort((a, b) => a.d - b.d)
+
+  let best = null
+  for (const { f, d } of candidates) {
+    if (best && d > best.metres) continue // cannot beat current best
+
+    const asLine = polygonToLine(f)
+    const lines = asLine.type === 'FeatureCollection' ? asLine.features : [asLine]
+    for (const line of lines) {
+      const m = distance(pt, nearestPointOnLine(line, pt), { units: 'meters' })
+      if (!best || m < best.metres) {
+        best = {
+          metres: m,
+          inside: booleanPointInPolygon(pt, f),
+          name: f.properties.NAME,
+          hectares: (f.properties['SHAPE_1.AREA'] ?? 0) / 10000,
+          isReserve:
+            f.properties.N_RESERVE === 1 || f.properties.N_RESERVE === '1',
+        }
+      }
+    }
+  }
+  return best
+}
+
+/** Log-scaled habitat value of a park by area, plus a reserve uplift. */
+function sizeWeight({ hectares, isReserve }) {
+  const { minHa, maxHa, reserveBonus } = SIZE_WEIGHT
+  const base = clamp01(
+    Math.log10(Math.max(hectares, 1e-6) / minHa) / Math.log10(maxHa / minHa)
+  )
+  return clamp01(base + (isReserve ? reserveBonus : 0))
+}
+
+export function habitatAt(lat, lng) {
+  const near = nearestGreenSpace(lat, lng)
+  if (!near) {
+    return {
+      value: 0,
+      weight: WEIGHTS.habitat,
+      note: 'Green-space data unavailable.',
+    }
+  }
+
+  // Bird presence is highest in and beside green space, fading outward.
+  let proximity = near.inside
+    ? 1
+    : clamp01(1 - near.metres / HABITAT.falloffOutward)
+
+  // Fallback only — normally density handles the reserve interior.
+  if (near.inside && HABITAT.useInwardFalloff) {
+    proximity = clamp01(1 - near.metres / HABITAT.falloffInward)
+  }
+
+  const value = proximity * sizeWeight(near)
+  const where = near.inside
+    ? `inside ${titleCase(near.name)}`
+    : `${Math.round(near.metres)}m from ${titleCase(near.name)}`
+
+  return {
+    value,
+    weight: WEIGHTS.habitat,
+    note: `${where} (${near.hectares.toFixed(1)} ha${near.isReserve ? ', nature reserve' : ''}).`,
+    detail: near,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// DENSITY — is there anything here to collide with?
+// ---------------------------------------------------------------------------
+
+/**
+ * Land-use zoning as a proxy for built density.
+ *
+ * TODO(L1 · path B): swap the internals for a precomputed OpenStreetMap
+ * building-count grid. Nothing outside this function needs to change — that
+ * is the point of keeping the interface this narrow.
+ *
+ * Known weakness to state on the methodology page: zoning is what is
+ * PERMITTED, not what is BUILT. A vacant plot zoned Commercial reads dense.
+ */
+export function densityAt(lat, lng) {
+  if (!zoning) {
+    return {
+      value: DENSITY_FALLBACK,
+      weight: WEIGHTS.density,
+      note: 'Land-use data not loaded — using a placeholder value.',
+      placeholder: true,
+    }
+  }
+
+  const pt = point([lng, lat])
+  for (const f of zoning) {
+    const [minX, minY, maxX, maxY] = f._bbox
+    if (lng < minX || lng > maxX || lat < minY || lat > maxY) continue
+    if (!booleanPointInPolygon(pt, f)) continue
+
+    const zone = extractZone(f.properties)
+    if (!zone) continue
+    const upper = zone.toUpperCase()
+    const hit = ZONE_DENSITY.find(([term]) => upper.includes(term))
+    if (hit) {
+      return {
+        value: hit[1],
+        weight: WEIGHTS.density,
+        note: `Zoned ${titleCase(zone)}.`,
+      }
+    }
+  }
+
+  return {
+    value: DENSITY_FALLBACK,
+    weight: WEIGHTS.density,
+    note: 'No land-use zone matched this point.',
+    placeholder: true,
+  }
+}
+
+/**
+ * URA datasets on data.gov.sg vary in how they carry the zone name — some
+ * expose a plain field, others bury it in an HTML Description blob.
+ * Adjust once you have looked at the real file.
+ */
+function extractZone(props) {
+  for (const key of ['LU_DESC', 'LU_TEXT', 'ZONE', 'LANDUSE', 'lu_desc']) {
+    if (props[key]) return String(props[key])
+  }
+  if (props.Description) {
+    const m = String(props.Description).match(
+      /LU_DESC<\/th>\s*<td>([^<]+)</i
+    )
+    if (m) return m[1]
+  }
+  return null
+}
+
+// ---------------------------------------------------------------------------
+// LIGHT — placeholder until the lamp survey or VIIRS lands
+// ---------------------------------------------------------------------------
+
+export function lightAt(lat, lng) {
+  // TODO(L1): replace with the field-survey lamp layer (preferred) or VIIRS.
+  // Blue content matters more than brightness — see BIRD_LIGHT_REFERENCE.md.
+  return {
+    value: 0.5,
+    weight: WEIGHTS.light,
+    note: 'Light data not collected yet — using a placeholder value.',
+    placeholder: true,
+  }
+}
+
+// ---------------------------------------------------------------------------
+
+/**
+ * @returns {{
+ *   total: number, band: 'low'|'moderate'|'high',
+ *   factors: { habitat: object, light: object, density: object },
+ *   isMock: boolean
+ * }}
  */
 export function scoreLocation(lat, lng) {
-  // TODO(L1): replace with real computation.
-  //   habitat — distance to nearest green-space edge, peaking AT the boundary
-  //             (see HABITAT in config.js)
-  //   light   — VIIRS radiance at this point, raised by nearby cool-white lamps
-  //   density — building count / footprint area in the surrounding cells
-  const pseudo = Math.abs(Math.sin(lat * 137.5 + lng * 91.3))
-
   const factors = {
-    habitat: {
-      value: clamp01(pseudo),
-      weight: WEIGHTS.habitat,
-      note: 'Mock value — distance to the nearest green-space edge is not yet computed.',
-    },
-    light: {
-      value: clamp01((pseudo * 1.7) % 1),
-      weight: WEIGHTS.light,
-      note: 'Mock value — VIIRS radiance is not yet loaded.',
-    },
-    density: {
-      value: clamp01((pseudo * 2.3) % 1),
-      weight: WEIGHTS.density,
-      note: 'Mock value — building density is not yet computed.',
-    },
+    habitat: habitatAt(lat, lng),
+    light: lightAt(lat, lng),
+    density: densityAt(lat, lng),
   }
 
   const total = Math.round(
     Object.values(factors).reduce((sum, f) => sum + f.value * f.weight, 0) * 100
   )
 
-  return { total, band: toBand(total), factors, isMock: true }
+  return {
+    total,
+    band: toBand(total),
+    factors,
+    // still incomplete while any factor is a stand-in
+    isMock: Object.values(factors).some((f) => f.placeholder),
+  }
 }
 
-/** @returns {'low'|'moderate'|'high'} */
 export function toBand(total) {
   if (total >= BANDS.high) return 'high'
   if (total >= BANDS.moderate) return 'moderate'
   return 'low'
 }
 
-function clamp01(n) {
-  return Math.min(1, Math.max(0, n))
+function titleCase(s) {
+  return String(s ?? '')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
 }
