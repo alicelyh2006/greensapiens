@@ -31,18 +31,21 @@ import {
   DENSITY_FALLBACK,
   DENSITY_RADIUS_M,
   DENSITY_PERCENTILE,
+  LIGHT,
+  LAMP_TYPES,
   DATA,
 } from './config.js'
 
 // --- module state, populated once by initScoring() --------------------------
 let greenSpaces = null
 let densityGrid = null
+let lamps = null
 
 export function getDataStatus() {
   return {
     greenSpaces: greenSpaces !== null,
     density: densityGrid !== null,
-    light: false, // TODO(L1): no light dataset yet — see lightAt()
+    light: Array.isArray(lamps) && lamps.length > 0,
   }
 }
 
@@ -54,12 +57,14 @@ export function getDataStatus() {
  * placeholder and says so in its `note`, so the app still runs.
  */
 export async function initScoring() {
-  const [gs, grid] = await Promise.all([
+  const [gs, grid, lampData] = await Promise.all([
     loadGeoJson(DATA.greenSpaces),
     loadJson(DATA.densityGrid),
+    loadJson(DATA.lamps),
   ])
   greenSpaces = gs
   densityGrid = grid
+  lamps = lampData?.lamps ?? null
   return getDataStatus()
 }
 
@@ -273,15 +278,79 @@ export function densityAt(lat, lng) {
 // LIGHT — placeholder until the lamp survey or VIIRS lands
 // ---------------------------------------------------------------------------
 
+/**
+ * Blue-light exposure from our own field survey.
+ *
+ * The survey is sparse by nature — a few hundred classified lamps, not
+ * island-wide coverage. So this reports its own confidence rather than
+ * pretending to know everywhere. `confidence: 'measured'` means real lamps
+ * were found nearby; 'estimated' means we are falling back and saying so.
+ *
+ * Nearby lamps are combined by inverse-distance weighting: a cool-white
+ * floodlight 20 m away matters far more than one 200 m away.
+ */
 export function lightAt(lat, lng) {
-  // TODO(L1): replace with the field-survey lamp layer (preferred) or VIIRS.
-  // Blue content matters more than brightness — see BIRD_LIGHT_REFERENCE.md.
-  return {
-    value: 0.5,
-    weight: WEIGHTS.light,
-    note: 'Light data not collected yet — using a placeholder value.',
-    placeholder: true,
+  const nearby = lampsWithin(lat, lng, LIGHT.radiusM)
+
+  if (nearby.length === 0) {
+    return {
+      value: LIGHT.fallback,
+      weight: WEIGHTS.light,
+      confidence: 'estimated',
+      sampleCount: 0,
+      note: lamps
+        ? 'No surveyed lamps within 250m — light is estimated, not measured.'
+        : 'Lamp survey not loaded — light is estimated, not measured.',
+      placeholder: true,
+    }
   }
+
+  // inverse-distance weighting, +1 m so a lamp underfoot cannot divide by zero
+  let num = 0
+  let den = 0
+  for (const { blue, metres } of nearby) {
+    const w = 1 / (metres + 1)
+    num += blue * w
+    den += w
+  }
+  const value = clamp01(num / den)
+
+  const measured = nearby.length >= LIGHT.minSamplesForConfidence
+  const worst = nearby.reduce((a, b) => (b.blue > a.blue ? b : a))
+
+  return {
+    value,
+    weight: WEIGHTS.light,
+    confidence: measured ? 'measured' : 'estimated',
+    sampleCount: nearby.length,
+    note: `${nearby.length} surveyed lamp${nearby.length === 1 ? '' : 's'} within 250m; ` +
+      `nearest problem light is ${worst.label.toLowerCase()}.`,
+    placeholder: !measured,
+  }
+}
+
+/** Surveyed lamps within `radiusM`, each with its blue value and distance. */
+function lampsWithin(lat, lng, radiusM) {
+  if (!lamps || lamps.length === 0) return []
+  const out = []
+  const latDeg = radiusM / 111000
+  const lngDeg = latDeg / Math.cos((lat * Math.PI) / 180)
+
+  for (const lamp of lamps) {
+    // cheap rectangular reject before the real distance calculation
+    if (Math.abs(lamp.lat - lat) > latDeg) continue
+    if (Math.abs(lamp.lng - lng) > lngDeg) continue
+
+    const metres = distance(point([lng, lat]), point([lamp.lng, lamp.lat]), {
+      units: 'meters',
+    })
+    if (metres > radiusM) continue
+
+    const type = LAMP_TYPES.find((t) => t.id === lamp.type)
+    if (!type) continue // unknown classification — ignore rather than guess
+    out.push({ ...lamp, blue: type.blue, label: type.label, metres })
+  }
+  return out
 }
 
 // ---------------------------------------------------------------------------

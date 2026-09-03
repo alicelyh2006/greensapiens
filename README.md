@@ -4,7 +4,7 @@
 
 Built by team Green Sapiens for [NextStep Hacks 2026](https://nextstephacks.com) — theme *Earth Forward*.
 
-> ⚠️ **Status: in development.** This repository currently contains planning and reference documentation. Application code lands from 3 September 2026. Everything here was created during the hackathon window (21 Aug – 13 Sep 2026); the repository was empty before it.
+> ⚠️ **Status: in development.** The scoring model works against real data; the interface is still being built. Everything here was created during the hackathon window (21 Aug – 13 Sep 2026); the repository was empty before it.
 
 ---
 
@@ -28,9 +28,13 @@ Three layers, each independently useful:
 | **Lamp photos** | Community contributions | Ground truth on light *colour* where no inventory exists |
 | **Collision reports** | Community contributions | Evidence that sharpens the map over time |
 
-`risk = habitat proximity × light level × building density`
+```
+risk = √(habitat × density) × light
+```
 
-Habitat risk peaks **at the boundary** — not inside a reserve, where there are no buildings to strike, and not far from one, where there are no birds. This is why forest-edge buildings dominate collision records.
+**habitat** is bird presence — highest in and beside green space, scaled by the size of that green space, decaying outward. **density** is what there is to collide with, near zero inside a reserve. **light** modulates: blue-rich lighting raises risk, warm lighting barely does, and it never zeroes the result because an unlit facade still kills by daylight reflection.
+
+Both habitat and density are *required* — either at zero means no collisions. We deliberately do **not** hard-code the well-known result that forest-edge buildings are worst. It emerges on its own, because the edge is the only place where birds and buildings overlap. That the model reproduces the published finding without being told is the point.
 
 ## Why colour, not brightness
 

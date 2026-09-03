@@ -161,13 +161,34 @@ export const DENSITY_FALLBACK = 0.5
 export const DENSITY_RADIUS_M = 300
 export const DENSITY_PERCENTILE = 0.8
 
-/** F10 — lamp classification buckets. Blue content, not brightness. */
+/**
+ * F10 — lamp classification buckets. Blue content, not brightness, is what
+ * predicts migrant collisions. `blue` is the 0-1 value fed into the model.
+ */
 export const LAMP_TYPES = [
-  { id: 'sodium', label: 'Sodium ~2000K', appearance: 'Deep orange', risk: 'low' },
-  { id: 'warm-led', label: 'Warm LED 2700-3000K', appearance: 'Yellowish white', risk: 'low' },
-  { id: 'neutral-led', label: 'Neutral LED ~4000K', appearance: 'Plain white', risk: 'moderate' },
-  { id: 'cool-led', label: 'Cool LED 5000-6500K', appearance: 'Blue-white glare', risk: 'high' },
+  { id: 'sodium', label: 'Sodium ~2000K', appearance: 'Deep orange', risk: 'low', blue: 0.05 },
+  { id: 'warm-led', label: 'Warm LED 2700-3000K', appearance: 'Yellowish white', risk: 'low', blue: 0.2 },
+  { id: 'neutral-led', label: 'Neutral LED ~4000K', appearance: 'Plain white', risk: 'moderate', blue: 0.6 },
+  { id: 'cool-led', label: 'Cool LED 5000-6500K', appearance: 'Blue-white glare', risk: 'high', blue: 1.0 },
 ]
+
+/**
+ * Light comes from our own field survey — a sparse set of classified lamps,
+ * not island-wide coverage. So the factor reports whether it actually KNOWS.
+ *
+ * Why measure at all when VIIRS exists: VIIRS DNB records ~500-900 nm and is
+ * blind below 500 nm, exactly where white LEDs emit and exactly the band that
+ * predicts migrant collisions. The satellite cannot see the variable that
+ * matters. See docs/BIRD_LIGHT_REFERENCE.md §4.
+ */
+export const LIGHT = {
+  /** Lamps within this distance inform a location's light value. */
+  radiusM: 250,
+  /** Below this many nearby lamps the reading is labelled an estimate. */
+  minSamplesForConfidence: 2,
+  /** Used where we have no survey coverage. Deliberately mid-scale. */
+  fallback: 0.5,
+}
 
 /** Peak collision months (1-indexed). */
 export const PEAK_MONTHS = [10, 11]
@@ -193,4 +214,6 @@ export const DATA = {
   greenSpaces: '/data/green-spaces.geojson',
   /** Built by scripts/build-density-grid.mjs. See npm run data:density. */
   densityGrid: '/data/density-grid.json',
+  /** Our own field survey. See public/data/lamps.json for the schema. */
+  lamps: '/data/lamps.json',
 }

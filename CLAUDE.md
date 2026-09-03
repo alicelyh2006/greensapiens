@@ -90,9 +90,15 @@ changes at standup rather than editing quietly.
   Rebuild: `npm run data:density`.
 - `scoreLocation` computes real habitat and density. ~2.5 ms per call.
 
-**Still a placeholder:** `lightAt()` returns a flat 0.5. Preferred source is our
-own field-survey lamp colour readings; VIIRS is the fallback. Until it lands,
-every score carries `isMock: true`.
+- `lightAt()` reads `public/data/lamps.json` — inverse-distance weighted over
+  lamps within 250 m, and it reports its own `confidence`: `'measured'` when
+  two or more surveyed lamps are nearby, `'estimated'` otherwise.
+
+**Waiting on data, not code:** `lamps.json` is **empty on purpose** until the
+field survey. Do NOT seed it with invented entries — the survey is the only
+dataset nobody else has, and fabricating it would destroy the project's central
+claim. See `public/data/SURVEY.md` for how to collect it. Until then every
+score carries `isMock: true` and the UI must say the light value is estimated.
 
 **The model** — see MODEL in `config.js`:
 
