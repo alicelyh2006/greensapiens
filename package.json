@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "data:simplify": "mapshaper data-raw/parks-raw.geojson -simplify 10% keep-shapes -o public/data/green-spaces.geojson",
+    "data:risk": "node scripts/build-risk-grid.mjs",
     "data:density": "node --max-old-space-size=8192 scripts/build-density-grid.mjs data-raw/landuse-raw.geojson public/data/density-grid.json"
   },
   "dependencies": {

@@ -9,6 +9,7 @@ import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMapEvents } fro
 import L from 'leaflet'
 import { MAP_DEFAULT } from '../../lib/config.js'
 import './MapView.css'
+import { GreenSpaceLayer, RiskLayer } from './layers.jsx'
 
 // Fix Leaflet default marker icons — Vite does not resolve them automatically.
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
@@ -51,13 +52,19 @@ export default function MapView({ selected, onSelect }) {
     >
       <ZoomControl position="bottomright" />
 
+      {/* OSM tiles, desaturated in CSS (see .leaflet-tile-pane in MapView.css).
+          Standard OSM is far too colourful for a translucent data overlay to
+          read against. Carto and Stadia both solve that but now require API
+          keys — a runtime dependency that could fail mid-demo (N1). A CSS
+          filter gets the same result with nothing to break. */}
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {/* TODO(L2 · F1): GeoJSON layer for NParks boundaries from public/data/ */}
-      {/* TODO(L2 · F2): risk surface — grid or choropleth coloured by score */}
+      <RiskLayer />
+      <GreenSpaceLayer />
+
       {/* TODO(L2 · F4): address / postal code search, degrading to click */}
       {/* TODO(L2 · F12): layer toggles for risk / habitat / lamps / reports */}
 

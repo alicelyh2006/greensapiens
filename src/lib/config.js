@@ -216,4 +216,6 @@ export const DATA = {
   densityGrid: '/data/density-grid.json',
   /** Our own field survey. See public/data/lamps.json for the schema. */
   lamps: '/data/lamps.json',
+  /** Precomputed risk surface. Built by scripts/build-risk-grid.mjs. */
+  riskGrid: '/data/risk-grid.json',
 }
