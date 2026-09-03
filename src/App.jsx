@@ -9,6 +9,7 @@
 import { useState } from 'react'
 import MapView from './features/map/MapView.jsx'
 import ResultPanel from './features/result/ResultPanel.jsx'
+import Methodology from './features/result/Methodology.jsx'
 import { scoreLocation } from './lib/score.js'
 import './App.css'
 
@@ -38,7 +39,25 @@ export default function App() {
         <aside className="app__side">
           <ResultPanel risk={risk} location={selected} />
           {/* TODO(L4): mount LampUpload and ReportForm here once they do something */}
-          {/* TODO(L3 · F8): route or disclose Methodology */}
+          {/* F8: methodology disclosure — collapsible, below the result panel */}
+          <details style={{ marginTop: 'var(--space-3)' }}>
+            <summary style={{
+              cursor: 'pointer',
+              fontSize: 'var(--text-sm)',
+              color: 'var(--text-faint)',
+              listStyle: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-2)',
+              padding: 'var(--space-2) 0',
+              borderTop: '1px solid var(--line)',
+            }}>
+              How is this calculated? ▸
+            </summary>
+            <div style={{ marginTop: 'var(--space-3)' }}>
+              <Methodology />
+            </div>
+          </details>
         </aside>
       </main>
     </div>
