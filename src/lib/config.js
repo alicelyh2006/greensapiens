@@ -24,9 +24,37 @@ export const WEIGHTS = {
   density: 0.25,
 }
 
+/**
+ * How the factors combine. NOT a weighted sum — a sum would let habitat alone
+ * produce a high score in the middle of a forest, where there is nothing to
+ * collide with.
+ *
+ *   risk = sqrt(habitat x density) x (lightFloor + (1 - lightFloor) x light)
+ *
+ * habitat and density are both REQUIRED: either at zero means zero risk.
+ * Light MODULATES rather than creates — an unlit building beside a reserve
+ * still kills birds by daylight reflection, so light never zeroes the result.
+ * `lightFloor` is the multiplier when light is 0.
+ *
+ * The square root is a geometric mean. A plain product of two sub-1 values
+ * rarely exceeds 0.3, so scores would never reach the risk bands and the tool
+ * would look broken. The geometric mean keeps the "both required" property
+ * while restoring a usable 0-100 range.
+ */
+export const MODEL = {
+  lightFloor: 0.45,
+}
+
 export const HABITAT = {
   /** Metres outward from a green-space edge before bird presence reaches 0. */
   falloffOutward: 500,
+
+  /**
+   * Birds are not literally absent from the CBD — migrants get pulled in by
+   * light. A small floor keeps built-up areas scoreable rather than exactly
+   * zero, so the light factor can still lift them.
+   */
+  floor: 0.08,
 
   /**
    * FALLBACK ONLY. With the two-factor model above, points deep inside a
@@ -71,27 +99,42 @@ export const BANDS = {
  * Source: URA Master Plan Land Use layer, data.gov.sg
  */
 export const ZONE_DENSITY = [
-  ['NATURE RESERVE', 0.0],
-  ['PARK', 0.0],
-  ['OPEN SPACE', 0.0],
+  // --- MUST come first: these contain words that appear below ---
+  ['BUSINESS PARK', 0.7], // before PARK, or it would score 0
+  ['COMMERCIAL & RESIDENTIAL', 0.9],
+  ['RESIDENTIAL WITH COMMERCIAL', 0.8],
+  ['COMMERCIAL / INSTITUTION', 0.9],
+  ['RESIDENTIAL / INSTITUTION', 0.7],
+
+  // --- nothing to collide with ---
   ['WATERBODY', 0.0],
   ['BEACH AREA', 0.0],
+  ['OPEN SPACE', 0.0],
+  ['PARK', 0.0],
+  ['CEMETERY', 0.02],
   ['AGRICULTURE', 0.05],
-  ['CEMETERY', 0.05],
-  ['ROAD', 0.1],
   ['RESERVE SITE', 0.1],
+  ['ROAD', 0.1],
+
+  // --- sparse / low-rise ---
   ['SPECIAL USE', 0.2],
   ['UTILITY', 0.2],
+  ['PORT / AIRPORT', 0.3],
+  ['MASS RAPID TRANSIT', 0.3],
+  ['LIGHT RAPID TRANSIT', 0.3],
   ['TRANSPORT FACILITIES', 0.3],
+  ['SPORTS & RECREATION', 0.3],
+
+  // --- institutional ---
   ['PLACE OF WORSHIP', 0.4],
   ['EDUCATIONAL INSTITUTION', 0.5],
-  ['CIVIC', 0.5],
-  ['HEALTH', 0.6],
-  ['SPORTS', 0.4],
-  ['BUSINESS PARK', 0.8],
-  ['BUSINESS', 0.8],
-  ['LIGHT RAPID TRANSIT', 0.5],
+  ['CIVIC & COMMUNITY INSTITUTION', 0.5],
+  ['HEALTH & MEDICAL CARE', 0.6],
+
+  // --- built-up ---
   ['RESIDENTIAL', 0.7],
+  ['BUSINESS 1', 0.8],
+  ['BUSINESS 2', 0.8],
   ['HOTEL', 0.9],
   ['WHITE', 1.0],
   ['COMMERCIAL', 1.0],
@@ -99,6 +142,24 @@ export const ZONE_DENSITY = [
 
 /** Used when the zoning layer has not been loaded, or a point matches nothing. */
 export const DENSITY_FALLBACK = 0.5
+
+/**
+ * Density is sampled over a NEIGHBOURHOOD, not at a single point.
+ *
+ * A bird at a reserve edge does not collide with whatever is directly beneath
+ * it — it collides with the buildings across the road. Point-sampling put
+ * edge-adjacent locations inside the park's own grid cell and scored them 0,
+ * which erased exactly the band the model exists to find.
+ *
+ * 300 m is roughly the scale over which a disoriented bird encounters glass.
+ *
+ * We take the 80th PERCENTILE of the disc, not the mean. At a reserve edge
+ * most of the disc is still park, so a mean dilutes away the very development
+ * that creates the hazard. What matters is whether significant building exists
+ * nearby at all — one glass tower kills birds regardless of the average.
+ */
+export const DENSITY_RADIUS_M = 300
+export const DENSITY_PERCENTILE = 0.8
 
 /** F10 — lamp classification buckets. Blue content, not brightness. */
 export const LAMP_TYPES = [
@@ -130,5 +191,6 @@ export const MAP_DEFAULT = {
 /** Where the committed static datasets live. */
 export const DATA = {
   greenSpaces: '/data/green-spaces.geojson',
-  zoning: '/data/land-use.geojson',
+  /** Built by scripts/build-density-grid.mjs. See npm run data:density. */
+  densityGrid: '/data/density-grid.json',
 }

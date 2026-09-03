@@ -24,22 +24,24 @@ import { point } from '@turf/helpers'
 
 import {
   WEIGHTS,
+  MODEL,
   HABITAT,
   SIZE_WEIGHT,
   BANDS,
-  ZONE_DENSITY,
   DENSITY_FALLBACK,
+  DENSITY_RADIUS_M,
+  DENSITY_PERCENTILE,
   DATA,
 } from './config.js'
 
 // --- module state, populated once by initScoring() --------------------------
 let greenSpaces = null
-let zoning = null
+let densityGrid = null
 
 export function getDataStatus() {
   return {
     greenSpaces: greenSpaces !== null,
-    zoning: zoning !== null,
+    density: densityGrid !== null,
     light: false, // TODO(L1): no light dataset yet — see lightAt()
   }
 }
@@ -52,25 +54,29 @@ export function getDataStatus() {
  * placeholder and says so in its `note`, so the app still runs.
  */
 export async function initScoring() {
-  const [gs, zn] = await Promise.all([
+  const [gs, grid] = await Promise.all([
     loadGeoJson(DATA.greenSpaces),
-    loadGeoJson(DATA.zoning),
+    loadJson(DATA.densityGrid),
   ])
   greenSpaces = gs
-  zoning = zn
+  densityGrid = grid
   return getDataStatus()
 }
 
-async function loadGeoJson(url) {
+async function loadJson(url) {
   try {
     const res = await fetch(url)
-    if (!res.ok) return null
-    const gj = await res.json()
-    for (const f of gj.features) f._bbox = bboxOf(f.geometry.coordinates)
-    return gj.features
+    return res.ok ? await res.json() : null
   } catch {
     return null // dataset not committed yet — caller degrades gracefully
   }
+}
+
+async function loadGeoJson(url) {
+  const gj = await loadJson(url)
+  if (!gj) return null
+  for (const f of gj.features) f._bbox = bboxOf(f.geometry.coordinates)
+  return gj.features
 }
 
 function bboxOf(coords) {
@@ -165,7 +171,9 @@ export function habitatAt(lat, lng) {
     proximity = clamp01(1 - near.metres / HABITAT.falloffInward)
   }
 
-  const value = proximity * sizeWeight(near)
+  const value = clamp01(
+    HABITAT.floor + (1 - HABITAT.floor) * proximity * sizeWeight(near)
+  )
   const where = near.inside
     ? `inside ${titleCase(near.name)}`
     : `${Math.round(near.metres)}m from ${titleCase(near.name)}`
@@ -192,59 +200,73 @@ export function habitatAt(lat, lng) {
  * Known weakness to state on the methodology page: zoning is what is
  * PERMITTED, not what is BUILT. A vacant plot zoned Commercial reads dense.
  */
+const DENSITY_WORDS = [
+  [0.05, 'Effectively nothing built here'],
+  [0.25, 'Very lightly built'],
+  [0.5, 'Moderately built'],
+  [0.75, 'Densely built'],
+  [1.01, 'Very densely built'],
+]
+
 export function densityAt(lat, lng) {
-  if (!zoning) {
+  if (!densityGrid) {
     return {
       value: DENSITY_FALLBACK,
       weight: WEIGHTS.density,
-      note: 'Land-use data not loaded — using a placeholder value.',
+      note: 'Density data not loaded — using a placeholder value.',
       placeholder: true,
     }
   }
 
-  const pt = point([lng, lat])
-  for (const f of zoning) {
-    const [minX, minY, maxX, maxY] = f._bbox
-    if (lng < minX || lng > maxX || lat < minY || lat > maxY) continue
-    if (!booleanPointInPolygon(pt, f)) continue
+  const { bbox, cell, cols, rows, data } = densityGrid
+  const cx = Math.floor((lng - bbox[0]) / cell)
+  const cy = Math.floor((lat - bbox[1]) / cell)
 
-    const zone = extractZone(f.properties)
-    if (!zone) continue
-    const upper = zone.toUpperCase()
-    const hit = ZONE_DENSITY.find(([term]) => upper.includes(term))
-    if (hit) {
-      return {
-        value: hit[1],
-        weight: WEIGHTS.density,
-        note: `Zoned ${titleCase(zone)}.`,
-      }
+  if (cx < 0 || cy < 0 || cx >= cols || cy >= rows) {
+    return {
+      value: 0,
+      weight: WEIGHTS.density,
+      note: 'Outside the Master Plan area — water or beyond Singapore.',
     }
   }
 
-  return {
-    value: DENSITY_FALLBACK,
-    weight: WEIGHTS.density,
-    note: 'No land-use zone matched this point.',
-    placeholder: true,
-  }
-}
+  // Average over a disc, not a single cell. See DENSITY_RADIUS_M in config.
+  const metresPerCell = cell * 111000
+  const r = Math.max(1, Math.round(DENSITY_RADIUS_M / metresPerCell))
 
-/**
- * URA datasets on data.gov.sg vary in how they carry the zone name — some
- * expose a plain field, others bury it in an HTML Description blob.
- * Adjust once you have looked at the real file.
- */
-function extractZone(props) {
-  for (const key of ['LU_DESC', 'LU_TEXT', 'ZONE', 'LANDUSE', 'lu_desc']) {
-    if (props[key]) return String(props[key])
+  const samples = []
+  for (let dy = -r; dy <= r; dy++) {
+    for (let dx = -r; dx <= r; dx++) {
+      if (dx * dx + dy * dy > r * r) continue // keep it circular
+      const x = cx + dx
+      const y = cy + dy
+      if (x < 0 || y < 0 || x >= cols || y >= rows) continue
+      const v = data[y * cols + x]
+      if (v < 0) continue // sea or beyond the plan — nothing built there
+      samples.push(v)
+    }
   }
-  if (props.Description) {
-    const m = String(props.Description).match(
-      /LU_DESC<\/th>\s*<td>([^<]+)</i
-    )
-    if (m) return m[1]
+
+  if (samples.length === 0) {
+    return {
+      value: 0,
+      weight: WEIGHTS.density,
+      note: `Nothing built within ${DENSITY_RADIUS_M}m.`,
+    }
   }
-  return null
+
+  // 80th percentile, not the mean — see DENSITY_PERCENTILE in config.js
+  samples.sort((a, b) => a - b)
+  const idx = Math.min(
+    samples.length - 1,
+    Math.floor(samples.length * DENSITY_PERCENTILE)
+  )
+  const value = samples[idx] / 100
+  return {
+    value,
+    weight: WEIGHTS.density,
+    note: `${DENSITY_WORDS.find(([t]) => value < t)[1]} within 300m (land-use zoning).`,
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -278,8 +300,16 @@ export function scoreLocation(lat, lng) {
     density: densityAt(lat, lng),
   }
 
+  // Multiplicative, not a sum. Birds AND buildings are both required — either
+  // at zero means no collisions. Light modulates but never zeroes, because an
+  // unlit facade still kills by daylight reflection. See MODEL in config.js.
+  const lightMultiplier =
+    MODEL.lightFloor + (1 - MODEL.lightFloor) * factors.light.value
+
   const total = Math.round(
-    Object.values(factors).reduce((sum, f) => sum + f.value * f.weight, 0) * 100
+    Math.sqrt(factors.habitat.value * factors.density.value) *
+      lightMultiplier *
+      100
   )
 
   return {

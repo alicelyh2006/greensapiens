@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "data:simplify": "mapshaper data-raw/parks-raw.geojson -simplify 10% keep-shapes -o public/data/green-spaces.geojson"
+    "data:simplify": "mapshaper data-raw/parks-raw.geojson -simplify 10% keep-shapes -o public/data/green-spaces.geojson",
+    "data:density": "node --max-old-space-size=8192 scripts/build-density-grid.mjs data-raw/landuse-raw.geojson public/data/density-grid.json"
   },
   "dependencies": {
     "@turf/boolean-point-in-polygon": "^7.4.0",

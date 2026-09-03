@@ -81,13 +81,32 @@ changes at standup rather than editing quietly.
 
 ## Current state (3 Sep)
 
-**Real:** `public/data/green-spaces.geojson` — 461 NParks polygons including all
-7 nature reserves, simplified from 2.9 MB to 419 KB. Regenerate with
-`npm run data:simplify`.
+**Real and working — two of three factors:**
 
-**Still mock:** `scoreLocation` returns pseudo-random values. The working habitat
-maths is proven in `spike-habitat.mjs` (gitignored, on L1's machine) and is being
-ported into `src/lib/score.js`.
+- `public/data/green-spaces.geojson` — 461 NParks polygons, all 7 nature
+  reserves. Simplified 2.9 MB → 419 KB. Rebuild: `npm run data:simplify`.
+- `public/data/density-grid.json` — 334×221 grid at ~165 m, built from the
+  180 MB URA Master Plan land-use layer. 210 KB, O(1) lookup.
+  Rebuild: `npm run data:density`.
+- `scoreLocation` computes real habitat and density. ~2.5 ms per call.
+
+**Still a placeholder:** `lightAt()` returns a flat 0.5. Preferred source is our
+own field-survey lamp colour readings; VIIRS is the fallback. Until it lands,
+every score carries `isMock: true`.
+
+**The model** — see MODEL in `config.js`:
+
+```
+risk = sqrt(habitat x density) x (lightFloor + (1 - lightFloor) x light)
+```
+
+Multiplicative, not a weighted sum. Both habitat and density are required —
+either at zero means zero risk. The square root is a geometric mean, needed
+because a plain product of two sub-1 values never reaches the risk bands.
+
+Sanity check (`node spike-score.mjs`): Botanic Gardens edge 55 (big green
+space ringed by dense development), Bukit Timah interior 0 (nothing to hit),
+Sungei Buloh 0 (remote), CBD 21 (dense but little habitat).
 
 **Not started:** everything in `src/features/` is an empty shell. Every stub
 carries `TODO(lane · requirement)` comments.
