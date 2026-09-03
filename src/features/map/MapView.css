@@ -1,5 +1,25 @@
 /* Map feature styles. Colours from tokens only — no hex codes here. */
 
+/* --- Risk surface --- */
+/* Band is encoded by both colour and the numeric result panel; the map layer
+   is deliberately low-opacity so the basemap remains readable. */
+.risk-cell {
+  stroke: none;
+  pointer-events: none;
+}
+
+.risk-cell--low {
+  fill: var(--risk-low);
+}
+
+.risk-cell--moderate {
+  fill: var(--risk-moderate);
+}
+
+.risk-cell--high {
+  fill: var(--risk-high);
+}
+
 /* --- Selected-location marker --- */
 .marker-selected {
   display: flex;

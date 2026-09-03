@@ -7,9 +7,10 @@
  * L1-owned scoreLocation() contract — no risk logic lives here.
  */
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, GeoJSON, ZoomControl, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Rectangle, ZoomControl, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
-import { MAP_DEFAULT } from '../../lib/config.js'
+import { MAP_DEFAULT, MAP_BOUNDS, RISK_SURFACE } from '../../lib/config.js'
+import { buildRiskGrid } from './riskGrid.js'
 import './MapView.css'
 
 // Fix Leaflet default marker icons — Vite does not resolve them automatically.
@@ -25,10 +26,26 @@ L.Icon.Default.mergeOptions({
 })
 
 /** Constrain panning to Singapore and surrounding waters. */
-const SG_BOUNDS = [
-  [1.15, 103.59],
-  [1.47, 104.1],
-]
+
+
+function RiskSurface({ cells }) {
+  return (
+    <>
+      {cells.map((cell) => (
+        <Rectangle
+          key={cell.key}
+          bounds={cell.bounds}
+          pathOptions={{
+            className: `risk-cell risk-cell--${cell.band}`,
+            fillOpacity: RISK_SURFACE.opacity,
+            weight: 0,
+            interactive: false,
+          }}
+        />
+      ))}
+    </>
+  )
+}
 
 function ClickHandler({ onSelect }) {
   useMapEvents({
@@ -40,13 +57,15 @@ function ClickHandler({ onSelect }) {
 }
 
 export default function MapView({ selected, onSelect }) {
+  const riskGrid = useState(() => buildRiskGrid())[0]
+
   return (
     <MapContainer
       center={MAP_DEFAULT.center}
       zoom={MAP_DEFAULT.zoom}
       minZoom={MAP_DEFAULT.minZoom}
       maxZoom={MAP_DEFAULT.maxZoom}
-      maxBounds={SG_BOUNDS}
+      maxBounds={MAP_BOUNDS}
       maxBoundsViscosity={0.8}
       scrollWheelZoom
       zoomControl={false}
@@ -58,6 +77,7 @@ export default function MapView({ selected, onSelect }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
+      <RiskSurface cells={riskGrid} />
       <ClickHandler onSelect={onSelect} />
       {selected && (
         <Marker position={[selected.lat, selected.lng]}>

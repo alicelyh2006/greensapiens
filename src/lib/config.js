@@ -63,3 +63,15 @@ export const MAP_DEFAULT = {
   minZoom: 11,
   maxZoom: 18,
 }
+
+/** Singapore display bounds and L2 risk-surface rendering settings. */
+export const MAP_BOUNDS = [
+  [1.15, 103.59],
+  [1.47, 104.1],
+]
+
+export const RISK_SURFACE = {
+  rows: 24,
+  columns: 36,
+  opacity: 0.28,
+}
