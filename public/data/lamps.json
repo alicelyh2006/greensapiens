@@ -1,0 +1,18 @@
+{
+  "note": "Field-survey lamp classifications. EMPTY until the survey is done — see README below. Real entries only; never seed this with invented data.",
+  "schema": {
+    "lat": "number, decimal degrees",
+    "lng": "number, decimal degrees",
+    "type": "one of: sodium | warm-led | neutral-led | cool-led (see LAMP_TYPES in src/lib/config.js)",
+    "kind": "optional, what the fixture lights: carpark | facade | signage | floodlight | sports | street | other",
+    "surveyed": "optional ISO date, e.g. 2026-09-06"
+  },
+  "example": {
+    "lat": 1.3487,
+    "lng": 103.7815,
+    "type": "cool-led",
+    "kind": "carpark",
+    "surveyed": "2026-09-06"
+  },
+  "lamps": []
+}

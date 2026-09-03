@@ -75,3 +75,12 @@ export const RISK_SURFACE = {
   columns: 36,
   opacity: 0.28,
 }
+
+/** Where the committed static datasets live. */
+export const DATA = {
+  greenSpaces: '/data/green-spaces.geojson',
+  /** Built by scripts/build-density-grid.mjs. See npm run data:density. */
+  densityGrid: '/data/density-grid.json',
+  /** Our own field survey. See public/data/lamps.json for the schema. */
+  lamps: '/data/lamps.json',
+}
