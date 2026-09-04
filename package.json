@@ -7,9 +7,18 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "data:simplify": "mapshaper data-raw/parks-raw.geojson -simplify 10% keep-shapes -o public/data/green-spaces.geojson",
+    "data:risk": "node scripts/build-risk-grid.mjs",
+    "data:density": "node --max-old-space-size=8192 scripts/build-density-grid.mjs data-raw/landuse-raw.geojson public/data/density-grid.json"
   },
   "dependencies": {
+    "@turf/boolean-point-in-polygon": "^7.4.0",
+    "@turf/distance": "^7.4.0",
+    "@turf/helpers": "^7.4.0",
+    "@turf/nearest-point-on-line": "^7.4.0",
+    "@turf/polygon-to-line": "^7.4.0",
+    "heic2any": "^0.0.4",
     "leaflet": "1.9.4",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -17,6 +26,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "4.3.4",
+    "mapshaper": "^0.7.56",
     "vite": "5.4.11"
   }
 }

@@ -23,3 +23,7 @@ pnpm-debug.log*
 data-raw/
 *.zip
 *.tif
+
+# Throwaway spikes — the code they prove out moves into src/lib/
+spike-*.mjs
+__synthetic-lamps.json

@@ -45,6 +45,12 @@
   background: var(--ground);
 }
 
+.app__loading {
+  padding: var(--space-4);
+  color: var(--text-dim);
+  font-size: var(--text-sm);
+}
+
 /* N3 — mobile. Map on top, panel below. */
 @media (max-width: 48rem) {
   .app__body {
