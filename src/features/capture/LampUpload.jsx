@@ -1,15 +1,16 @@
 /**
- * SPIKE — F9 (EXIF GPS) + F10 (lamp colour classification)
- * OWNER: L4  |  throwaway — delete once both features are proven or dropped.
+ * F9 (EXIF GPS) + F10 (lamp colour classification).  OWNER: L4
  *
- * What this proves:
- *   F9: does a phone photo carry GPS in EXIF after browser upload?
- *   F10: can we bucket a lamp into warm/neutral/cool by colour reliably?
+ * Reads a photo's embedded GPS, then classifies the lamp by colour. Blue
+ * content, not brightness, is what predicts migrant collisions — so this needs
+ * no photometry and no exposure calibration, only the colour a camera already
+ * records.
  *
- * Nothing here is wired to the main app. Run via spike.html.
+ * Mounted in the app from App.jsx. HEIC decoding is loaded on demand; see
+ * heicConvert.js.
  */
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import heic2any from 'heic2any'
+import { heicToJpeg } from './heicConvert.js'
 import { readExifGps } from './exifGps.js'
 import { sampleLampColour } from './lampColour.js'
 import { extractHeicThumbnail } from './extractHeicThumbnail.js'
@@ -161,7 +162,7 @@ function FileCard({ file, result }) {
           }
           // 2. Fallback: heic2any decoding with optimized preview quality (0.6)
           try {
-            const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.6 })
+            const converted = await heicToJpeg(file, 0.6)
             if (cancelled) return
             const blob = Array.isArray(converted) ? converted[0] : converted
             objectUrl = URL.createObjectURL(blob)
@@ -319,15 +320,11 @@ export default function LampUpload({ onAdd }) {
   return (
     <div className="spike">
       <header className="spike__header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <div className="spike__badge">SPIKE · F9 / F10</div>
-          <a href="/ReportForm.html" style={{ fontSize: '0.85rem', color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
-            Go to Collision Reporting &rarr;
-          </a>
-        </div>
-        <h1 className="spike__title">Lamp upload spike</h1>
+        <h1 className="spike__title">Add a light</h1>
         <p className="spike__sub">
-          Proving F9 (EXIF GPS) and F10 (colour classification) before wiring to the main app.
+          Photograph a lamp near a park or reserve edge. Location is read from
+          the photo, and the lamp is classified by colour — blue-rich lighting
+          is what draws migrating birds off course.
           <br />
           Nothing leaves your device.
         </p>

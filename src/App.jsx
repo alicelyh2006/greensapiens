@@ -4,10 +4,17 @@
  * Loads the static datasets once, then holds the selected location and its
  * risk result. Keep feature logic in features/; this file only composes.
  */
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import MapView from './features/map/MapView.jsx'
 import ResultPanel from './features/result/ResultPanel.jsx'
 import Methodology from './features/result/Methodology.jsx'
+import Modal from './components/Modal.jsx'
+import { Button } from './components/index.jsx'
+
+// Loaded on demand — these pull in EXIF and HEIC handling that most visitors
+// never trigger. See heicConvert.js for the 1.36 MB decoder behind them.
+const LampUpload = lazy(() => import('./features/capture/LampUpload.jsx'))
+const ReportForm = lazy(() => import('./features/capture/ReportForm.jsx'))
 import { initScoring, scoreLocation } from './lib/score.js'
 import './App.css'
 
@@ -35,6 +42,7 @@ export default function App() {
   const [dataStatus, setDataStatus] = useState(null)
   const [selected, setSelected] = useState(null)
   const [risk, setRisk] = useState(null)
+  const [capture, setCapture] = useState(null) // 'lamp' | 'report' | null
 
   // Datasets load once. scoreLocation stays synchronous afterwards, because
   // three other lanes call it directly and must not have to await.
@@ -86,7 +94,14 @@ export default function App() {
           ) : (
             <p className="app__loading">Loading map data…</p>
           )}
-          {/* TODO(L4): mount LampUpload and ReportForm here once they do something */}
+          <div className="app__contribute">
+            <p className="app__contribute-label">Contribute</p>
+            <Button onClick={() => setCapture('lamp')}>Add a light</Button>
+            <Button onClick={() => setCapture('report')}>Report a collision</Button>
+            <p className="app__contribute-note">
+              Photos and reports stay on your device.
+            </p>
+          </div>
           {/* F8: methodology disclosure — collapsible, below the result panel */}
           <details style={{ marginTop: 'var(--space-3)' }}>
             <summary style={{
@@ -108,6 +123,17 @@ export default function App() {
           </details>
         </aside>
       </main>
+
+      <Modal
+        open={capture !== null}
+        title={capture === 'lamp' ? 'Add a light' : 'Report a collision'}
+        onClose={() => setCapture(null)}
+      >
+        <Suspense fallback={<p className="app__loading">Loading…</p>}>
+          {capture === 'lamp' && <LampUpload />}
+          {capture === 'report' && <ReportForm />}
+        </Suspense>
+      </Modal>
     </div>
   )
 }

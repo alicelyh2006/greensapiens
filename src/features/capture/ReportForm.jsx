@@ -1,8 +1,8 @@
 /**
- * SPIKE · F11 — Citizen Collision Incident Reporting
- * OWNER: L4 (Capture & Contribution)
+ * F11 — citizen collision reporting.  OWNER: L4 (Capture & Contribution)
  *
- * Throwaway spike page for reporting bird collisions:
+ * N5: everything stays in the browser and the UI says so.
+ *
  *   1. Citizens upload a photo of the bird collision (JPEG, HEIC, PNG).
  *   2. Extracts EXIF GPS from photo automatically.
  *   3. If GPS is missing, allows entering location or using device geolocation.
@@ -12,7 +12,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { readExifGps } from './exifGps.js'
 import { extractHeicThumbnail } from './extractHeicThumbnail.js'
-import heic2any from 'heic2any'
+import { heicToJpeg } from './heicConvert.js'
 import './ReportForm.css'
 
 const STORAGE_KEY = 'nightjar.reports.v1'
@@ -84,7 +84,7 @@ export default function ReportForm({ onSubmit }) {
         setPreviewSrc(URL.createObjectURL(fastThumb))
       } else {
         try {
-          const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.6 })
+          const converted = await heicToJpeg(file, 0.6)
           const blob = Array.isArray(converted) ? converted[0] : converted
           setPreviewSrc(URL.createObjectURL(blob))
         } catch (e) {
@@ -189,19 +189,13 @@ export default function ReportForm({ onSubmit }) {
     <div className="collision-page">
       {/* Header */}
       <header className="collision-header">
-        <div className="collision-header__nav">
-          <span className="collision-badge">Throwaway Spike · F11</span>
-          <a href="/LampUpload.html" className="collision-header__link">
-            &larr; Switch to Lamp Upload
-          </a>
-        </div>
         <div className="collision-header__inner">
           <h1 className="collision-title">Report a Bird Collision</h1>
           <p className="collision-sub">
-            Citizen tool for documenting bird strikes near buildings and glass facades.
-            Upload a photo to automatically log incident coordinates via EXIF GPS.
+            Found a dead or stunned bird near a building? Logging it builds the
+            evidence base Singapore does not currently have.
             <br />
-            <strong>Privacy notice:</strong> Reports are stored on this device until database connection is configured.
+            <strong>Privacy:</strong> reports stay on this device and are never uploaded.
           </p>
         </div>
       </header>

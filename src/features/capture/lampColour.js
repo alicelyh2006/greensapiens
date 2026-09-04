@@ -13,7 +13,7 @@
  * @param {File} file
  * @returns {Promise<{ type: 'warm'|'neutral'|'cool'|'unknown', avgR, avgG, avgB, blueRatio, pixelsSampled }>}
  */
-import heic2any from 'heic2any'
+import { heicToJpeg } from './heicConvert.js'
 import { extractHeicThumbnail } from './extractHeicThumbnail.js'
 
 export async function sampleLampColour(file) {
@@ -29,7 +29,7 @@ export async function sampleLampColour(file) {
     } else {
       // 2. Fallback to heic2any with reduced quality for speed
       try {
-        const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.5 })
+        const converted = await heicToJpeg(file, 0.5)
         imageBlob = Array.isArray(converted) ? converted[0] : converted
       } catch (e) {
         console.warn('HEIC conversion for colour sampling failed:', e)
