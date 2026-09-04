@@ -40,6 +40,7 @@ import {
 let greenSpaces = null
 let densityGrid = null
 let lamps = null
+let singaporeBoundary = null
 
 export function getDataStatus() {
   return {
@@ -57,14 +58,16 @@ export function getDataStatus() {
  * placeholder and says so in its `note`, so the app still runs.
  */
 export async function initScoring() {
-  const [gs, grid, lampData] = await Promise.all([
+  const [gs, grid, lampData, boundaryData] = await Promise.all([
     loadGeoJson(DATA.greenSpaces),
     loadJson(DATA.densityGrid),
     loadJson(DATA.lamps),
+    loadJson('/data/singapore-boundary.geojson'),
   ])
   greenSpaces = gs
   densityGrid = grid
   lamps = lampData?.lamps ?? null
+  singaporeBoundary = boundaryData?.features ?? null
   return getDataStatus()
 }
 
@@ -167,9 +170,20 @@ export function habitatAt(lat, lng) {
   }
 
   // Bird presence is highest in and beside green space, fading outward.
+  // No nearby green space means no habitat signal. The old implementation
+  // applied HABITAT.floor globally, which created a false low-risk carpet over
+  // dense urban areas far from greenery.
   let proximity = near.inside
     ? 1
     : clamp01(1 - near.metres / HABITAT.falloffOutward)
+  if (proximity <= 0) {
+    return {
+      value: 0,
+      weight: WEIGHTS.habitat,
+      note: `More than ${HABITAT.falloffOutward}m from mapped green space.`,
+      detail: near,
+    }
+  }
 
   // Fallback only — normally density handles the reserve interior.
   if (near.inside && HABITAT.useInwardFalloff) {
@@ -231,7 +245,20 @@ export function densityAt(lat, lng) {
     return {
       value: 0,
       weight: WEIGHTS.density,
-      note: 'Outside the Master Plan area — water or beyond Singapore.',
+      note: 'Outside the mapped assessment area.',
+      unavailable: true,
+    }
+  }
+
+  // A -1 cell is explicitly no-data in the committed URA grid. Do not infer
+  // collision risk there from neighbouring cells; this prevents water and
+  // unmapped/restricted portions from receiving a synthetic score.
+  if (data[cy * cols + cx] < 0) {
+    return {
+      value: 0,
+      weight: WEIGHTS.density,
+      note: 'No usable land-use data at this location.',
+      unavailable: true,
     }
   }
 
@@ -362,7 +389,16 @@ function lampsWithin(lat, lng, radiusM) {
  *   isMock: boolean
  * }}
  */
+
+function isLand(lat, lng) {
+  const pt = point([lng, lat])
+  return singaporeBoundary.some((feature) => booleanPointInPolygon(pt, feature))
+}
+
 export function scoreLocation(lat, lng) {
+  if (singaporeBoundary && !isLand(lat, lng)) {
+    return { total: 0, band: 'low', factors: { habitat: { value: 0, weight: WEIGHTS.habitat, note: 'Outside Singapore land boundary.' }, light: { value: 0, weight: WEIGHTS.light, note: 'Not assessed outside Singapore.' }, density: { value: 0, weight: WEIGHTS.density, note: 'Not assessed outside Singapore.' } }, isMock: false, unavailable: true, reason: 'outside-singapore' }
+  }
   const factors = {
     habitat: habitatAt(lat, lng),
     light: lightAt(lat, lng),

@@ -1,5 +1,9 @@
 /* Map feature styles. Colours from tokens only — no hex codes here. */
 
+/* --- Risk surface --- */
+/* Band is encoded by both colour and the numeric result panel; the map layer
+   is deliberately low-opacity so the basemap remains readable. */
+
 /* --- Selected-location marker --- */
 .marker-selected {
   display: flex;
@@ -330,21 +334,56 @@
   }
 }
 
-/* --------------------------------------------------------------------------
-   Desaturate the basemap so the risk overlay reads against it.
-
-   Standard OSM tiles are too colourful for a translucent data layer — the risk
-   surface was effectively invisible over them. Purpose-built muted basemaps
-   (Carto Positron, Stadia) now require API keys, which is a runtime dependency
-   that could fail during judging (N1). This gets the same result with nothing
-   to break.
-   -------------------------------------------------------------------------- */
-.leaflet-tile-pane {
-  filter: saturate(0.25) brightness(1.08) contrast(0.92);
+.map-shell { position:relative; width:100%; height:100%; min-height:0; }
+.risk-cell { pointer-events:none; stroke:none; }
+.risk-cell--low { fill:var(--risk-low); }
+.risk-cell--moderate { fill:var(--risk-moderate); }
+.risk-cell--high { fill:var(--risk-high); }
+.theme-control {
+  width:36px; height:36px; border:1px solid var(--line); border-radius:var(--radius);
+  background:var(--surface); color:var(--text); box-shadow:var(--shadow); cursor:pointer; font-size:1rem;
+}
+.theme-control:hover, .layer-toggle:hover { background:var(--surface-2); }
+.map-tools { position:absolute; top:var(--space-3); right:var(--space-3); z-index:1001; display:flex; gap:var(--space-2); }
+.layer-toggle { padding:0 var(--space-3); border:1px solid var(--line); border-radius:var(--radius); background:var(--surface); color:var(--text); box-shadow:var(--shadow); cursor:pointer; font-size:var(--text-sm); }
+.layer-toggle--active { border-color:var(--accent); }
+.map-search__status { position:absolute; top:calc(100% + var(--space-1)); left:0; right:0; padding:var(--space-2) var(--space-3); background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); color:var(--text-faint); font-size:var(--text-sm); }
+.map-legend { position:absolute; left:var(--space-3); bottom:var(--space-4); z-index:1001; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:var(--space-2) var(--space-3); box-shadow:var(--shadow); }
+.map-legend__title { font-size:0.6875rem; font-weight:600; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.06em; font-family:var(--font-mono); margin-bottom:var(--space-1); }
+.map-legend__items { display:flex; gap:var(--space-3); font-size:var(--text-sm); color:var(--text-dim); }
+.map-legend__items span { display:flex; align-items:center; gap:var(--space-1); }
+.legend-swatch { display:inline-block; width:14px; height:10px; border-radius:2px; }
+.legend-swatch--low { background:var(--risk-low); }
+.legend-swatch--moderate { background:var(--risk-moderate); }
+.legend-swatch--high { background:var(--risk-high); }
+.leaflet-control-attribution { background:var(--surface) !important; color:var(--text-faint) !important; }
+.leaflet-control-attribution a { color:var(--text-dim) !important; }
+@media (max-width:48rem) {
+  .map-search { max-width:calc(100% - 6rem); }
+  .map-legend__items { flex-direction:column; gap:2px; }
 }
 
-/* Keep the risk surface crisp — the grid is deliberately coarse, and browsers
-   smooth scaled images by default, which turns cells into mush. */
-.risk-overlay {
-  image-rendering: auto;
+
+.risk-legend {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 500;
+  max-width: 230px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.risk-legend .risk-legend-gradient {
+  width: 190px;
+  height: 8px;
+  border-radius: 999px;
+}
+.risk-legend .risk-legend-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 5px;
+  font-size: 11px;
 }

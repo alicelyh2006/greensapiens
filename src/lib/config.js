@@ -209,6 +209,12 @@ export const MAP_DEFAULT = {
   maxZoom: 18,
 }
 
+/** Constrain panning to Singapore and its surrounding waters. */
+export const MAP_BOUNDS = [
+  [1.15, 103.59],
+  [1.47, 104.1],
+]
+
 /** Where the committed static datasets live. */
 export const DATA = {
   greenSpaces: '/data/green-spaces.geojson',

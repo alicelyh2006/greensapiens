@@ -28,6 +28,15 @@
   --risk-high: #a33a3a;
   --risk-high-bg: #f6dada;
 
+
+  /* --- risk ramp: the map overlay only ---
+     Distinct from --risk-low/moderate/high, which are text-on-chip colours and
+     are deliberately dark in light mode. As a translucent overlay those wash
+     out against the basemap, so the ramp gets its own, more saturated set. */
+  --risk-ramp-low: #43a06a;
+  --risk-ramp-mid: #e8912b;
+  --risk-ramp-high: #d93b3b;
+
   /* --- map layers --- */
   --habitat: #4c8c5a;
   --habitat-fill: rgba(76, 140, 90, 0.22);
@@ -81,6 +90,11 @@
     --risk-high: #e07272;
     --risk-high-bg: #3a1d1d;
 
+
+    --risk-ramp-low: #5fc48c;
+    --risk-ramp-mid: #f0a83f;
+    --risk-ramp-high: #f26060;
+
     --habitat: #6fae7d;
     --habitat-fill: rgba(111, 174, 125, 0.2);
     --lamp-warm: #e8913a;
@@ -109,6 +123,11 @@
   --risk-moderate-bg: #3a2e15;
   --risk-high: #e07272;
   --risk-high-bg: #3a1d1d;
+
+
+  --risk-ramp-low: #5fc48c;
+  --risk-ramp-mid: #f0a83f;
+  --risk-ramp-high: #f26060;
 
   --habitat: #6fae7d;
   --habitat-fill: rgba(111, 174, 125, 0.2);

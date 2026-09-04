@@ -75,7 +75,7 @@ export function GreenSpaceLayer() {
  * Painted once to an offscreen canvas and added as a single image overlay.
  * Drawing ~7,000 individual Leaflet rectangles would crawl; one image does not.
  */
-export function RiskLayer({ opacity = 0.75 }) {
+export function RiskLayer({ opacity = 0.75, theme }) {
   const map = useMap()
 
   useEffect(() => {
@@ -94,9 +94,9 @@ export function RiskLayer({ opacity = 0.75 }) {
         const ctx = canvas.getContext('2d')
         const img = ctx.createImageData(cols, rows)
 
-        const low = tokenRgb('--risk-low', [111, 191, 139])
-        const mid = tokenRgb('--risk-moderate', [224, 169, 74])
-        const high = tokenRgb('--risk-high', [224, 114, 114])
+        const low = tokenRgb('--risk-ramp-low', [67, 160, 106])
+        const mid = tokenRgb('--risk-ramp-mid', [232, 145, 43])
+        const high = tokenRgb('--risk-ramp-high', [217, 59, 59])
 
         // Normalise against the "high" band, not the observed peak. The
         // distribution is heavily skewed — median 17, p99 57, and only a
@@ -139,7 +139,9 @@ export function RiskLayer({ opacity = 0.75 }) {
       cancelled = true
       if (overlay) map.removeLayer(overlay)
     }
-  }, [map, opacity])
+    // `theme` is a dependency because the colour ramp is read from CSS tokens,
+    // which change with the theme — the canvas has to be repainted.
+  }, [map, opacity, theme])
 
   return null
 }

@@ -118,3 +118,15 @@
   font-size: var(--text-sm);
   max-width: 34ch;
 }
+
+.result-score { display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap; }
+.result-score__value { font-size:2.25rem; line-height:1; }
+.result-score__scale { color:var(--text-faint); margin-left:-0.6rem; }
+.result__notice { color:var(--text-dim); font-size:var(--text-sm); }
+.result__location { color:var(--text-faint); font-size:var(--text-sm); overflow-wrap:anywhere; }
+.factor-list { display:flex; flex-direction:column; gap:var(--space-3); }
+.factor { display:flex; flex-direction:column; gap:var(--space-1); }
+.factor__top { display:flex; justify-content:space-between; gap:var(--space-3); font-size:var(--text-sm); }
+.factor__bar { height:6px; border-radius:999px; background:var(--line); overflow:hidden; }
+.factor__bar span { display:block; height:100%; background:var(--accent); border-radius:inherit; }
+.factor__meta { color:var(--text-faint); font-size:0.75rem; line-height:1.4; }
