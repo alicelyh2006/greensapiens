@@ -29,7 +29,7 @@ export const WEIGHTS = {
  * produce a high score in the middle of a forest, where there is nothing to
  * collide with.
  *
- *   risk = sqrt(habitat × density) × (lightFloor + (1 - lightFloor) × light)
+ *   risk = sqrt(habitat x density) x (lightFloor + (1 - lightFloor) x light)
  *
  * habitat and density are both REQUIRED: either at zero means zero risk.
  * Light MODULATES rather than creates — an unlit building beside a reserve
@@ -100,7 +100,7 @@ export const BANDS = {
  */
 export const ZONE_DENSITY = [
   // --- MUST come first: these contain words that appear below ---
-  ['BUSINESS PARK', 0.7],
+  ['BUSINESS PARK', 0.7], // before PARK, or it would score 0
   ['COMMERCIAL & RESIDENTIAL', 0.9],
   ['RESIDENTIAL WITH COMMERCIAL', 0.8],
   ['COMMERCIAL / INSTITUTION', 0.9],
@@ -186,8 +186,8 @@ export const LIGHT = {
   radiusM: 250,
   /** Below this many nearby lamps the reading is labelled an estimate. */
   minSamplesForConfidence: 2,
-  /** No surveyed coverage: use a neutral factor and disclose the limitation. */
-  fallback: 1.0,
+  /** Used where we have no survey coverage. Deliberately mid-scale. */
+  fallback: 0.5,
 }
 
 /** Peak collision months (1-indexed). */
@@ -209,17 +209,11 @@ export const MAP_DEFAULT = {
   maxZoom: 18,
 }
 
-/** Singapore display bounds and L2 risk-surface rendering settings. */
+/** Constrain panning to Singapore and its surrounding waters. */
 export const MAP_BOUNDS = [
   [1.15, 103.59],
   [1.47, 104.1],
 ]
-
-export const RISK_SURFACE = {
-  rows: 45,
-  columns: 70,
-  opacity: 0.65,
-}
 
 /** Where the committed static datasets live. */
 export const DATA = {
@@ -228,4 +222,6 @@ export const DATA = {
   densityGrid: '/data/density-grid.json',
   /** Our own field survey. See public/data/lamps.json for the schema. */
   lamps: '/data/lamps.json',
+  /** Precomputed risk surface. Built by scripts/build-risk-grid.mjs. */
+  riskGrid: '/data/risk-grid.json',
 }

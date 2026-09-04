@@ -1,47 +1,131 @@
-import { Panel, Card, RiskPill, EmptyState } from '../../components/index.jsx'
+/**
+ * F5 score display · F6 recommendations · F7 seasonal context
+ * OWNER: L3 (Result & Guidance)
+ *
+ * Turns a RiskResult into something a person can act on. Builds against the
+ * mock scoreLocation — needs nothing from any other lane.
+ */
+import { Panel, RiskPill, EmptyState } from '../../components/index.jsx'
 import { getRecommendations, isPeakSeason } from '../../lib/recommendations.js'
+import { WEIGHTS } from '../../lib/config.js'
+import './result.css'
 
-const LABELS = { habitat: 'Habitat', density: 'Building density', light: 'Blue-light exposure' }
+// ── Private sub-components ────────────────────────────────────────────────────
 
-function pct(value) { return `${Math.round(value * 100)}%` }
+/** Derive a risk band label from a 0–1 factor value. */
+function valueToBand(value) {
+  if (value >= 0.67) return 'high'
+  if (value >= 0.34) return 'moderate'
+  return 'low'
+}
+
+/** F5 — a single factor row: label, weight, progress bar, and note. */
+function FactorBar({ name, factor }) {
+  const band = valueToBand(factor.value)
+  const pct = Math.round(factor.value * 100)
+  const weightPct = Math.round(factor.weight * 100)
+  return (
+    <div className="factor-item">
+      <div className="factor-header">
+        <span className="factor-name">{name}</span>
+        <span className="factor-weight">{weightPct}% weight · {pct}/100</span>
+      </div>
+      <div className="factor-bar">
+        <div
+          className={`factor-fill factor-fill--${band}`}
+          style={{ width: `${pct}%` }}
+          role="meter"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`${name} ${pct} out of 100`}
+        />
+      </div>
+      <p className="factor-note">{factor.note}</p>
+    </div>
+  )
+}
+
+/** F6 — a single recommendation card with action, why, owner, and horizon. */
+function RecCard({ rec }) {
+  const horizonLabels = { now: 'Act now', seasonal: 'Seasonal', permanent: 'Long-term' }
+  return (
+    <div className="rec-item">
+      <p className="rec-action">{rec.action}</p>
+      <p className="rec-why">{rec.why}</p>
+      <div className="rec-meta">
+        <span className="owner-badge">{rec.owner}</span>
+        <span className={`horizon-tag horizon-tag--${rec.horizon}`}>
+          {horizonLabels[rec.horizon] ?? rec.horizon}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// ── Main export ───────────────────────────────────────────────────────────────
 
 export default function ResultPanel({ risk, location }) {
   if (!risk) {
-    return <Panel><EmptyState title="Pick a place on the map" body="Search for an address or tap a location on Singapore land to see its estimated collision risk." /></Panel>
-  }
-
-  if (risk.unavailable) {
-    return <Panel title="No risk assessment"><RiskPill band="unknown" /><p className="result__notice">Nightjar does not calculate or display risk for this location because it is outside the Singapore land boundary or has no usable land-use data.</p></Panel>
+    return (
+      <Panel>
+        <EmptyState
+          title="Pick a place on the map"
+          body="Tap anywhere in Singapore to see how likely bird-building collisions are there, and what would reduce them."
+        />
+      </Panel>
+    )
   }
 
   const recommendations = getRecommendations(risk)
-  const measuredLight = risk.factors.light.confidence === 'measured'
+  const peakSeason = isPeakSeason()
 
-  return <Panel title="Collision risk">
-    <div className="result-score">
-      <strong className="result-score__value">{risk.total}</strong><span className="result-score__scale">/100</span>
+  return (
+    <Panel title="Collision risk">
       <RiskPill band={risk.band} />
-    </div>
 
-    <p className="result__notice">Estimated risk index, not a probability of collision. The model combines published Singapore collision drivers with the project's current static datasets.</p>
+      {risk.isMock && (
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-faint)' }}>
+          Habitat and building density use real data. Light is estimated until
+          our field survey is complete, so this score will change.
+        </p>
+      )}
 
-    <Card label="Why">
-      <div className="factor-list">
-        {Object.entries(risk.factors).map(([key, factor]) => <div className="factor" key={key}>
-          <div className="factor__top"><span>{LABELS[key]}</span><strong>{pct(factor.value)}</strong></div>
-          <div className="factor__bar"><span style={{ width: `${Math.round(factor.value * 100)}%` }} /></div>
-          <div className="factor__meta">Weight {Math.round(factor.weight * 100)}% · {factor.note}</div>
-        </div>)}
+      {/* F7 — seasonal alert: amber banner during Oct–Nov */}
+      {peakSeason && (
+        <div className="season-alert" role="alert">
+          <p className="season-alert__heading">🐦 Peak migration period</p>
+          <p className="season-alert__body">
+            October – November is when migratory birds along the East Asian–Australasian
+            Flyway pass through Singapore. Collision risk is highest now.
+          </p>
+        </div>
+      )}
+
+      {/* F5 — factor breakdown */}
+      <div>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-faint)', marginBottom: 'var(--space-2)' }}>
+          Why this score
+        </p>
+        <div className="factor-list">
+          <FactorBar name="Habitat proximity" factor={risk.factors.habitat} />
+          <FactorBar name="Light level" factor={risk.factors.light} />
+          <FactorBar name="Building density" factor={risk.factors.density} />
+        </div>
       </div>
-    </Card>
 
-    <Card label="Data quality">
-      <p className="result__notice">Habitat: NParks green-space polygons. Building density: URA Master Plan land-use zoning used as a proxy for built density. Light: {measuredLight ? `${risk.factors.light.sampleCount} nearby surveyed lamps` : 'estimated because there are not enough surveyed lamps nearby'}.</p>
-    </Card>
-
-    {isPeakSeason() && <Card label="Season"><p className="result__notice">October–November is the project's peak migration window; collision risk can be more consequential during this period.</p></Card>}
-
-    <Card label="What would help"><p className="result__notice">{recommendations[0].action}</p></Card>
-    {location?.label && <p className="result__location">{location.label}</p>}
-  </Panel>
+      {/* F6 — recommendations */}
+      <div>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-faint)', marginBottom: 'var(--space-2)' }}>
+          What would help
+        </p>
+        <div className="rec-list">
+          {recommendations.map((rec, i) => (
+            <RecCard key={i} rec={rec} />
+          ))}
+        </div>
+      </div>
+    </Panel>
+  )
 }
+

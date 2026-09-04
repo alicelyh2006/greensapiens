@@ -3,12 +3,12 @@
  * OWNER: L2 (Map)
  */
 import { useEffect, useMemo, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, ZoomControl, Polygon, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 import { point } from '@turf/helpers'
-import { MAP_DEFAULT, MAP_BOUNDS, RISK_SURFACE } from '../../lib/config.js'
-import { buildRiskGrid } from './riskGrid.js'
+import { MAP_DEFAULT, MAP_BOUNDS } from '../../lib/config.js'
+import { GreenSpaceLayer, RiskLayer } from './layers.jsx'
 import './MapView.css'
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
@@ -20,21 +20,11 @@ L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, 
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
 
-function RiskSurface({ scoringReady, boundary, visible }) {
-  const [cells, setCells] = useState([])
-  useEffect(() => {
-    if (!scoringReady || !boundary || !visible) { setCells([]); return }
-    setCells(buildRiskGrid({ boundaryFeatures: boundary.features }))
-  }, [scoringReady, boundary, visible])
-
-  return <>{cells.map((cell) => (
-    <Polygon
-      key={cell.key}
-      positions={cell.positions}
-      pathOptions={{ className: `risk-cell risk-cell--${cell.band}`, fillOpacity: RISK_SURFACE.opacity, color: 'transparent', weight: 0 }}
-    />
-  ))}</>
-}
+/* L2's runtime RiskSurface was removed here. It scored every cell in the
+   browser on load — at 45x70 that is ~6s of blocking work, which breaks the
+   3-second budget (N2). The precomputed grid in layers.jsx renders the same
+   surface instantly from a 52 KB file. L2's land-mask idea was kept and moved
+   into scripts/build-risk-grid.mjs. */
 
 function SearchControl({ onSelect }) {
   const map = useMap()
@@ -119,7 +109,8 @@ export default function MapView({ selected, onSelect, scoringReady, theme = 'lig
       <ZoomControl position="bottomright" />
       <TileLayer key={theme} attribution={attribution} url={tileUrl} maxZoom={19} minZoom={11} detectRetina />
       <SearchControl onSelect={(location) => { if (!selectable(location.lat, location.lng)) return false; onSelect(location); return true }} />
-      <RiskSurface scoringReady={scoringReady} boundary={boundary} visible={riskVisible} />
+      {riskVisible && <RiskLayer theme={theme} />}
+      <GreenSpaceLayer />
       <ClickHandler onSelect={onSelect} isSelectable={selectable} />
       {selected && <Marker position={[selected.lat, selected.lng]}><Popup><strong>{selected.label || 'Selected location'}</strong><br />{selected.lat.toFixed(5)}, {selected.lng.toFixed(5)}</Popup></Marker>}
     </MapContainer>
