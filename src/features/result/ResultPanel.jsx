@@ -86,7 +86,8 @@ export default function ResultPanel({ risk, location }) {
 
       {risk.isMock && (
         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-faint)' }}>
-          Placeholder data — the scoring model is not implemented yet.
+          Habitat and building density use real data. Light is estimated until
+          our field survey is complete, so this score will change.
         </p>
       )}
 
