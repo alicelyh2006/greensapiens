@@ -7,7 +7,7 @@ import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMap, useMapEven
 import L from 'leaflet'
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 import { point } from '@turf/helpers'
-import { MAP_DEFAULT, MAP_BOUNDS } from '../../lib/config.js'
+import { MAP_DEFAULT, MAP_BOUNDS, DATA } from '../../lib/config.js'
 import { GreenSpaceLayer, RiskLayer } from './layers.jsx'
 import './MapView.css'
 
@@ -94,7 +94,7 @@ export default function MapView({ selected, onSelect, scoringReady, theme = 'lig
   const [riskVisible, setRiskVisible] = useState(true)
 
   useEffect(() => {
-    fetch('/data/singapore-boundary.geojson').then((r) => r.ok ? r.json() : null).then(setBoundary).catch(() => setBoundary(null))
+    fetch(DATA.boundary).then((r) => r.ok ? r.json() : null).then(setBoundary).catch(() => setBoundary(null))
   }, [])
 
   const tileUrl = theme === 'dark'

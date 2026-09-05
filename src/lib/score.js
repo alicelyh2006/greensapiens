@@ -62,7 +62,7 @@ export async function initScoring() {
     loadGeoJson(DATA.greenSpaces),
     loadJson(DATA.densityGrid),
     loadJson(DATA.lamps),
-    loadJson('/data/singapore-boundary.geojson'),
+    loadJson(DATA.boundary),
   ])
   greenSpaces = gs
   densityGrid = grid
