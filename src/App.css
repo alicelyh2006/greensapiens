@@ -26,7 +26,7 @@
 
 .app__body {
   display: grid;
-  grid-template-columns: 1fr minmax(20rem, 24rem);
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 24rem);
   flex: 1;
   min-height: 0;
 }
@@ -55,7 +55,7 @@
 @media (max-width: 48rem) {
   .app__body {
     grid-template-columns: 1fr;
-    grid-template-rows: 55vh auto;
+    grid-template-rows: minmax(24rem, 58vh) auto;
   }
 
   .app__side {

@@ -59,6 +59,11 @@ export default function App() {
   }, [])
 
   function handleSelect(location) {
+    if (!location) {
+      setSelected(null)
+      setRisk(null)
+      return
+    }
     setSelected(location)
     setRisk(scoreLocation(location.lat, location.lng))
   }

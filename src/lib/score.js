@@ -1,21 +1,8 @@
 /**
- * F5 — the risk model.  OWNER: L1 (Data & Model)
+ * F5 — the risk model. OWNER: L1 (Data & Model)
  *
- * `scoreLocation` is SYNCHRONOUS and must stay that way — three other lanes
- * call it directly. Datasets are fetched once by `initScoring()` at startup
- * and held in module state.
- *
- * The model, in one line:
- *
- *   habitat (are birds here?) x density (is there anything to hit?) x light
- *
- * We deliberately do NOT hard-code "risk peaks at the park edge". Habitat is
- * highest in and near green space; density is ~0 inside a reserve. Multiply
- * them and the peak falls on the edge by itself, because that is the only
- * place both are non-zero. The edge result is a prediction of the model, not
- * an assumption baked into it.
+ * scoreLocation() is the single scoring API used by the app.
  */
-
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 import polygonToLine from '@turf/polygon-to-line'
 import nearestPointOnLine from '@turf/nearest-point-on-line'
@@ -24,7 +11,6 @@ import { point } from '@turf/helpers'
 
 import {
   WEIGHTS,
-  MODEL,
   HABITAT,
   SIZE_WEIGHT,
   BANDS,
@@ -36,7 +22,6 @@ import {
   DATA,
 } from './config.js'
 
-// --- module state, populated once by initScoring() --------------------------
 let greenSpaces = null
 let densityGrid = null
 let lamps = null
@@ -50,19 +35,12 @@ export function getDataStatus() {
   }
 }
 
-/**
- * Load every static dataset and precompute bounding boxes.
- * Call once, await it, then render. Safe to call twice.
- *
- * A missing dataset is not fatal: the matching factor falls back to a
- * placeholder and says so in its `note`, so the app still runs.
- */
 export async function initScoring() {
   const [gs, grid, lampData, boundaryData] = await Promise.all([
     loadGeoJson(DATA.greenSpaces),
     loadJson(DATA.densityGrid),
     loadJson(DATA.lamps),
-    loadJson('/data/singapore-boundary.geojson'),
+    loadJson(DATA.boundary),
   ])
   greenSpaces = gs
   densityGrid = grid
@@ -76,7 +54,7 @@ async function loadJson(url) {
     const res = await fetch(url)
     return res.ok ? await res.json() : null
   } catch {
-    return null // dataset not committed yet — caller degrades gracefully
+    return null
   }
 }
 
@@ -101,7 +79,6 @@ function bboxOf(coords) {
   return [minX, minY, maxX, maxY]
 }
 
-/** Cheap metres-to-bbox. 0 when inside. Used to skip expensive line maths. */
 function bboxDistance(lng, lat, [minX, minY, maxX, maxY]) {
   const dx = Math.max(minX - lng, 0, lng - maxX)
   const dy = Math.max(minY - lat, 0, lat - maxY)
@@ -110,27 +87,16 @@ function bboxDistance(lng, lat, [minX, minY, maxX, maxY]) {
 
 const clamp01 = (n) => Math.min(1, Math.max(0, n))
 
-// ---------------------------------------------------------------------------
-// HABITAT — are birds likely to be here?
-// ---------------------------------------------------------------------------
-
-/**
- * Nearest green space, with signed edge distance.
- * Naive scan of all 461 polygons is ~13.6 ms; the bbox prefilter makes it
- * ~0.3 ms. This runs on every map click, so keep the prefilter.
- */
 export function nearestGreenSpace(lat, lng) {
   if (!greenSpaces) return null
   const pt = point([lng, lat])
-
   const candidates = greenSpaces
     .map((f) => ({ f, d: bboxDistance(lng, lat, f._bbox) }))
     .sort((a, b) => a.d - b.d)
 
   let best = null
   for (const { f, d } of candidates) {
-    if (best && d > best.metres) continue // cannot beat current best
-
+    if (best && d > best.metres) continue
     const asLine = polygonToLine(f)
     const lines = asLine.type === 'FeatureCollection' ? asLine.features : [asLine]
     for (const line of lines) {
@@ -141,8 +107,7 @@ export function nearestGreenSpace(lat, lng) {
           inside: booleanPointInPolygon(pt, f),
           name: f.properties.NAME,
           hectares: (f.properties['SHAPE_1.AREA'] ?? 0) / 10000,
-          isReserve:
-            f.properties.N_RESERVE === 1 || f.properties.N_RESERVE === '1',
+          isReserve: f.properties.N_RESERVE === 1 || f.properties.N_RESERVE === '1',
         }
       }
     }
@@ -150,7 +115,6 @@ export function nearestGreenSpace(lat, lng) {
   return best
 }
 
-/** Log-scaled habitat value of a park by area, plus a reserve uplift. */
 function sizeWeight({ hectares, isReserve }) {
   const { minHa, maxHa, reserveBonus } = SIZE_WEIGHT
   const base = clamp01(
@@ -169,13 +133,10 @@ export function habitatAt(lat, lng) {
     }
   }
 
-  // Bird presence is highest in and beside green space, fading outward.
-  // No nearby green space means no habitat signal. The old implementation
-  // applied HABITAT.floor globally, which created a false low-risk carpet over
-  // dense urban areas far from greenery.
   let proximity = near.inside
     ? 1
     : clamp01(1 - near.metres / HABITAT.falloffOutward)
+
   if (proximity <= 0) {
     return {
       value: 0,
@@ -185,7 +146,6 @@ export function habitatAt(lat, lng) {
     }
   }
 
-  // Fallback only — normally density handles the reserve interior.
   if (near.inside && HABITAT.useInwardFalloff) {
     proximity = clamp01(1 - near.metres / HABITAT.falloffInward)
   }
@@ -193,6 +153,7 @@ export function habitatAt(lat, lng) {
   const value = clamp01(
     HABITAT.floor + (1 - HABITAT.floor) * proximity * sizeWeight(near)
   )
+
   const where = near.inside
     ? `inside ${titleCase(near.name)}`
     : `${Math.round(near.metres)}m from ${titleCase(near.name)}`
@@ -205,20 +166,6 @@ export function habitatAt(lat, lng) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// DENSITY — is there anything here to collide with?
-// ---------------------------------------------------------------------------
-
-/**
- * Land-use zoning as a proxy for built density.
- *
- * TODO(L1 · path B): swap the internals for a precomputed OpenStreetMap
- * building-count grid. Nothing outside this function needs to change — that
- * is the point of keeping the interface this narrow.
- *
- * Known weakness to state on the methodology page: zoning is what is
- * PERMITTED, not what is BUILT. A vacant plot zoned Commercial reads dense.
- */
 const DENSITY_WORDS = [
   [0.05, 'Effectively nothing built here'],
   [0.25, 'Very lightly built'],
@@ -250,9 +197,6 @@ export function densityAt(lat, lng) {
     }
   }
 
-  // A -1 cell is explicitly no-data in the committed URA grid. Do not infer
-  // collision risk there from neighbouring cells; this prevents water and
-  // unmapped/restricted portions from receiving a synthetic score.
   if (data[cy * cols + cx] < 0) {
     return {
       value: 0,
@@ -262,19 +206,18 @@ export function densityAt(lat, lng) {
     }
   }
 
-  // Average over a disc, not a single cell. See DENSITY_RADIUS_M in config.
   const metresPerCell = cell * 111000
   const r = Math.max(1, Math.round(DENSITY_RADIUS_M / metresPerCell))
-
   const samples = []
+
   for (let dy = -r; dy <= r; dy++) {
     for (let dx = -r; dx <= r; dx++) {
-      if (dx * dx + dy * dy > r * r) continue // keep it circular
+      if (dx * dx + dy * dy > r * r) continue
       const x = cx + dx
       const y = cy + dy
       if (x < 0 || y < 0 || x >= cols || y >= rows) continue
       const v = data[y * cols + x]
-      if (v < 0) continue // sea or beyond the plan — nothing built there
+      if (v < 0) continue
       samples.push(v)
     }
   }
@@ -287,13 +230,13 @@ export function densityAt(lat, lng) {
     }
   }
 
-  // 80th percentile, not the mean — see DENSITY_PERCENTILE in config.js
   samples.sort((a, b) => a - b)
   const idx = Math.min(
     samples.length - 1,
     Math.floor(samples.length * DENSITY_PERCENTILE)
   )
   const value = samples[idx] / 100
+
   return {
     value,
     weight: WEIGHTS.density,
@@ -301,21 +244,6 @@ export function densityAt(lat, lng) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// LIGHT — placeholder until the lamp survey or VIIRS lands
-// ---------------------------------------------------------------------------
-
-/**
- * Blue-light exposure from our own field survey.
- *
- * The survey is sparse by nature — a few hundred classified lamps, not
- * island-wide coverage. So this reports its own confidence rather than
- * pretending to know everywhere. `confidence: 'measured'` means real lamps
- * were found nearby; 'estimated' means we are falling back and saying so.
- *
- * Nearby lamps are combined by inverse-distance weighting: a cool-white
- * floodlight 20 m away matters far more than one 200 m away.
- */
 export function lightAt(lat, lng) {
   const nearby = lampsWithin(lat, lng, LIGHT.radiusM)
 
@@ -332,7 +260,6 @@ export function lightAt(lat, lng) {
     }
   }
 
-  // inverse-distance weighting, +1 m so a lamp underfoot cannot divide by zero
   let num = 0
   let den = 0
   for (const { blue, metres } of nearby) {
@@ -340,8 +267,8 @@ export function lightAt(lat, lng) {
     num += blue * w
     den += w
   }
-  const value = clamp01(num / den)
 
+  const value = clamp01(num / den)
   const measured = nearby.length >= LIGHT.minSamplesForConfidence
   const worst = nearby.reduce((a, b) => (b.blue > a.blue ? b : a))
 
@@ -356,7 +283,6 @@ export function lightAt(lat, lng) {
   }
 }
 
-/** Surveyed lamps within `radiusM`, each with its blue value and distance. */
 function lampsWithin(lat, lng, radiusM) {
   if (!lamps || lamps.length === 0) return []
   const out = []
@@ -364,7 +290,6 @@ function lampsWithin(lat, lng, radiusM) {
   const lngDeg = latDeg / Math.cos((lat * Math.PI) / 180)
 
   for (const lamp of lamps) {
-    // cheap rectangular reject before the real distance calculation
     if (Math.abs(lamp.lat - lat) > latDeg) continue
     if (Math.abs(lamp.lng - lng) > lngDeg) continue
 
@@ -374,54 +299,54 @@ function lampsWithin(lat, lng, radiusM) {
     if (metres > radiusM) continue
 
     const type = LAMP_TYPES.find((t) => t.id === lamp.type)
-    if (!type) continue // unknown classification — ignore rather than guess
+    if (!type) continue
     out.push({ ...lamp, blue: type.blue, label: type.label, metres })
   }
+
   return out
 }
 
-// ---------------------------------------------------------------------------
-
-/**
- * @returns {{
- *   total: number, band: 'low'|'moderate'|'high',
- *   factors: { habitat: object, light: object, density: object },
- *   isMock: boolean
- * }}
- */
-
 function isLand(lat, lng) {
+  if (!singaporeBoundary?.length) return true
   const pt = point([lng, lat])
   return singaporeBoundary.some((feature) => booleanPointInPolygon(pt, feature))
 }
 
 export function scoreLocation(lat, lng) {
-  if (singaporeBoundary && !isLand(lat, lng)) {
-    return { total: 0, band: 'low', factors: { habitat: { value: 0, weight: WEIGHTS.habitat, note: 'Outside Singapore land boundary.' }, light: { value: 0, weight: WEIGHTS.light, note: 'Not assessed outside Singapore.' }, density: { value: 0, weight: WEIGHTS.density, note: 'Not assessed outside Singapore.' } }, isMock: false, unavailable: true, reason: 'outside-singapore' }
+  if (!isLand(lat, lng)) {
+    return {
+      total: 0,
+      band: 'low',
+      factors: {
+        habitat: { value: 0, weight: WEIGHTS.habitat, note: 'Outside Singapore land boundary.' },
+        light: { value: 0, weight: WEIGHTS.light, note: 'Not assessed outside Singapore.' },
+        density: { value: 0, weight: WEIGHTS.density, note: 'Not assessed outside Singapore.' },
+      },
+      isMock: false,
+      unavailable: true,
+      reason: 'outside-singapore',
+    }
   }
+
   const factors = {
     habitat: habitatAt(lat, lng),
     light: lightAt(lat, lng),
     density: densityAt(lat, lng),
   }
 
-  // Multiplicative, not a sum. Birds AND buildings are both required — either
-  // at zero means no collisions. Light modulates but never zeroes, because an
-  // unlit facade still kills by daylight reflection. See MODEL in config.js.
-  const lightMultiplier =
-    MODEL.lightFloor + (1 - MODEL.lightFloor) * factors.light.value
-
+  // Single authoritative scoring formula.
   const total = Math.round(
-    Math.sqrt(factors.habitat.value * factors.density.value) *
-      lightMultiplier *
-      100
+    (
+      factors.habitat.value * WEIGHTS.habitat +
+      factors.light.value * WEIGHTS.light +
+      factors.density.value * WEIGHTS.density
+    ) * 100
   )
 
   return {
     total,
     band: toBand(total),
     factors,
-    // still incomplete while any factor is a stand-in
     isMock: Object.values(factors).some((f) => f.placeholder),
   }
 }
