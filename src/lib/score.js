@@ -357,6 +357,37 @@ export function toBand(total) {
   return 'low'
 }
 
+/**
+ * UI simulation only: keep the authoritative location score unchanged while
+ * recalculating the selected location as if its light exposure were reduced.
+ * The same L1-owned weights and thresholds are used; no new scoring model is introduced.
+ */
+export function simulateLightExposure(risk, lightExposure) {
+  if (!risk?.factors) return null
+
+  const light = clamp01(Number(lightExposure) / 100)
+  const total = Math.round((
+    risk.factors.habitat.value * WEIGHTS.habitat +
+    light * WEIGHTS.light +
+    risk.factors.density.value * WEIGHTS.density
+  ) * 100)
+
+  return {
+    ...risk,
+    total,
+    band: toBand(total),
+    factors: {
+      ...risk.factors,
+      light: {
+        ...risk.factors.light,
+        value: light,
+        note: `Simulated light exposure: ${Math.round(light * 100)}/100.`,
+      },
+    },
+    isSimulation: light !== clamp01(risk.factors.light.value),
+  }
+}
+
 function titleCase(s) {
   return String(s ?? '')
     .toLowerCase()

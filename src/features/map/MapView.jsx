@@ -184,9 +184,8 @@ function SearchControl({ onSelect, onMessage }) {
   )
 }
 
-export default function MapView({ selected, onSelect, theme = 'light' }) {
+export default function MapView({ selected, onSelect, theme = 'light', riskVisible = true, habitatVisible = true, visible = true }) {
   const [riskGrid, setRiskGrid] = useState(null)
-  const [riskVisible, setRiskVisible] = useState(true)
   const [message, setMessage] = useState('')
 
   useEffect(() => {
@@ -264,7 +263,7 @@ export default function MapView({ selected, onSelect, theme = 'light' }) {
         <SearchControl onSelect={selectLocation} onMessage={setMessage} />
 
         {riskVisible && <RiskLayer theme={theme} />}
-        <GreenSpaceLayer />
+        {habitatVisible && <GreenSpaceLayer />}
         <ClickHandler onSelect={selectLocation} />
 
         {selected && (
@@ -279,13 +278,7 @@ export default function MapView({ selected, onSelect, theme = 'light' }) {
       </MapContainer>
 
       <div className="map-tools">
-        <button
-          className={`layer-toggle ${riskVisible ? 'layer-toggle--active' : ''}`}
-          type="button"
-          onClick={() => setRiskVisible((v) => !v)}
-        >
-          {riskVisible ? 'Hide risk' : 'Show risk'}
-        </button>
+        <span className="map-mode-chip">{theme === 'dark' ? 'Night Mode' : 'Day Mode'}</span>
       </div>
 
       {message && <div className="map-search__error">{message}</div>}

@@ -473,7 +473,7 @@ export default function ReportForm({ onSubmit }) {
                     {rpt.coords ? (
                       <div className="loc-banner loc-banner--found" style={{ padding: '6px 10px' }}>
                         <div style={{ fontSize: '0.75rem' }}>
-                          <strong>{rpt.coords.lat.toFixed(5)}°, {rpt.coords.lng.toFixed(5)}°</strong>
+                          <strong>{Number(rpt.coords.lat).toFixed(5)}°, {Number(rpt.coords.lng).toFixed(5)}°</strong>
                           {' '}({rpt.gpsSource})
                         </div>
                         <a
@@ -500,7 +500,7 @@ export default function ReportForm({ onSubmit }) {
 
                     <div className="report-card__footer">
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>
-                        Report ID: #{rpt.id.replace('rpt-', '')}
+                        Report ID: #{String(rpt.id ?? '').replace('rpt-', '')}
                       </span>
                       <button
                         className="btn-delete"

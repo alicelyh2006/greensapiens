@@ -3,10 +3,20 @@
  *
  * Algorithm:
  *   1. Decode image onto a 200x200 canvas (fast, no full-res needed).
- *   2. Find pixels brighter than the 90th-percentile luminance.
- *   3. Average their R, G, B.
- *   4. Compute blue ratio = B / (R + G + B).
- *   5. Bucket: blueRatio < 0.28 → warm, < 0.36 → neutral, else cool.
+ *   2. DISCARD saturated pixels — see below.
+ *   3. Of what remains, take the brightest decile.
+ *   4. Average their R, G, B and compute blue ratio = B / (R + G + B).
+ *   5. Bucket into the four lamp types.
+ *
+ * Why step 2 matters. A lamp photographed at night almost always blows out:
+ * the source clips to 255,255,255, whose blue ratio is exactly 255/765 =
+ * 0.333. That sits in the "neutral" band, so EVERY overexposed lamp — sodium
+ * or cool LED alike — was classifying as neutral. The reading looked
+ * plausible and carried no information at all.
+ *
+ * Colour survives in the unclipped halo around the source and on the surfaces
+ * it lights, so that is what we sample. `clipped` is returned so the UI can
+ * tell someone their photo is too blown out to read.
  *
  * Thresholds are rough starters — adjust after testing real lamp photos.
  *
@@ -47,30 +57,40 @@ export async function sampleLampColour(file) {
   const { data } = ctx.getImageData(0, 0, SIZE, SIZE)
   const total = SIZE * SIZE
 
-  // Compute luminance for every pixel
+  // A pixel with any channel at or near the ceiling has lost its colour: the
+  // sensor clipped and we cannot tell sodium from daylight-white any more.
+  const SATURATED = 250
+
   const lum = new Float32Array(total)
+  const usable = []
+  let clippedCount = 0
+
   for (let i = 0; i < total; i++) {
     const r = data[i * 4]
     const g = data[i * 4 + 1]
     const b = data[i * 4 + 2]
-    // perceived luminance
     lum[i] = 0.2126 * r + 0.7152 * g + 0.0722 * b
-  }
-
-  // 90th-percentile luminance threshold
-  const sorted = Float32Array.from(lum).sort()
-  const threshold = sorted[Math.floor(total * 0.90)]
-
-  // Average RGB of bright pixels
-  let sumR = 0, sumG = 0, sumB = 0, count = 0
-  for (let i = 0; i < total; i++) {
-    if (lum[i] >= threshold) {
-      sumR += data[i * 4]
-      sumG += data[i * 4 + 1]
-      sumB += data[i * 4 + 2]
-      count++
+    if (r >= SATURATED || g >= SATURATED || b >= SATURATED) {
+      clippedCount++
+      continue
     }
+    usable.push(i)
   }
+
+  // Brightest decile of what survived — the halo and lit surfaces, which do
+  // carry the colour cast.
+  usable.sort((a, b) => lum[b] - lum[a])
+  const take = Math.max(1, Math.floor(usable.length * 0.1))
+  const bright = usable.slice(0, take)
+
+  let sumR = 0, sumG = 0, sumB = 0
+  for (const i of bright) {
+    sumR += data[i * 4]
+    sumG += data[i * 4 + 1]
+    sumB += data[i * 4 + 2]
+  }
+  const count = bright.length
+  const clipped = clippedCount / total
 
   if (count === 0) {
     return {
@@ -82,6 +102,8 @@ export async function sampleLampColour(file) {
       redRatio: 0,
       greenRatio: 0,
       pixelsSampled: 0,
+      clipped: 1,
+      warning: 'Image is too overexposed to read a colour.',
     }
   }
 
@@ -119,5 +141,10 @@ export async function sampleLampColour(file) {
     redRatio,
     greenRatio,
     pixelsSampled: count,
+    clipped,
+    warning:
+      clipped > 0.05
+        ? 'The lamp is blown out in this photo. Tap the lamp before shooting so the camera stops down — the reading uses the glow around it, not the source.'
+        : null,
   }
 }

@@ -238,6 +238,9 @@ function FileCard({ file, result }) {
                       <span className={`risk-pill ${info.riskBadgeClass}`}>
                         {info.birdRisk} Bird Risk
                       </span>
+                      {result.reportedLampType && (
+                        <span className="reported-style">Reported: {(LAMP_LABEL[result.reportedLampType] || LAMP_LABEL.unknown).lamp}</span>
+                      )}
                     </div>
                   </div>
 
@@ -319,20 +322,46 @@ export default function LampUpload({ onAdd }) {
 
   return (
     <div className="spike">
-      <header className="spike__header">
-        <h1 className="spike__title">Add a light</h1>
-        <p className="spike__sub">
-          Photograph a lamp near a park or reserve edge. Location is read from
-          the photo, and the lamp is classified by colour — blue-rich lighting
-          is what draws migrating birds off course.
-          <br />
-          Nothing leaves your device.
-        </p>
-      </header>
-
-      <main className="spike__main">
-        <div
-          className="dropzone"
+      <section className="observation-panel">
+        <div className="observation-panel__intro">
+          <div>
+            <span className="observation-panel__eyebrow">FIELD SURVEY</span>
+            <h2 className="observation-panel__title">Lamp observations</h2>
+            <p className="observation-panel__sub">
+              Review lamp observations collected on this device. Add a light to photograph a lamp, read its location from EXIF, and classify its colour.
+            </p>
+          </div>
+          <details className="add-light">
+            <summary className="add-light__button">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Add a light
+            </summary>
+            <div className="add-light__backdrop" aria-hidden="true" />
+            <div className="add-light__content">
+              <div className="add-light__modal-header">
+                <div>
+                  <h2 className="add-light__title">Add a light</h2>
+                  <p className="add-light__hint">Photograph a lamp near a park or reserve edge. Location is read from the photo, and the lamp is classified by colour — blue-rich lighting is what draws migrating birds off course. Nothing leaves your device.</p>
+                </div>
+                <button
+                  type="button"
+                  className="add-light__close"
+                  aria-label="Close Add a light"
+                  onClick={(e) => {
+                    const details = e.currentTarget.closest('details')
+                    if (details) details.open = false
+                  }}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+              <div
+                className="dropzone"
           onDrop={onDrop}
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
@@ -365,6 +394,41 @@ export default function LampUpload({ onAdd }) {
               <p className="dropzone__hint">JPEG, HEIC / HEIF, PNG · multiple files OK</p>
             </>
           )}
+              </div>
+
+              <div className="add-light__filter-row" aria-label="Observation filters">
+                <div className="add-light__filter-field">
+                  <label htmlFor="modal-filter-lamp-type">Lamp type</label>
+                  <select
+                    id="modal-filter-lamp-type"
+                    value={lampTypeFilter}
+                    onChange={(e) => setLampTypeFilter(e.target.value)}
+                  >
+                    <option value="all">All Lamp Types</option>
+                    <option value="hps">High-pressure sodium (~2000K)</option>
+                    <option value="warm_led">Warm white LED (2700–3000K)</option>
+                    <option value="neutral_led">Neutral LED (~4000K)</option>
+                    <option value="cool_led">Cool white LED (5000–6500K)</option>
+                    <option value="unknown">Unknown / Unclassified</option>
+                  </select>
+                </div>
+                <div className="add-light__filter-field">
+                  <label htmlFor="modal-filter-bird-risk">Bird risk</label>
+                  <select
+                    id="modal-filter-bird-risk"
+                    value={birdRiskFilter}
+                    onChange={(e) => setBirdRiskFilter(e.target.value)}
+                  >
+                    <option value="all">All Risk Levels</option>
+                    <option value="low">Low Risk (Minimal / Low Blue)</option>
+                    <option value="medium">Medium Risk (Moderate Blue)</option>
+                    <option value="high">High Risk (High Blue)</option>
+                    <option value="unknown">Unknown Risk</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </details>
         </div>
 
         {/* Persistent Filter Toolbar */}
@@ -466,7 +530,7 @@ export default function LampUpload({ onAdd }) {
             )}
           </section>
         ) : null}
-      </main>
+      </section>
     </div>
   )
 }
