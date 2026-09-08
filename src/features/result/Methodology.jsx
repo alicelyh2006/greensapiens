@@ -6,7 +6,7 @@
  * did not discover the collision drivers ourselves.
  */
 import { Panel } from '../../components/index.jsx'
-import { WEIGHTS, HABITAT, BANDS } from '../../lib/config.js'
+import { MODEL, HABITAT, BANDS, DENSITY_RADIUS_M } from '../../lib/config.js'
 import './result.css'
 
 export default function Methodology() {
@@ -21,39 +21,72 @@ export default function Methodology() {
             <thead>
               <tr>
                 <th>Factor</th>
-                <th>Weight</th>
+                <th>Role</th>
                 <th>What it measures</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>Habitat proximity</td>
-                <td>{Math.round(WEIGHTS.habitat * 100)}%</td>
-                <td>Distance to the nearest nature reserve or park connector edge</td>
-              </tr>
-              <tr>
-                <td>Light level</td>
-                <td>{Math.round(WEIGHTS.light * 100)}%</td>
-                <td>Nocturnal light intensity from VIIRS satellite data, adjusted for blue-rich lamp presence</td>
+                <td>Required</td>
+                <td>
+                  Distance to the nearest mapped green space, scaled by how large
+                  that green space is and decaying with distance from its edge
+                </td>
               </tr>
               <tr>
                 <td>Building density</td>
-                <td>{Math.round(WEIGHTS.density * 100)}%</td>
-                <td>Number of buildings per unit area in the surrounding 250 m grid cell</td>
+                <td>Required</td>
+                <td>
+                  OpenStreetMap building footprints within {DENSITY_RADIUS_M} m,
+                  each weighted by storeys and how glazed its facade typically is,
+                  rather than counted — a glass tower and a shophouse are not the
+                  same hazard
+                </td>
+              </tr>
+              <tr>
+                <td>Light level</td>
+                <td>Multiplier ×{MODEL.lightFloor.toFixed(2)}–1.00</td>
+                <td>
+                  Colour temperature of lamps we have photographed and classified
+                  within 250 m. Where we have not surveyed, this is an estimate and
+                  the result says so
+                </td>
               </tr>
             </tbody>
           </table>
+          <p>
+            The first two are <strong>multiplied</strong>, not added: either at zero
+            means no collision risk, because a collision needs both a bird and a
+            building. The forest-edge peak that the research describes is therefore
+            something this model <em>produces</em> rather than something we told it.
+            Light scales that result and never zeroes it, since an unlit facade
+            still kills by daylight reflection.
+          </p>
+          <p>
+            We do <strong>not</strong> use VIIRS satellite imagery to measure light,
+            despite it being the source behind most light-pollution maps. The reason
+            is below.
+          </p>
         </div>
 
         {/* Boundary effect */}
         <div className="methodology-section">
           <h3>Why risk peaks at the forest edge</h3>
           <p>
-            Collision risk is highest <em>at the boundary</em> — not deep inside a reserve
-            (there are no buildings to strike there) and not far away (migrating birds
-            won't be flying there). Risk drops to near zero within{' '}
-            {HABITAT.falloffInward} m inside a reserve and within {HABITAT.falloffOutward} m
-            outside it. Forest-edge buildings dominate local collision records.
+            Collision risk is highest <em>at the boundary</em> — not deep inside a
+            reserve, where there is nothing built to strike, and not far outside it,
+            where migrating birds are not concentrated. Bird presence fades to zero
+            about {HABITAT.falloffOutward} m beyond a green-space edge.
+          </p>
+          <p>
+            Nothing in the model says "risk peaks at the edge". We never encoded
+            that. Inside a reserve the score falls to zero because building density
+            there is zero, and the two factors are multiplied; far outside one it
+            falls because bird presence is. The edge is simply the only place both
+            are non-zero at once, so the peak lands there on its own. Forest-edge
+            buildings dominate local collision records, and the model reproducing
+            that without being told is the closest thing we have to a check on it.
           </p>
         </div>
 

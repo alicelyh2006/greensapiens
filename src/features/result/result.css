@@ -259,3 +259,12 @@
 .methodology-citation a {
   color: var(--accent);
 }
+
+/* Explains how the three factor bars above actually combine. Without it the
+   bars read as independent contributions, which is how "40% weight" got there. */
+.factor-model-note {
+  margin-top: var(--space-3);
+  color: var(--text-faint);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}

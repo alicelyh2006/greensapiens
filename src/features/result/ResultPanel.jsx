@@ -7,7 +7,7 @@
  */
 import { Panel, RiskPill, EmptyState } from '../../components/index.jsx'
 import { getRecommendations, isPeakSeason } from '../../lib/recommendations.js'
-import { WEIGHTS } from '../../lib/config.js'
+import { MODEL } from '../../lib/config.js'
 import './result.css'
 
 // ── Private sub-components ────────────────────────────────────────────────────
@@ -19,16 +19,24 @@ function valueToBand(value) {
   return 'low'
 }
 
-/** F5 — a single factor row: label, weight, progress bar, and note. */
-function FactorBar({ name, factor }) {
+/**
+ * F5 — a single factor row: label, role in the model, progress bar, and note.
+ *
+ * `role` says how this factor enters the score, and it is not decoration. The
+ * model multiplies habitat by density, so either one at zero means no risk at
+ * all — the middle of a reserve scores zero however much habitat it has. Light
+ * only scales what those two produce. This row used to read "40% weight",
+ * which described a weighted sum the model has never used and invited people
+ * to "fix" the model to match the label.
+ */
+function FactorBar({ name, factor, role }) {
   const band = valueToBand(factor.value)
   const pct = Math.round(factor.value * 100)
-  const weightPct = Math.round(factor.weight * 100)
   return (
     <div className="factor-item">
       <div className="factor-header">
         <span className="factor-name">{name}</span>
-        <span className="factor-weight">{weightPct}% weight · {pct}/100</span>
+        <span className="factor-weight">{role} · {pct}/100</span>
       </div>
       <div className="factor-bar">
         <div
@@ -79,6 +87,8 @@ export default function ResultPanel({ risk, location }) {
 
   const recommendations = getRecommendations(risk)
   const peakSeason = isPeakSeason()
+  const lightMultiplier =
+    MODEL.lightFloor + (1 - MODEL.lightFloor) * risk.factors.light.value
 
   return (
     <Panel title="Collision risk">
@@ -108,10 +118,22 @@ export default function ResultPanel({ risk, location }) {
           Why this score
         </p>
         <div className="factor-list">
-          <FactorBar name="Habitat proximity" factor={risk.factors.habitat} />
-          <FactorBar name="Light level" factor={risk.factors.light} />
-          <FactorBar name="Building density" factor={risk.factors.density} />
+          <FactorBar name="Habitat proximity" factor={risk.factors.habitat} role="Required" />
+          <FactorBar name="Building density" factor={risk.factors.density} role="Required" />
+          <FactorBar
+            name="Light level"
+            factor={risk.factors.light}
+            role={`Multiplier ×${lightMultiplier.toFixed(2)}`}
+          />
         </div>
+        <p className="factor-model-note">
+          Habitat and building density are multiplied, so either one at zero means
+          no collision risk — there is nothing to hit in a forest, and nothing to
+          hit it in a built-up area with no birds. Light scales that result
+          between ×{MODEL.lightFloor.toFixed(2)} and ×1.00; it never brings the
+          score to zero, because an unlit facade still kills by daylight
+          reflection.
+        </p>
       </div>
 
       {/* F6 — recommendations */}
