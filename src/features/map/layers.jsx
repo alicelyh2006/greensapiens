@@ -1,10 +1,4 @@
-/**
- * F1 green-space boundaries · F2 risk surface. OWNER: L2 (Map)
- *
- * The risk surface is rendered from the L1-generated risk grid. Each visible
- * hexagon is centred on the exact geographic centre of one source grid cell.
- * This layer never calculates risk and is never interactive.
- */
+/** F1 green-space boundaries · F2 risk surface. OWNER: L2 (Map) */
 import { useEffect, useState } from 'react'
 import { GeoJSON, useMap } from 'react-leaflet'
 import L from 'leaflet'
@@ -21,6 +15,13 @@ function bandForRisk(value) {
   if (value >= BANDS.high) return 'high'
   if (value >= BANDS.moderate) return 'moderate'
   return 'low'
+}
+
+function hexToRgba(hex, alpha) {
+  const value = hex.replace('#', '')
+  if (value.length !== 6) return `rgba(255, 255, 255, ${alpha})`
+  const [r, g, b] = [0, 2, 4].map((offset) => parseInt(value.slice(offset, offset + 2), 16))
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
 export function GreenSpaceLayer() {
@@ -61,8 +62,12 @@ export function RiskLayer({ opacity = 0.86, theme }) {
   const map = useMap()
 
   useEffect(() => {
-    let group = null
+    let canvas = null
+    let frame = null
+    let removeListeners = null
     let cancelled = false
+    let hoveredIndex = -1
+    let phase = 0
 
     fetch(DATA.riskGrid)
       .then((r) => (r.ok ? r.json() : null))
@@ -70,16 +75,11 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         if (cancelled || !grid?.bbox || !grid?.cell) return
 
         const { bbox, cell, cols, rows, data } = grid
-        const renderer = L.canvas({ padding: 0.5 })
-        group = L.layerGroup()
-
-        const fills = {
+        const colors = {
           low: cssToken('--risk-ramp-low'),
           moderate: cssToken('--risk-ramp-mid'),
           high: cssToken('--risk-ramp-high'),
         }
-
-        if (!fills.low || !fills.moderate || !fills.high) return
 
         const points = []
         for (let row = 0; row < rows; row += 1) {
@@ -93,30 +93,80 @@ export function RiskLayer({ opacity = 0.86, theme }) {
             })
           }
         }
-
-        // Paint lower-risk circles first so higher-risk colors stay visible.
         points.sort((a, b) => a.value - b.value)
-        for (const { lat, lng, value } of points) {
-          const band = bandForRisk(value)
-          const radius = cell * 111_000 * (0.18 + (value / 100) * 0.3)
-          L.circle([lat, lng], {
-            renderer,
-            interactive: false,
-            bubblingMouseEvents: false,
-            stroke: false,
-            radius,
-            fillColor: fills[band],
-            fillOpacity: band === 'low' ? opacity * 0.65 : opacity,
-          }).addTo(group)
+
+        canvas = L.DomUtil.create('canvas', 'risk-blob-layer', map.getPanes().overlayPane)
+        const context = canvas.getContext('2d')
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+        function resize() {
+          const size = map.getSize()
+          const dpr = window.devicePixelRatio || 1
+          canvas.width = size.x * dpr
+          canvas.height = size.y * dpr
+          canvas.style.width = `${size.x}px`
+          canvas.style.height = `${size.y}px`
+          context.setTransform(dpr, 0, 0, dpr, 0, 0)
         }
 
-        group.addTo(map)
+        function draw() {
+          const size = map.getSize()
+          context.clearRect(0, 0, size.x, size.y)
+          for (let index = 0; index < points.length; index += 1) {
+            const { lat, lng, value } = points[index]
+            const position = map.latLngToContainerPoint([lat, lng])
+            const edge = map.latLngToContainerPoint([lat, lng + cell])
+            const cellPixels = Math.max(3, Math.abs(edge.x - position.x))
+            const band = bandForRisk(value)
+            const baseRadius = cellPixels * (0.5 + (value / 100) * 1.2)
+            const breathing = band === 'high' && !reducedMotion ? 1 + Math.sin(phase) * 0.045 : 1
+            const radius = baseRadius * breathing * (index === hoveredIndex ? 1.12 : 1)
+            const gradient = context.createRadialGradient(position.x, position.y, 0, position.x, position.y, radius)
+            const alpha = (band === 'low' ? 0.24 : band === 'moderate' ? 0.34 : 0.4) * opacity
+            gradient.addColorStop(0, hexToRgba(colors[band], alpha))
+            gradient.addColorStop(0.55, hexToRgba(colors[band], alpha * 0.65))
+            gradient.addColorStop(1, hexToRgba(colors[band], 0))
+            context.fillStyle = gradient
+            context.beginPath()
+            context.arc(position.x, position.y, radius, 0, Math.PI * 2)
+            context.fill()
+          }
+        }
+
+        function animate() {
+          phase += 0.02
+          draw()
+          if (!reducedMotion) frame = requestAnimationFrame(animate)
+        }
+
+        const handleMove = () => { resize(); draw() }
+        const handleMouseMove = (event) => {
+          const nearest = points.reduce((best, point, index) => {
+            const position = map.latLngToContainerPoint([point.lat, point.lng])
+            const distance = position.distanceTo(event.containerPoint)
+            return distance < best.distance ? { index, distance } : best
+          }, { index: -1, distance: 22 })
+          hoveredIndex = nearest.index
+          draw()
+        }
+        map.on('move zoom resize', handleMove)
+        map.on('mousemove', handleMouseMove)
+        resize()
+        animate()
+
+        removeListeners = () => {
+          map.off('move zoom resize', handleMove)
+          map.off('mousemove', handleMouseMove)
+          if (frame) cancelAnimationFrame(frame)
+        }
       })
       .catch(() => {})
 
     return () => {
       cancelled = true
-      if (group) map.removeLayer(group)
+      if (removeListeners) removeListeners()
+      if (frame) cancelAnimationFrame(frame)
+      if (canvas) canvas.remove()
     }
   }, [map, opacity, theme])
 

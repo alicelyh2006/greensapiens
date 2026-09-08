@@ -3,6 +3,10 @@
 /* --- Risk surface --- */
 /* Band is encoded by both colour and the numeric result panel; the map layer
    is deliberately low-opacity so the basemap remains readable. */
+.risk-blob-layer {
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
 
 /* --- Selected-location marker --- */
 .marker-selected {
