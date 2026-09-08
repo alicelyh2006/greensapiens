@@ -277,6 +277,10 @@ export default function MapView({ selected, onSelect, theme = 'light', riskVisib
         )}
       </MapContainer>
 
+      <div className="map-tools">
+        <span className="map-mode-chip">{theme === 'dark' ? 'Night Mode' : 'Day Mode'}</span>
+      </div>
+
       {message && <div className="map-search__error">{message}</div>}
 
       <div className="map-legend">
