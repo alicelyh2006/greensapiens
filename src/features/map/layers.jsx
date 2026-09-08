@@ -99,7 +99,8 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         for (let row = 0; row < rows; row += 1) {
           for (let col = 0; col < cols; col += 1) {
             const value = data[row * cols + col]
-            if (typeof value !== 'number' || value <= 0) continue
+            // -1 marks masked water/outside cells; zero is valid low risk.
+            if (typeof value !== 'number' || value < 0) continue
 
             const lat = bbox[1] + (row + 0.5) * cell
             const lng = bbox[0] + (col + 0.5) * cell
