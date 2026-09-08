@@ -132,7 +132,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
           return {
             x: metrics.origin.x + point.col * metrics.columnSpacing,
             y: metrics.origin.y
-              + point.row * metrics.rowSpacing
+              - point.row * metrics.rowSpacing
               + (point.col % 2) * metrics.rowSpacing / 2,
           }
         }
