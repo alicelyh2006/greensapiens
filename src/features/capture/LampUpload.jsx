@@ -64,6 +64,37 @@ const LAMP_LABEL = {
   },
 }
 
+const STORAGE_KEY = 'nightjar.lamp-observations.v1'
+
+function getStoredItems() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    if (!Array.isArray(stored)) return []
+    return stored.map((item) => ({
+      file: {
+        name: item.fileName || 'Saved lamp observation',
+        type: item.fileType || '',
+        persisted: true,
+      },
+      result: item.result || { gps: null, colour: null },
+    }))
+  } catch {
+    return []
+  }
+}
+
+function saveItems(items) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map(({ file, result }) => ({
+      fileName: file.name,
+      fileType: file.type,
+      result,
+    }))))
+  } catch (error) {
+    console.warn('Could not save lamp observations locally:', error)
+  }
+}
+
 /** Format decimal degrees to a readable DMS string e.g. 1°21′30.5″ N */
 function toDMS(decimal, posLabel, negLabel) {
   const abs = Math.abs(decimal)
@@ -148,6 +179,10 @@ function FileCard({ file, result }) {
     let cancelled = false
     let objectUrl = null
 
+    if (file.persisted) {
+      return undefined
+    }
+
     if (isHeic) {
       setLoadingPreview(true)
       // 1. Try instant embedded preview extraction (~5-15ms)
@@ -200,8 +235,8 @@ function FileCard({ file, result }) {
           <img src={previewSrc} alt={file.name} />
         ) : (
           <div className="card__thumb-placeholder">
-            <span>{isHeic ? 'HEIC / HEIF' : 'Image'}</span>
-            <small>Could not render preview</small>
+            <span>{file.persisted ? 'Saved observation' : (isHeic ? 'HEIC / HEIF' : 'Image')}</span>
+            <small>{file.persisted ? 'Photo preview is not stored' : 'Could not render preview'}</small>
           </div>
         )}
       </div>
@@ -271,11 +306,15 @@ function FileCard({ file, result }) {
 }
 
 export default function LampUpload({ onAdd }) {
-  const [items, setItems] = useState([])
+  const [items, setItems] = useState(getStoredItems)
   const [busy, setBusy] = useState(false)
   const [lampTypeFilter, setLampTypeFilter] = useState('all')
   const [birdRiskFilter, setBirdRiskFilter] = useState('all')
   const inputRef = useRef(null)
+
+  useEffect(() => {
+    saveItems(items)
+  }, [items])
 
   const processFiles = useCallback(async (files) => {
     if (!files.length) return
