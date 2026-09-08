@@ -84,8 +84,8 @@ function getStoredItems() {
         name: item.fileName || 'Saved lamp observation',
         type: item.fileType || '',
         persisted: true,
-        previewUrl: item.previewUrl || null,
       },
+      previewUrl: item.previewUrl || null,
       result: item.result || { gps: null, colour: null },
     }))
   } catch {
@@ -95,10 +95,10 @@ function getStoredItems() {
 
 function saveItems(items) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map(({ file, result }) => ({
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map(({ file, previewUrl, result }) => ({
       fileName: file.name,
       fileType: file.type,
-      previewUrl: file.previewUrl || null,
+      previewUrl: previewUrl || null,
       result,
     }))))
   } catch (error) {
@@ -180,8 +180,8 @@ function GpsSection({ gps }) {
   )
 }
 
-function FileCard({ file, result }) {
-  const [previewSrc, setPreviewSrc] = useState(() => file.previewUrl || null)
+function FileCard({ file, previewUrl, result }) {
+  const [previewSrc, setPreviewSrc] = useState(() => previewUrl || null)
   const [loadingPreview, setLoadingPreview] = useState(false)
   const isHeic = file.type === 'image/heic' || file.type === 'image/heif' ||
                  file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
@@ -190,8 +190,8 @@ function FileCard({ file, result }) {
     let cancelled = false
     let objectUrl = null
 
-    if (file.previewUrl) {
-      setPreviewSrc(file.previewUrl)
+    if (previewUrl) {
+      setPreviewSrc(previewUrl)
       return undefined
     }
 
@@ -237,7 +237,7 @@ function FileCard({ file, result }) {
       cancelled = true
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [file, isHeic])
+  }, [file, isHeic, previewUrl])
 
   return (
     <article className="card">
@@ -348,7 +348,7 @@ export default function LampUpload({ onAdd }) {
         } catch (error) {
           console.warn('Could not save lamp photo preview locally:', error)
         }
-        return { file: Object.assign(file, { previewUrl }), result: { gps, colour } }
+        return { file, previewUrl, result: { gps, colour } }
       })
     )
     setItems((prev) => [...results, ...prev])
@@ -542,8 +542,8 @@ export default function LampUpload({ onAdd }) {
 
             {filteredItems.length > 0 ? (
               <div className="results__grid">
-                {filteredItems.map(({ file, result }, i) => (
-                  <FileCard key={`${file.name}-${i}`} file={file} result={result} />
+                {filteredItems.map(({ file, previewUrl, result }, i) => (
+                  <FileCard key={`${file.name}-${i}`} file={file} previewUrl={previewUrl} result={result} />
                 ))}
               </div>
             ) : (
