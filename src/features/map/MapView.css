@@ -8,6 +8,12 @@
   mix-blend-mode: screen;
 }
 
+.risk-cell {
+  pointer-events: none;
+  stroke: none;
+  mix-blend-mode: screen;
+}
+
 /* --- Selected-location marker --- */
 .marker-selected {
   display: flex;
@@ -167,6 +173,56 @@
   display: block;
   width: 15px;
   height: 15px;
+}
+
+/* Final map-reference overrides. */
+.map-search {
+  top: 15px;
+  left: 15px;
+  right: auto;
+  width: 222px;
+  max-width: none;
+}
+
+.map-search__input {
+  height: 34px;
+  padding: 0 33px 0 31px;
+  border-radius: 7px;
+  font-size: 10px;
+}
+
+.map-search__icon {
+  left: 11px;
+}
+
+.map-legend {
+  left: 15px;
+  bottom: 15px;
+  padding: 10px 11px;
+  border-radius: 8px;
+}
+
+.map-legend__title {
+  margin-bottom: 7px;
+  font-size: 9px;
+}
+
+.map-legend__items {
+  gap: 12px;
+  font-size: 8px;
+}
+
+.legend-swatch {
+  width: 18px;
+  height: 5px;
+  border-radius: 4px;
+}
+
+@media (max-width: 30rem) {
+  .map-search {
+    width: auto;
+    max-width: calc(100% - 6rem);
+  }
 }
 
 .map-search__results {

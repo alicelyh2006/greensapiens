@@ -97,7 +97,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         }
         points.sort((a, b) => a.value - b.value)
 
-        canvas = L.DomUtil.create('canvas', 'risk-blob-layer', map.getPanes().overlayPane)
+        canvas = L.DomUtil.create('canvas', 'risk-cell', map.getPanes().overlayPane)
         const context = canvas.getContext('2d')
         staticCanvas = document.createElement('canvas')
         const staticContext = staticCanvas.getContext('2d')
