@@ -121,7 +121,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
           const edge = map.latLngToContainerPoint([lat, lng + cell])
           const cellPixels = Math.max(3, Math.abs(edge.x - position.x))
           const band = bandForRisk(value)
-          const radius = cellPixels * 0.58
+          const radius = cellPixels * 0.62
           const alpha = index === hoveredIndex ? Math.min(1, opacity + 0.14) : opacity
 
           target.fillStyle = hexToRgba(colors[band], alpha)
