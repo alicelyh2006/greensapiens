@@ -4,6 +4,7 @@
 
 .collision-page {
   min-height: 100dvh;
+  overflow: visible;
   background: var(--ground);
   color: var(--text);
   font-family: var(--font-sans, Inter, system-ui, sans-serif);
