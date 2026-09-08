@@ -124,12 +124,16 @@ export function RiskLayer({ opacity = 0.86, theme }) {
             const gradient = context.createRadialGradient(position.x, position.y, 0, position.x, position.y, radius)
             const alpha = (band === 'low' ? 0.24 : band === 'moderate' ? 0.34 : 0.4) * opacity
             gradient.addColorStop(0, hexToRgba(colors[band], alpha))
-            gradient.addColorStop(0.55, hexToRgba(colors[band], alpha * 0.65))
-            gradient.addColorStop(1, hexToRgba(colors[band], 0))
+            gradient.addColorStop(0.78, hexToRgba(colors[band], alpha * 0.72))
+            gradient.addColorStop(0.92, hexToRgba(colors[band], alpha))
+            gradient.addColorStop(1, hexToRgba(colors[band], alpha))
             context.fillStyle = gradient
             context.beginPath()
             context.arc(position.x, position.y, radius, 0, Math.PI * 2)
             context.fill()
+            context.strokeStyle = hexToRgba(colors[band], Math.min(1, alpha * 1.4))
+            context.lineWidth = 1.5
+            context.stroke()
           }
         }
 
