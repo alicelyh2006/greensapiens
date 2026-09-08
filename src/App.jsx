@@ -45,8 +45,6 @@ function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange
   const layerRows = [
     ['risk', 'Risk Heatmap'],
     ['habitat', 'Habitat (NParks)'],
-    ['light', 'Night Light (VIIRS)'],
-    ['density', 'Building Density'],
     ['lamp', 'Lamp Observations'],
     ['warning', 'Collision Reports'],
   ]
