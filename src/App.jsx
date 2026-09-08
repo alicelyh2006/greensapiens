@@ -39,7 +39,7 @@ function Icon({ name, size = 16 }) {
 function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange }) {
   const nav = [
     ['map', 'Risk Map', 'risk'],
-    ['eye', 'Light Observations', 'observations'],
+    ['eye', 'Lamp Observations', 'observations'],
     ['report', 'Report Collision', 'report'],
   ]
   const layerRows = [
