@@ -311,6 +311,7 @@ export default function LampUpload({ onAdd }) {
   const [lampTypeFilter, setLampTypeFilter] = useState('all')
   const [birdRiskFilter, setBirdRiskFilter] = useState('all')
   const inputRef = useRef(null)
+  const addLightRef = useRef(null)
 
   useEffect(() => {
     saveItems(items)
@@ -330,6 +331,7 @@ export default function LampUpload({ onAdd }) {
     )
     setItems((prev) => [...results, ...prev])
     setBusy(false)
+    if (addLightRef.current) addLightRef.current.open = false
   }, [])
 
   const onDrop = useCallback((e) => {
@@ -370,7 +372,7 @@ export default function LampUpload({ onAdd }) {
               Review lamp observations collected on this device. Add a light to photograph a lamp, read its location from EXIF, and classify its colour.
             </p>
           </div>
-          <details className="add-light">
+          <details ref={addLightRef} className="add-light">
             <summary className="add-light__button">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M12 5v14M5 12h14" />
@@ -435,37 +437,6 @@ export default function LampUpload({ onAdd }) {
           )}
               </div>
 
-              <div className="add-light__filter-row" aria-label="Observation filters">
-                <div className="add-light__filter-field">
-                  <label htmlFor="modal-filter-lamp-type">Lamp type</label>
-                  <select
-                    id="modal-filter-lamp-type"
-                    value={lampTypeFilter}
-                    onChange={(e) => setLampTypeFilter(e.target.value)}
-                  >
-                    <option value="all">All Lamp Types</option>
-                    <option value="hps">High-pressure sodium (~2000K)</option>
-                    <option value="warm_led">Warm white LED (2700–3000K)</option>
-                    <option value="neutral_led">Neutral LED (~4000K)</option>
-                    <option value="cool_led">Cool white LED (5000–6500K)</option>
-                    <option value="unknown">Unknown / Unclassified</option>
-                  </select>
-                </div>
-                <div className="add-light__filter-field">
-                  <label htmlFor="modal-filter-bird-risk">Bird risk</label>
-                  <select
-                    id="modal-filter-bird-risk"
-                    value={birdRiskFilter}
-                    onChange={(e) => setBirdRiskFilter(e.target.value)}
-                  >
-                    <option value="all">All Risk Levels</option>
-                    <option value="low">Low Risk (Minimal / Low Blue)</option>
-                    <option value="medium">Medium Risk (Moderate Blue)</option>
-                    <option value="high">High Risk (High Blue)</option>
-                    <option value="unknown">Unknown Risk</option>
-                  </select>
-                </div>
-              </div>
             </div>
           </details>
         </div>
