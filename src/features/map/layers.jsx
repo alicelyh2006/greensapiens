@@ -23,6 +23,18 @@ function bandForRisk(value) {
   return 'low'
 }
 
+function hexPositions(lat, lng, cell, scale = 1) {
+  const latRadius = cell * 0.5 * scale
+  const lngRadius = latRadius / Math.cos((lat * Math.PI) / 180)
+  return Array.from({ length: 6 }, (_, index) => {
+    const angle = (Math.PI / 3) * index
+    return [
+      lat + Math.sin(angle) * latRadius,
+      lng + Math.cos(angle) * lngRadius,
+    ]
+  })
+}
+
 export function GreenSpaceLayer() {
   const [data, setData] = useState(null)
 
@@ -91,16 +103,27 @@ export function RiskLayer({ opacity = 0.86, theme }) {
             const lng = bbox[0] + (col + 0.5) * cell
             const band = bandForRisk(value)
             const fill = fills[band]
+            const glow = band !== 'low'
+            const cellScale = band === 'high' ? 1.07 : 1
 
-            // Use one circle per sampled data point instead of square tiles.
-            L.circle([lat, lng], {
+            if (glow) {
+              L.polygon(hexPositions(lat, lng, cell, cellScale * 1.16), {
+                renderer,
+                interactive: false,
+                bubblingMouseEvents: false,
+                stroke: false,
+                fillColor: fill,
+                fillOpacity: opacity * 0.16,
+              }).addTo(group)
+            }
+
+            L.polygon(hexPositions(lat, lng, cell, cellScale), {
               renderer,
               interactive: false,
               bubblingMouseEvents: false,
               stroke: false,
-              radius: cell * 111_000 * 0.45,
               fillColor: fill,
-              fillOpacity: opacity,
+              fillOpacity: band === 'low' ? opacity * 0.42 : opacity,
             }).addTo(group)
           }
         }
