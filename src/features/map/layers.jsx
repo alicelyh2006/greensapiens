@@ -123,7 +123,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
           const band = bandForRisk(value)
           const baseRadius = cellPixels * (0.5 + (value / 100) * 1.2)
           const radius = baseRadius * (index === hoveredIndex ? 1.12 : 1)
-          const alpha = (band === 'low' ? 0.24 : band === 'moderate' ? 0.34 : 0.4) * opacity
+          const alpha = opacity
           if (band === 'low') {
             target.fillStyle = hexToRgba(colors.low, alpha)
           } else {
