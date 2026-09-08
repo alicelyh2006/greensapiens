@@ -57,16 +57,6 @@ export function GreenSpaceLayer() {
   )
 }
 
-function cellPositions(lat, lng, cell) {
-  const halfCell = cell / 2
-  return [
-    [lat - halfCell, lng - halfCell],
-    [lat - halfCell, lng + halfCell],
-    [lat + halfCell, lng + halfCell],
-    [lat + halfCell, lng - halfCell],
-  ]
-}
-
 export function RiskLayer({ opacity = 0.86, theme }) {
   const map = useMap()
 
@@ -102,11 +92,13 @@ export function RiskLayer({ opacity = 0.86, theme }) {
             const band = bandForRisk(value)
             const fill = fills[band]
 
-            L.polygon(cellPositions(lat, lng, cell), {
+            // Use one circle per sampled data point instead of square tiles.
+            L.circle([lat, lng], {
               renderer,
               interactive: false,
               bubblingMouseEvents: false,
               stroke: false,
+              radius: cell * 111_000 * 0.45,
               fillColor: fill,
               fillOpacity: opacity,
             }).addTo(group)
