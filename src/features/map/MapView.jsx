@@ -12,6 +12,8 @@ import {
   useMap,
 } from 'react-leaflet'
 import L from 'leaflet'
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
+import { point } from '@turf/helpers'
 import { MAP_DEFAULT, MAP_BOUNDS, DATA } from '../../lib/config.js'
 import { GreenSpaceLayer, RiskLayer } from './layers.jsx'
 import './MapView.css'
@@ -212,22 +214,9 @@ export default function MapView({ selected, onSelect, theme = 'light', riskVisib
         return false
       }
 
-      const snapped = snapToRiskCell(location.lat, location.lng, riskGrid)
-      if (!snapped) {
-        setMessage('That location is outside the assessable Singapore land area.')
-        return false
-      }
-
-      onSelect({
-        lat: snapped.lat,
-        lng: snapped.lng,
-        label: location.label,
-      })
-      setMessage('')
-      return snapped
-    },
-    [riskGrid, onSelect]
-  )
+  useEffect(() => {
+    fetch(DATA.boundary).then((r) => r.ok ? r.json() : null).then(setBoundary).catch(() => setBoundary(null))
+  }, [])
 
   const tileUrl = theme === 'dark'
     ? 'https://www.onemap.gov.sg/maps/tiles/Night/{z}/{x}/{y}.png'

@@ -215,19 +215,28 @@ export const MAP_BOUNDS = [
   [1.47, 104.1],
 ]
 
-export const RISK_SURFACE = {
-  rows: 45,
-  columns: 70,
-  opacity: 0.65,
-}
+/**
+ * Base path for static assets.
+ *
+ * GitHub Pages serves a project site from /<repo>/, so absolute '/data/...'
+ * URLs 404 there. Vite injects the configured base as BASE_URL. The guard is
+ * for Node: the offline build scripts import this file too, and there
+ * import.meta.env does not exist.
+ */
+const BASE =
+  typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL
+    ? import.meta.env.BASE_URL
+    : '/'
 
 /** Where the committed static datasets live. */
 export const DATA = {
-  greenSpaces: '/data/green-spaces.geojson',
+  greenSpaces: `${BASE}data/green-spaces.geojson`,
   /** Built by scripts/build-density-grid.mjs. See npm run data:density. */
-  densityGrid: '/data/density-grid.json',
+  densityGrid: `${BASE}data/density-grid.json`,
   /** Our own field survey. See public/data/lamps.json for the schema. */
-  lamps: '/data/lamps.json',
-  boundary: '/data/singapore-boundary.geojson',
-  riskGrid: '/data/risk-grid.json',
+  lamps: `${BASE}data/lamps.json`,
+  /** Precomputed risk surface. Built by scripts/build-risk-grid.mjs. */
+  riskGrid: `${BASE}data/risk-grid.json`,
+  /** Land mask, also used to reject clicks on water. */
+  boundary: `${BASE}data/singapore-boundary.geojson`,
 }

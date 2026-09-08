@@ -57,7 +57,8 @@ Contributed photos and collision reports are stored **in the browser only** and 
 | Dataset | Source | Licence |
 |---|---|---|
 | Parks, reserves, park connectors | [data.gov.sg](https://data.gov.sg) (NParks) | Singapore Open Data Licence |
-| Address search, building footprints | [OneMap SG](https://www.onemap.gov.sg) | OneMap terms |
+| Building footprints | [OpenStreetMap](https://www.openstreetmap.org) via Overpass | ODbL |
+| Land-use zoning (superseded) | [data.gov.sg](https://data.gov.sg) (URA Master Plan 2025) | Singapore Open Data Licence |
 | Nighttime lights | VIIRS Day/Night Band | Public domain (NOAA/NASA) |
 | Lamp classifications | Our own field survey | This repository |
 
