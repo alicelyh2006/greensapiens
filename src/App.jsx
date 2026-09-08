@@ -99,7 +99,6 @@ function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange
           <div className="season-card__label">Peak Migration Season</div>
           <strong>October – November</strong>
         </div>
-        <Icon name="arrow" size={14} />
       </div>
 
       <div className="sidebar-about">
