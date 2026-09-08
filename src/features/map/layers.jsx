@@ -87,8 +87,8 @@ export function RiskLayer({ opacity = 0.86, theme }) {
             const value = data[row * cols + col]
             if (typeof value !== 'number' || value < 0) continue
             points.push({
-              lat: bbox[1] + (row + 0.5) * cell,
-              lng: bbox[0] + (col + 0.5) * cell,
+              row,
+              col,
               value,
             })
           }
@@ -113,15 +113,37 @@ export function RiskLayer({ opacity = 0.86, theme }) {
           staticContext.setTransform(dpr, 0, 0, dpr, 0, 0)
         }
 
-        function drawPoint(target, point, index) {
-          const { lat, lng, value } = point
-          const position = map.latLngToContainerPoint([lat, lng])
+        function getGridMetrics() {
+          const origin = map.latLngToContainerPoint([
+            bbox[1] + cell / 2,
+            bbox[0] + cell / 2,
+          ])
+          const edge = map.latLngToContainerPoint([
+            bbox[1] + cell / 2,
+            bbox[0] + cell * 1.5,
+          ])
+          const columnSpacing = Math.max(3, Math.abs(edge.x - origin.x))
+          const radius = columnSpacing / 1.5
+          const rowSpacing = Math.sqrt(3) * radius
+          return { origin, columnSpacing, radius, rowSpacing }
+        }
+
+        function pointPosition(point, metrics) {
+          return {
+            x: metrics.origin.x + point.col * metrics.columnSpacing,
+            y: metrics.origin.y
+              + point.row * metrics.rowSpacing
+              + (point.col % 2) * metrics.rowSpacing / 2,
+          }
+        }
+
+        function drawPoint(target, point, index, metrics) {
+          const { value } = point
+          const position = pointPosition(point, metrics)
           const size = map.getSize()
           if (position.x < -40 || position.y < -40 || position.x > size.x + 40 || position.y > size.y + 40) return
-          const edge = map.latLngToContainerPoint([lat, lng + cell])
-          const cellPixels = Math.max(3, Math.abs(edge.x - position.x))
           const band = bandForRisk(value)
-          const radius = cellPixels * 0.62
+          const radius = metrics.radius + 0.25
           const alpha = index === hoveredIndex ? Math.min(1, opacity + 0.14) : opacity
 
           target.fillStyle = hexToRgba(colors[band], alpha)
@@ -139,19 +161,21 @@ export function RiskLayer({ opacity = 0.86, theme }) {
 
         function drawStatic() {
           const size = map.getSize()
+          const metrics = getGridMetrics()
           staticContext.clearRect(0, 0, size.x, size.y)
           for (let index = 0; index < points.length; index += 1) {
             if (index === hoveredIndex) continue
-            drawPoint(staticContext, points[index], index)
+            drawPoint(staticContext, points[index], index, metrics)
           }
         }
 
         function draw(timestamp = 0) {
           const size = map.getSize()
+          const metrics = getGridMetrics()
           context.clearRect(0, 0, size.x, size.y)
           context.drawImage(staticCanvas, 0, 0, size.x, size.y)
           for (let index = 0; index < points.length; index += 1) {
-            if (index === hoveredIndex) drawPoint(context, points[index], index)
+            if (index === hoveredIndex) drawPoint(context, points[index], index, metrics)
           }
         }
 
@@ -166,9 +190,13 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         }
         const handleMove = scheduleRedraw
         const handleMouseMove = (event) => {
+          const metrics = getGridMetrics()
           const nearest = points.reduce((best, point, index) => {
-            const position = map.latLngToContainerPoint([point.lat, point.lng])
-            const distance = position.distanceTo(event.containerPoint)
+            const position = pointPosition(point, metrics)
+            const distance = Math.hypot(
+              position.x - event.containerPoint.x,
+              position.y - event.containerPoint.y
+            )
             return distance < best.distance ? { index, distance } : best
           }, { index: -1, distance: 22 })
           hoveredIndex = nearest.index
