@@ -63,6 +63,98 @@ function RecCard({ rec }) {
   )
 }
 
+function Methodology() {
+  return (
+    <details className="methodology">
+      <summary className="methodology-toggle">
+        <span>What does this mean?</span>
+        <span aria-hidden="true">▸</span>
+      </summary>
+      <div className="methodology-content">
+        <section className="methodology-section">
+          <h3>How this is calculated</h3>
+          <p>The score combines three indicators that describe conditions around the selected location.</p>
+          <table className="methodology-weight-table">
+            <thead>
+              <tr>
+                <th>Factor</th>
+                <th>Weight</th>
+                <th>What it measures</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Habitat proximity</td>
+                <td>40%</td>
+                <td>Distance to the nearest nature reserve or park connector edge</td>
+              </tr>
+              <tr>
+                <td>Light level</td>
+                <td>35%</td>
+                <td>Nocturnal light intensity from VIIRS satellite data, adjusted for blue-rich lamp presence</td>
+              </tr>
+              <tr>
+                <td>Building density</td>
+                <td>25%</td>
+                <td>Number of buildings per unit area in the surrounding 250 m grid cell</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section className="methodology-section">
+          <h3>Why risk peaks at the forest edge</h3>
+          <p>
+            Collision risk is highest at the boundary — not deep inside a reserve
+            (there are no buildings to strike there) and not far away (migrating
+            birds will not be flying there). Risk drops to near zero within 150 m
+            inside a reserve and within 500 m outside it. Forest-edge buildings
+            dominate local collision records.
+          </p>
+        </section>
+
+        <section className="methodology-section">
+          <h3>Why colour, not brightness</h3>
+          <p>
+            The published research identifies blue-rich nocturnal light — not
+            overall brightness — as the strongest predictor of migratory bird
+            collisions. This has two practical consequences:
+          </p>
+          <ul>
+            <li>Colour temperature is visible in an ordinary photograph, so a phone camera is enough to classify a lamp — no photometer needed.</li>
+            <li>The VIIRS Day/Night Band satellite sensor, the source behind essentially every light-pollution map, records roughly 500–900 nm. It is blind below 500 nm — precisely where white LEDs emit most strongly and precisely the band that predicts migrant collisions. VIIRS alone underestimates risk at locations lit by cool-white LEDs.</li>
+          </ul>
+        </section>
+
+        <p className="methodology-disclaimer">
+          This score is a weighted heuristic, not a validated predictive model.
+          Weights reflect our judgement, informed by the study below but not
+          statistically derived from it. We did not discover the collision
+          drivers — the research did. This tool operationalises published
+          findings to make them actionable. Treat the output as a guide for
+          prioritising attention, not as a precise prediction.
+        </p>
+
+        <section className="methodology-section">
+          <h3>Source</h3>
+          <p className="methodology-citation">
+            Disentangling the biotic and abiotic drivers of bird–building
+            collisions in a tropical Asian city with ecological niche modeling.
+            Conservation Biology 38, e14255 (2024).{' '}
+            <a
+              href="https://doi.org/10.1111/cobi.14255"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              doi:10.1111/cobi.14255
+            </a>
+          </p>
+        </section>
+      </div>
+    </details>
+  )
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export default function ResultPanel({ risk, location }) {
@@ -125,7 +217,8 @@ export default function ResultPanel({ risk, location }) {
           ))}
         </div>
       </div>
+
+      <Methodology />
     </Panel>
   )
 }
-

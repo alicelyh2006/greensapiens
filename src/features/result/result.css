@@ -177,6 +177,18 @@
   align-items: center;
 }
 
+.methodology-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.methodology[open] .methodology-toggle span:last-child {
+  transform: rotate(90deg);
+}
+
+.methodology-toggle span:last-child {
+  transition: transform 0.15s ease;
+}
+
 .methodology-toggle:hover {
   color: var(--text-dim);
 }
