@@ -55,7 +55,7 @@ function aggregateHexBins(grid) {
 
       bins.push({
         lat: bbox[1] + (binRow * 2 + 1) * cell,
-        lng: bbox[0] + (binCol * 2 + 1) * cell + (binRow % 2 ? cell : 0),
+        lng: bbox[0] + (binCol * 2 + 1) * cell,
         value: values.reduce((sum, value) => sum + value, 0) / values.length,
       })
     }
@@ -126,10 +126,10 @@ export function RiskLayer({ opacity = 0.86, theme }) {
           const band = bandForRisk(value)
           const fill = fills[band]
           const glow = band !== 'low'
-          const cellScale = band === 'high' ? 1.07 : 1
+          const cellScale = band === 'high' ? 1.16 * 1.07 : 1.16
 
           if (glow) {
-            L.polygon(hexPositions(lat, lng, binCell, cellScale * 1.16), {
+            L.polygon(hexPositions(lat, lng, binCell, cellScale * 1.08), {
               renderer,
               interactive: false,
               bubblingMouseEvents: false,
