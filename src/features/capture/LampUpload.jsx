@@ -64,6 +64,15 @@ const LAMP_LABEL = {
   },
 }
 
+function readPreview(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null)
+    reader.onerror = () => reject(reader.error || new Error('Could not read image preview'))
+    reader.readAsDataURL(file)
+  })
+}
+
 const STORAGE_KEY = 'nightjar.lamp-observations.v1'
 
 function getStoredItems() {
@@ -75,6 +84,7 @@ function getStoredItems() {
         name: item.fileName || 'Saved lamp observation',
         type: item.fileType || '',
         persisted: true,
+        previewUrl: item.previewUrl || null,
       },
       result: item.result || { gps: null, colour: null },
     }))
@@ -88,6 +98,7 @@ function saveItems(items) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map(({ file, result }) => ({
       fileName: file.name,
       fileType: file.type,
+      previewUrl: file.previewUrl || null,
       result,
     }))))
   } catch (error) {
@@ -180,6 +191,7 @@ function FileCard({ file, result }) {
     let objectUrl = null
 
     if (file.persisted) {
+      if (file.previewUrl) setPreviewSrc(file.previewUrl)
       return undefined
     }
 
@@ -326,7 +338,13 @@ export default function LampUpload({ onAdd }) {
           readExifGps(file).catch(() => null),
           sampleLampColour(file).catch(() => null),
         ])
-        return { file, result: { gps, colour } }
+        let previewUrl = null
+        try {
+          previewUrl = await readPreview(file)
+        } catch (error) {
+          console.warn('Could not save lamp photo preview locally:', error)
+        }
+        return { file: { ...file, previewUrl }, result: { gps, colour } }
       })
     )
     setItems((prev) => [...results, ...prev])
