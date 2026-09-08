@@ -107,9 +107,6 @@ function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange
         <p>Nightjar maps light pollution and habitat factors to identify potential bird-collision risk areas in Singapore.</p>
       </div>
 
-      <button className="sidebar-theme" type="button" onClick={onTheme}>
-        <Icon name="moon" size={14} /> {theme === 'dark' ? 'Night Mode' : 'Day Mode'}
-      </button>
     </aside>
   )
 }
