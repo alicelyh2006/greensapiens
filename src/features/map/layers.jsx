@@ -35,6 +35,35 @@ function hexPositions(lat, lng, cell, scale = 1) {
   })
 }
 
+function aggregateHexBins(grid) {
+  const { bbox, cell, cols, rows, data } = grid
+  const binRows = Math.ceil(rows / 2)
+  const binCols = Math.ceil(cols / 2)
+  const bins = []
+
+  for (let binRow = 0; binRow < binRows; binRow += 1) {
+    for (let binCol = 0; binCol < binCols; binCol += 1) {
+      const values = []
+      for (let row = binRow * 2; row < Math.min(binRow * 2 + 2, rows); row += 1) {
+        for (let col = binCol * 2; col < Math.min(binCol * 2 + 2, cols); col += 1) {
+          const value = data[row * cols + col]
+          if (typeof value === 'number' && value >= 0) values.push(value)
+        }
+      }
+
+      if (!values.length) continue
+
+      bins.push({
+        lat: bbox[1] + (binRow * 2 + 1) * cell,
+        lng: bbox[0] + (binCol * 2 + 1) * cell,
+        value: values.reduce((sum, value) => sum + value, 0) / values.length,
+      })
+    }
+  }
+
+  return { bins, cell: cell * 2 }
+}
+
 export function GreenSpaceLayer() {
   const [data, setData] = useState(null)
 
@@ -81,7 +110,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
       .then((grid) => {
         if (cancelled || !grid?.bbox || !grid?.cell) return
 
-        const { bbox, cell, cols, rows, data } = grid
+        const { bins, cell: binCell } = aggregateHexBins(grid)
         const renderer = L.canvas({ padding: 0.5 })
         group = L.layerGroup()
 
@@ -93,39 +122,31 @@ export function RiskLayer({ opacity = 0.86, theme }) {
 
         if (!fills.low || !fills.moderate || !fills.high) return
 
-        for (let row = 0; row < rows; row += 1) {
-          for (let col = 0; col < cols; col += 1) {
-            const value = data[row * cols + col]
-            // -1 marks masked water/outside cells; zero is valid low risk.
-            if (typeof value !== 'number' || value < 0) continue
+        for (const { lat, lng, value } of bins) {
+          const band = bandForRisk(value)
+          const fill = fills[band]
+          const glow = band !== 'low'
+          const cellScale = band === 'high' ? 1.07 : 1
 
-            const lat = bbox[1] + (row + 0.5) * cell
-            const lng = bbox[0] + (col + 0.5) * cell
-            const band = bandForRisk(value)
-            const fill = fills[band]
-            const glow = band !== 'low'
-            const cellScale = band === 'high' ? 1.07 : 1
-
-            if (glow) {
-              L.polygon(hexPositions(lat, lng, cell, cellScale * 1.16), {
-                renderer,
-                interactive: false,
-                bubblingMouseEvents: false,
-                stroke: false,
-                fillColor: fill,
-                fillOpacity: opacity * 0.16,
-              }).addTo(group)
-            }
-
-            L.polygon(hexPositions(lat, lng, cell, cellScale), {
+          if (glow) {
+            L.polygon(hexPositions(lat, lng, binCell, cellScale * 1.16), {
               renderer,
               interactive: false,
               bubblingMouseEvents: false,
               stroke: false,
               fillColor: fill,
-              fillOpacity: band === 'low' ? opacity * 0.42 : opacity,
+              fillOpacity: opacity * 0.16,
             }).addTo(group)
           }
+
+          L.polygon(hexPositions(lat, lng, binCell, cellScale), {
+            renderer,
+            interactive: false,
+            bubblingMouseEvents: false,
+            stroke: false,
+            fillColor: fill,
+            fillOpacity: band === 'low' ? opacity * 0.42 : opacity,
+          }).addTo(group)
         }
 
         group.addTo(map)
