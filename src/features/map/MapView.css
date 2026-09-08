@@ -156,7 +156,6 @@
   transform: translateY(-50%);
   color: var(--text-faint);
   pointer-events: none;
-  font-size: var(--text-sm);
   line-height: 1;
 }
 
