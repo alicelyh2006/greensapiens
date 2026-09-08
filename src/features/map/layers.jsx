@@ -63,6 +63,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
 
   useEffect(() => {
     let canvas = null
+    let staticCanvas = null
     let frame = null
     let removeListeners = null
     let cancelled = false
@@ -97,6 +98,8 @@ export function RiskLayer({ opacity = 0.86, theme }) {
 
         canvas = L.DomUtil.create('canvas', 'risk-blob-layer', map.getPanes().overlayPane)
         const context = canvas.getContext('2d')
+        staticCanvas = document.createElement('canvas')
+        const staticContext = staticCanvas.getContext('2d')
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
         function resize() {
@@ -104,46 +107,67 @@ export function RiskLayer({ opacity = 0.86, theme }) {
           const dpr = window.devicePixelRatio || 1
           canvas.width = size.x * dpr
           canvas.height = size.y * dpr
+          staticCanvas.width = size.x * dpr
+          staticCanvas.height = size.y * dpr
           canvas.style.width = `${size.x}px`
           canvas.style.height = `${size.y}px`
           context.setTransform(dpr, 0, 0, dpr, 0, 0)
+          staticContext.setTransform(dpr, 0, 0, dpr, 0, 0)
         }
 
-        function draw() {
+        function drawPoint(target, point, index, animate) {
+          const { lat, lng, value } = point
+          const position = map.latLngToContainerPoint([lat, lng])
+          const edge = map.latLngToContainerPoint([lat, lng + cell])
+          const cellPixels = Math.max(3, Math.abs(edge.x - position.x))
+          const band = bandForRisk(value)
+          const baseRadius = cellPixels * (0.5 + (value / 100) * 1.2)
+          const breathing = animate && band === 'high' && !reducedMotion
+            ? 1 + Math.sin(phase) * 0.045
+            : 1
+          const radius = baseRadius * breathing * (index === hoveredIndex ? 1.12 : 1)
+          const gradient = target.createRadialGradient(position.x, position.y, 0, position.x, position.y, radius)
+          const alpha = (band === 'low' ? 0.24 : band === 'moderate' ? 0.34 : 0.4) * opacity
+          gradient.addColorStop(0, hexToRgba(colors[band], alpha))
+          gradient.addColorStop(0.78, hexToRgba(colors[band], alpha * 0.72))
+          gradient.addColorStop(0.92, hexToRgba(colors[band], alpha))
+          gradient.addColorStop(1, hexToRgba(colors[band], alpha))
+          target.fillStyle = gradient
+          target.beginPath()
+          target.arc(position.x, position.y, radius, 0, Math.PI * 2)
+          target.fill()
+          target.strokeStyle = hexToRgba(colors[band], Math.min(1, alpha * 1.4))
+          target.lineWidth = 1.5
+          target.stroke()
+        }
+
+        function drawStatic() {
+          const size = map.getSize()
+          staticContext.clearRect(0, 0, size.x, size.y)
+          for (let index = 0; index < points.length; index += 1) {
+            if (bandForRisk(points[index].value) === 'high' || index === hoveredIndex) continue
+            drawPoint(staticContext, points[index], index, false)
+          }
+        }
+
+        function draw(timestamp = 0) {
           const size = map.getSize()
           context.clearRect(0, 0, size.x, size.y)
+          context.drawImage(staticCanvas, 0, 0, size.x, size.y)
           for (let index = 0; index < points.length; index += 1) {
-            const { lat, lng, value } = points[index]
-            const position = map.latLngToContainerPoint([lat, lng])
-            const edge = map.latLngToContainerPoint([lat, lng + cell])
-            const cellPixels = Math.max(3, Math.abs(edge.x - position.x))
-            const band = bandForRisk(value)
-            const baseRadius = cellPixels * (0.5 + (value / 100) * 1.2)
-            const breathing = band === 'high' && !reducedMotion ? 1 + Math.sin(phase) * 0.045 : 1
-            const radius = baseRadius * breathing * (index === hoveredIndex ? 1.12 : 1)
-            const gradient = context.createRadialGradient(position.x, position.y, 0, position.x, position.y, radius)
-            const alpha = (band === 'low' ? 0.24 : band === 'moderate' ? 0.34 : 0.4) * opacity
-            gradient.addColorStop(0, hexToRgba(colors[band], alpha))
-            gradient.addColorStop(0.78, hexToRgba(colors[band], alpha * 0.72))
-            gradient.addColorStop(0.92, hexToRgba(colors[band], alpha))
-            gradient.addColorStop(1, hexToRgba(colors[band], alpha))
-            context.fillStyle = gradient
-            context.beginPath()
-            context.arc(position.x, position.y, radius, 0, Math.PI * 2)
-            context.fill()
-            context.strokeStyle = hexToRgba(colors[band], Math.min(1, alpha * 1.4))
-            context.lineWidth = 1.5
-            context.stroke()
+            if (bandForRisk(points[index].value) === 'high' || index === hoveredIndex) {
+              drawPoint(context, points[index], index, true)
+            }
           }
         }
 
         function animate() {
-          phase += 0.02
+          phase += 0.012
           draw()
           if (!reducedMotion) frame = requestAnimationFrame(animate)
         }
 
-        const handleMove = () => { resize(); draw() }
+        const handleMove = () => { resize(); drawStatic(); draw() }
         const handleMouseMove = (event) => {
           const nearest = points.reduce((best, point, index) => {
             const position = map.latLngToContainerPoint([point.lat, point.lng])
@@ -151,11 +175,13 @@ export function RiskLayer({ opacity = 0.86, theme }) {
             return distance < best.distance ? { index, distance } : best
           }, { index: -1, distance: 22 })
           hoveredIndex = nearest.index
+          drawStatic()
           draw()
         }
         map.on('move zoom resize', handleMove)
         map.on('mousemove', handleMouseMove)
         resize()
+        drawStatic()
         animate()
 
         removeListeners = () => {
@@ -171,6 +197,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
       if (removeListeners) removeListeners()
       if (frame) cancelAnimationFrame(frame)
       if (canvas) canvas.remove()
+      if (staticCanvas) staticCanvas.width = 0
     }
   }, [map, opacity, theme])
 
