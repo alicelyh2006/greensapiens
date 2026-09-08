@@ -1,7 +1,7 @@
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 import { point } from '@turf/helpers'
 import { scoreLocation } from '../../lib/score.js'
-import { MAP_BOUNDS, RISK_SURFACE } from '../../lib/config.js'
+import { MAP_BOUNDS } from '../../lib/config.js'
 
 function land(lat, lng, features) {
   if (!features?.length) return false
