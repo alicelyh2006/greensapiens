@@ -181,7 +181,7 @@ function GpsSection({ gps }) {
 }
 
 function FileCard({ file, result }) {
-  const [previewSrc, setPreviewSrc] = useState(null)
+  const [previewSrc, setPreviewSrc] = useState(() => file.previewUrl || null)
   const [loadingPreview, setLoadingPreview] = useState(false)
   const isHeic = file.type === 'image/heic' || file.type === 'image/heif' ||
                  file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
@@ -348,7 +348,7 @@ export default function LampUpload({ onAdd }) {
         } catch (error) {
           console.warn('Could not save lamp photo preview locally:', error)
         }
-        return { file: { ...file, previewUrl }, result: { gps, colour } }
+        return { file: Object.assign(file, { previewUrl }), result: { gps, colour } }
       })
     )
     setItems((prev) => [...results, ...prev])
