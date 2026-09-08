@@ -87,7 +87,7 @@ export const SIZE_WEIGHT = {
 
 export const BANDS = {
   moderate: 34,
-  high: 67,
+  high: 60,
 }
 
 /**
