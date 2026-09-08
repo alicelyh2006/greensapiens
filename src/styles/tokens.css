@@ -44,8 +44,9 @@
   --lamp-neutral: #c9cfd8;
   --lamp-cool: #6b9fe0;
 
-  /* --- type scale (4 sizes, stay on it) --- */
-  --text-sm: 0.8125rem;
+  /* --- type scale --- */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
   --text-base: 1rem;
   --text-lg: 1.25rem;
   --text-xl: 1.75rem;
