@@ -55,7 +55,7 @@ function aggregateHexBins(grid) {
 
       bins.push({
         lat: bbox[1] + (binRow * 2 + 1) * cell,
-        lng: bbox[0] + (binCol * 2 + 1) * cell,
+        lng: bbox[0] + (binCol * 2 + 1) * cell + (binRow % 2 ? cell : 0),
         value: values.reduce((sum, value) => sum + value, 0) / values.length,
       })
     }
