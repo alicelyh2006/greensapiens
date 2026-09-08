@@ -18,6 +18,8 @@
 
 /* Inspector / target dashboard */
 .app__inspector .panel { height:100%; gap:0; padding:0; overflow:hidden; background:var(--surface); }
+.app__inspector { padding:var(--space-2); }
+.app__inspector .panel { height:100%; }
 .app__inspector .panel > * { flex:none; }
 .inspector-head { display:flex; justify-content:space-between; padding:13px 13px 11px; border-bottom:1px solid var(--line); }
 .inspector-head strong { display:block; font-size:15px; line-height:1.15; }

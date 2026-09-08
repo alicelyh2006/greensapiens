@@ -89,9 +89,9 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         group = L.layerGroup()
 
         const fills = {
-          low: cssToken('--risk-low'),
-          moderate: cssToken('--risk-moderate'),
-          high: cssToken('--risk-high'),
+          low: cssToken('--risk-ramp-low'),
+          moderate: cssToken('--risk-ramp-mid'),
+          high: cssToken('--risk-ramp-high'),
         }
 
         if (!fills.low || !fills.moderate || !fills.high) return

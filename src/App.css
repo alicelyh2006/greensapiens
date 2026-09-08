@@ -47,8 +47,6 @@
 .season-card strong { display:block; color:var(--accent-warm); font-size:9px; margin-top:3px; }
 .sidebar-about { margin-top:auto; padding:0 7px 10px; }
 .sidebar-about p { color:var(--text-faint); font-size:8.5px; line-height:1.45; }
-.sidebar-theme { margin:0 1px; display:flex; align-items:center; justify-content:center; gap:7px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--text); padding:8px; font-size:10px; cursor:pointer; }
-.sidebar-theme:hover { background:var(--surface-2); }
 
 .app__workspace { min-width:0; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); gap:10px; padding:10px; overflow:hidden; }
 .workspace-header { min-height:54px; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:2px 4px 0 8px; }
@@ -143,7 +141,7 @@
   .brand { border:0; padding:0; min-width:150px; }
   .sidebar-nav { flex-direction:row; border:0; padding:0; overflow:auto; }
   .sidebar-nav__item { width:auto; white-space:nowrap; }
-  .sidebar-section, .season-card, .sidebar-about, .sidebar-theme { display:none; }
+  .sidebar-section, .season-card, .sidebar-about { display:none; }
   .app__workspace { padding:8px; }
   .risk-view { grid-template-columns:1fr; grid-template-rows:minmax(420px,1fr) minmax(340px,auto); overflow:auto; }
   .app__inspector { min-height:340px; }
