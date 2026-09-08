@@ -23,18 +23,6 @@ function bandForRisk(value) {
   return 'low'
 }
 
-function hexPositions(lat, lng, cell, scale = 1) {
-  const latRadius = cell * 0.5 * scale
-  const lngRadius = latRadius / Math.cos((lat * Math.PI) / 180)
-  return Array.from({ length: 6 }, (_, index) => {
-    const angle = (Math.PI / 3) * index
-    return [
-      lat + Math.sin(angle) * latRadius,
-      lng + Math.cos(angle) * lngRadius,
-    ]
-  })
-}
-
 function aggregateHexBins(grid) {
   const { bbox, cell, cols, rows, data } = grid
   const binRows = Math.ceil(rows / 2)
@@ -126,24 +114,24 @@ export function RiskLayer({ opacity = 0.86, theme }) {
           const band = bandForRisk(value)
           const fill = fills[band]
           const glow = band !== 'low'
-          const cellScale = band === 'high' ? 1.16 * 1.07 : 1.16
+          const radius = binCell * 111_000 * (0.18 + (value / 100) * 0.3)
 
           if (glow) {
-            L.polygon(hexPositions(lat, lng, binCell, cellScale * 1.08), {
+            L.circle([lat, lng], {
               renderer,
               interactive: false,
               bubblingMouseEvents: false,
-              stroke: false,
+              radius: radius * 1.18,
               fillColor: fill,
               fillOpacity: opacity * 0.16,
             }).addTo(group)
           }
 
-          L.polygon(hexPositions(lat, lng, binCell, cellScale), {
+          L.circle([lat, lng], {
             renderer,
             interactive: false,
             bubblingMouseEvents: false,
-            stroke: false,
+            radius,
             fillColor: fill,
             fillOpacity: band === 'low' ? opacity * 0.42 : opacity,
           }).addTo(group)
