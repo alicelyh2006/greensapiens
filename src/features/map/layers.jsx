@@ -64,11 +64,9 @@ export function RiskLayer({ opacity = 0.86, theme }) {
   useEffect(() => {
     let canvas = null
     let staticCanvas = null
-    let frame = null
     let removeListeners = null
     let cancelled = false
     let hoveredIndex = -1
-    let phase = 0
 
     fetch(DATA.riskGrid)
       .then((r) => (r.ok ? r.json() : null))
@@ -100,7 +98,6 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         const context = canvas.getContext('2d')
         staticCanvas = document.createElement('canvas')
         const staticContext = staticCanvas.getContext('2d')
-        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
         function resize() {
           const size = map.getSize()
@@ -115,17 +112,14 @@ export function RiskLayer({ opacity = 0.86, theme }) {
           staticContext.setTransform(dpr, 0, 0, dpr, 0, 0)
         }
 
-        function drawPoint(target, point, index, animate) {
+        function drawPoint(target, point, index) {
           const { lat, lng, value } = point
           const position = map.latLngToContainerPoint([lat, lng])
           const edge = map.latLngToContainerPoint([lat, lng + cell])
           const cellPixels = Math.max(3, Math.abs(edge.x - position.x))
           const band = bandForRisk(value)
           const baseRadius = cellPixels * (0.5 + (value / 100) * 1.2)
-          const breathing = animate && band === 'high' && !reducedMotion
-            ? 1 + Math.sin(phase) * 0.045
-            : 1
-          const radius = baseRadius * breathing * (index === hoveredIndex ? 1.12 : 1)
+          const radius = baseRadius * (index === hoveredIndex ? 1.12 : 1)
           const gradient = target.createRadialGradient(position.x, position.y, 0, position.x, position.y, radius)
           const alpha = (band === 'low' ? 0.24 : band === 'moderate' ? 0.34 : 0.4) * opacity
           gradient.addColorStop(0, hexToRgba(colors[band], alpha))
@@ -145,8 +139,8 @@ export function RiskLayer({ opacity = 0.86, theme }) {
           const size = map.getSize()
           staticContext.clearRect(0, 0, size.x, size.y)
           for (let index = 0; index < points.length; index += 1) {
-            if (bandForRisk(points[index].value) === 'high' || index === hoveredIndex) continue
-            drawPoint(staticContext, points[index], index, false)
+            if (index === hoveredIndex) continue
+            drawPoint(staticContext, points[index], index)
           }
         }
 
@@ -155,16 +149,8 @@ export function RiskLayer({ opacity = 0.86, theme }) {
           context.clearRect(0, 0, size.x, size.y)
           context.drawImage(staticCanvas, 0, 0, size.x, size.y)
           for (let index = 0; index < points.length; index += 1) {
-            if (bandForRisk(points[index].value) === 'high' || index === hoveredIndex) {
-              drawPoint(context, points[index], index, true)
-            }
+            if (index === hoveredIndex) drawPoint(context, points[index], index)
           }
-        }
-
-        function animate() {
-          phase += 0.012
-          draw()
-          if (!reducedMotion) frame = requestAnimationFrame(animate)
         }
 
         const handleMove = () => { resize(); drawStatic(); draw() }
@@ -182,12 +168,11 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         map.on('mousemove', handleMouseMove)
         resize()
         drawStatic()
-        animate()
+        draw()
 
         removeListeners = () => {
           map.off('move zoom resize', handleMove)
           map.off('mousemove', handleMouseMove)
-          if (frame) cancelAnimationFrame(frame)
         }
       })
       .catch(() => {})
@@ -195,7 +180,6 @@ export function RiskLayer({ opacity = 0.86, theme }) {
     return () => {
       cancelled = true
       if (removeListeners) removeListeners()
-      if (frame) cancelAnimationFrame(frame)
       if (canvas) canvas.remove()
       if (staticCanvas) staticCanvas.width = 0
     }
