@@ -41,7 +41,7 @@
 .layer-dot--lamp { background:var(--lamp-warm); }
 .layer-dot--warning { background:var(--risk-high); }
 
-.season-card { display:grid; grid-template-columns:25px 1fr 14px; gap:8px; align-items:center; margin:5px 1px 13px; padding:10px 8px; border:1px solid var(--line); border-radius:8px; background:linear-gradient(135deg,var(--surface),var(--surface-2)); color:var(--text-dim); }
+.season-card { display:grid; grid-template-columns:25px 1fr; gap:8px; align-items:center; margin:5px 1px 13px; padding:10px 8px; border:1px solid var(--line); border-radius:8px; background:linear-gradient(135deg,var(--surface),var(--surface-2)); color:var(--text-dim); }
 .season-card__icon { color:var(--text); }
 .season-card__label { font-size:7px; text-transform:uppercase; letter-spacing:.05em; }
 .season-card strong { display:block; color:var(--accent-warm); font-size:9px; margin-top:3px; }
