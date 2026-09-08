@@ -34,7 +34,7 @@ function readReports() {
   }
 }
 
-export function CollisionReportsLayer({ visible = true }) {
+export function CollisionReportsLayer() {
   const map = useMap()
 
   useEffect(() => {
@@ -44,8 +44,6 @@ export function CollisionReportsLayer({ visible = true }) {
     function renderReports() {
       if (cancelled) return
       if (group) map.removeLayer(group)
-      group = null
-      if (!visible) return
 
       group = L.layerGroup()
       readReports().forEach((report) => {
@@ -90,7 +88,7 @@ export function CollisionReportsLayer({ visible = true }) {
       window.removeEventListener('storage', renderReports)
       if (group) map.removeLayer(group)
     }
-  }, [map, visible])
+  }, [map])
 
   return null
 }

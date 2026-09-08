@@ -269,7 +269,7 @@ export default function MapView({ selected, onSelect, theme = 'light', riskVisib
 
         {riskVisible && <RiskLayer theme={theme} />}
         {habitatVisible && <GreenSpaceLayer />}
-        <CollisionReportsLayer visible={reportsVisible} />
+        {reportsVisible && <CollisionReportsLayer />}
         <ClickHandler onSelect={selectLocation} />
 
         {selected && (
