@@ -84,7 +84,7 @@
 .card__thumb-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-dim); font-size: 9px; font-weight: 600; }
 .card__thumb-placeholder small { color: var(--text-faint); font-size: 8px; font-weight: 400; }
 .card__body { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
-.card__filename { margin: 0; color: var(--text-faint); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card__filename { margin: 0; color: var(--text-faint); font-size: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card__section { display: flex; flex-direction: column; gap: 8px; }
 .card__section-title { margin: 0; font-size: 10px; font-weight: 700; }
 .badge { display: inline-flex; align-items: center; padding: 3px 7px; border: 1px solid transparent; border-radius: 999px; font-size: 7px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
@@ -93,8 +93,8 @@
 .card__dl { margin: 0; display: grid; grid-template-columns: minmax(95px, auto) 1fr; gap: 6px 10px; }
 .card__dl dt { color: var(--text-faint); white-space: nowrap; }
 .card__dl dd { margin: 0; color: var(--text-dim); font-variant-numeric: tabular-nums; }
-.card__dl--compact, .card__dl--metrics { font-size: 12px; }
-.card__miss { margin: 0; color: var(--text-faint); font-size: 12px; font-style: italic; }
+.card__dl--compact, .card__dl--metrics { font-size: 9px; }
+.card__miss { margin: 0; color: var(--text-faint); font-size: 9px; font-style: italic; }
 .swatch-row { display: flex; align-items: center; gap: 9px; }
 .swatch { width: 30px; height: 30px; flex-shrink: 0; display: inline-block; border: 1px solid var(--line-strong); border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
 .lamp-header-info { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
@@ -109,11 +109,11 @@
 .risk-badge--medium { color: var(--risk-moderate); background: var(--risk-moderate-bg); border: 1px solid var(--line); }
 .risk-badge--high { color: var(--risk-high); background: var(--risk-high-bg); border: 1px solid var(--line); }
 .risk-badge--unknown { color: var(--text-faint); background: var(--surface); border: 1px solid var(--line); }
-.lamp-report { display: flex; flex-direction: column; gap: 12px; }
+.lamp-report { display: flex; flex-direction: column; gap: 10px; }
 .font-mono { font-family: var(--font-mono); font-size: 8px; }
 .btn-ghost { min-height: 31px; padding: 5px 9px; color: var(--text-dim); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 6px; font: inherit; font-size: 9px; cursor: pointer; }
 .btn-ghost:hover { color: var(--text); background: var(--surface-3); }
-.gps-block { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 9px; font-size: 12px; }
+.gps-block { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 9px; font-size: 9px; }
 .gps-block--found { background: var(--risk-low-bg); border: 1px solid var(--line); }
 .gps-block--miss { flex-direction: row; align-items: flex-start; gap: 8px; background: var(--surface); border: 1px solid var(--line); }
 .gps-block__icon { display: flex; flex-shrink: 0; margin-top: 2px; color: var(--text-faint); }
@@ -121,8 +121,8 @@
 .gps-block__coords { display: flex; align-items: flex-start; gap: 8px; }
 .gps-block__dms { display: flex; flex-direction: column; gap: 2px; color: var(--text-dim); font-weight: 600; font-variant-numeric: tabular-nums; }
 .gps-block__alt { color: var(--text-faint); font-weight: 400; }
-.gps-block__decimal { color: var(--text-faint); font-size: 11px; font-variant-numeric: tabular-nums; }
-.gps-block__map-link { display: inline-flex; align-items: center; gap: 5px; width: fit-content; padding: 4px 7px; color: var(--accent-purple); background: var(--accent-purple-soft); border-radius: 7px; text-decoration: none; font-size: 11px; font-weight: 600; }
+.gps-block__decimal { color: var(--text-faint); font-size: 8px; font-variant-numeric: tabular-nums; }
+.gps-block__map-link { display: inline-flex; align-items: center; gap: 5px; width: fit-content; padding: 4px 7px; color: var(--accent-purple); background: var(--accent-purple-soft); border-radius: 7px; text-decoration: none; font-size: 8px; font-weight: 600; }
 .gps-block__map-link:hover { background: var(--surface-3); }
 .gps-block__miss-title { margin: 0 0 2px; color: var(--text-dim); font-weight: 600; }
 .gps-block__miss-body { margin: 0; color: var(--text-faint); line-height: 1.45; }
