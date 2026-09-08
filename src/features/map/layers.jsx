@@ -87,6 +87,8 @@ export function RiskLayer({ opacity = 0.86, theme }) {
             const value = data[row * cols + col]
             if (typeof value !== 'number' || value < 0) continue
             points.push({
+              lat: bbox[1] + (row + 0.5) * cell,
+              lng: bbox[0] + (col + 0.5) * cell,
               row,
               col,
               value,
@@ -118,32 +120,32 @@ export function RiskLayer({ opacity = 0.86, theme }) {
             bbox[1] + cell / 2,
             bbox[0] + cell / 2,
           ])
-          const edge = map.latLngToContainerPoint([
+          const columnEdge = map.latLngToContainerPoint([
             bbox[1] + cell / 2,
             bbox[0] + cell * 1.5,
           ])
-          const columnSpacing = Math.max(3, Math.abs(edge.x - origin.x))
-          const radius = columnSpacing / 1.5
-          const rowSpacing = Math.sqrt(3) * radius
-          return { origin, columnSpacing, radius, rowSpacing }
+          const rowEdge = map.latLngToContainerPoint([
+            bbox[1] + cell * 1.5,
+            bbox[0] + cell / 2,
+          ])
+          return {
+            origin,
+            columnSpacing: Math.max(3, Math.abs(columnEdge.x - origin.x)),
+            rowSpacing: Math.max(3, Math.abs(rowEdge.y - origin.y)),
+          }
         }
 
-        function pointPosition(point, metrics) {
-          return {
-            x: metrics.origin.x + point.col * metrics.columnSpacing,
-            y: metrics.origin.y
-              - point.row * metrics.rowSpacing
-              + (point.col % 2) * metrics.rowSpacing / 2,
-          }
+        function pointPosition(point) {
+          return map.latLngToContainerPoint([point.lat, point.lng])
         }
 
         function drawPoint(target, point, index, metrics) {
           const { value } = point
-          const position = pointPosition(point, metrics)
+          const position = pointPosition(point)
           const size = map.getSize()
           if (position.x < -40 || position.y < -40 || position.x > size.x + 40 || position.y > size.y + 40) return
           const band = bandForRisk(value)
-          const radius = metrics.radius + 0.25
+          const radius = Math.min(metrics.columnSpacing, metrics.rowSpacing) * 0.58
           const alpha = index === hoveredIndex ? Math.min(1, opacity + 0.14) : opacity
 
           target.fillStyle = hexToRgba(colors[band], alpha)
@@ -192,7 +194,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         const handleMouseMove = (event) => {
           const metrics = getGridMetrics()
           const nearest = points.reduce((best, point, index) => {
-            const position = pointPosition(point, metrics)
+            const position = pointPosition(point)
             const distance = Math.hypot(
               position.x - event.containerPoint.x,
               position.y - event.containerPoint.y
