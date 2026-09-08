@@ -1,4 +1,10 @@
-/** F1 green-space boundaries · F2 risk surface. OWNER: L2 (Map) */
+/**
+ * F1 green-space boundaries · F2 risk surface. OWNER: L2 (Map)
+ *
+ * The risk surface is rendered from the L1-generated risk grid. Each visible
+ * hexagon is centred on the exact geographic centre of one source grid cell.
+ * This layer never calculates risk and is never interactive.
+ */
 import { useEffect, useState } from 'react'
 import { GeoJSON, useMap } from 'react-leaflet'
 import L from 'leaflet'
@@ -17,11 +23,19 @@ function bandForRisk(value) {
   return 'low'
 }
 
-function hexToRgba(hex, alpha) {
-  const value = hex.replace('#', '')
-  if (value.length !== 6) return `rgba(255, 255, 255, ${alpha})`
-  const [r, g, b] = [0, 2, 4].map((offset) => parseInt(value.slice(offset, offset + 2), 16))
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+function hexPositions(lat, lng, cell) {
+  const latRadius = cell * 0.46
+  const lngRadius = (cell * 0.46) / Math.cos((lat * Math.PI) / 180)
+
+  const positions = []
+  for (let i = 0; i < 6; i += 1) {
+    const angle = (Math.PI / 3) * i
+    positions.push([
+      lat + Math.sin(angle) * latRadius,
+      lng + Math.cos(angle) * lngRadius,
+    ])
+  }
+  return positions
 }
 
 export function GreenSpaceLayer() {
@@ -62,12 +76,8 @@ export function RiskLayer({ opacity = 0.86, theme }) {
   const map = useMap()
 
   useEffect(() => {
-    let canvas = null
-    let staticCanvas = null
-    let removeListeners = null
-    let redrawFrame = null
+    let group = null
     let cancelled = false
-    let hoveredIndex = -1
 
     fetch(DATA.riskGrid)
       .then((r) => (r.ok ? r.json() : null))
@@ -75,155 +85,43 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         if (cancelled || !grid?.bbox || !grid?.cell) return
 
         const { bbox, cell, cols, rows, data } = grid
-        const colors = {
-          low: cssToken('--risk-ramp-low'),
-          moderate: cssToken('--risk-ramp-mid'),
-          high: cssToken('--risk-ramp-high'),
+        const renderer = L.canvas({ padding: 0.5 })
+        group = L.layerGroup()
+        const fills = {
+          low: cssToken('--risk-low'),
+          moderate: cssToken('--risk-moderate'),
+          high: cssToken('--risk-high'),
         }
 
-        const points = []
+        if (!fills.low || !fills.moderate || !fills.high) return
+
         for (let row = 0; row < rows; row += 1) {
           for (let col = 0; col < cols; col += 1) {
             const value = data[row * cols + col]
-            if (typeof value !== 'number' || value < 0) continue
-            points.push({
-              lat: bbox[1] + (row + 0.5) * cell,
-              lng: bbox[0] + (col + 0.5) * cell,
-              row,
-              col,
-              value,
-            })
-          }
-        }
-        points.sort((a, b) => a.value - b.value)
+            if (typeof value !== 'number' || value <= 0) continue
 
-        canvas = L.DomUtil.create('canvas', 'risk-cell', map.getPanes().overlayPane)
-        const context = canvas.getContext('2d')
-        staticCanvas = document.createElement('canvas')
-        const staticContext = staticCanvas.getContext('2d')
+            const lat = bbox[1] + (row + 0.5) * cell
+            const lng = bbox[0] + (col + 0.5) * cell
+            const band = bandForRisk(value)
 
-        function resize() {
-          const size = map.getSize()
-          const dpr = window.devicePixelRatio || 1
-          canvas.width = size.x * dpr
-          canvas.height = size.y * dpr
-          staticCanvas.width = size.x * dpr
-          staticCanvas.height = size.y * dpr
-          canvas.style.width = `${size.x}px`
-          canvas.style.height = `${size.y}px`
-          context.setTransform(dpr, 0, 0, dpr, 0, 0)
-          staticContext.setTransform(dpr, 0, 0, dpr, 0, 0)
-        }
-
-        function getGridMetrics() {
-          const origin = map.latLngToContainerPoint([
-            bbox[1] + cell / 2,
-            bbox[0] + cell / 2,
-          ])
-          const columnEdge = map.latLngToContainerPoint([
-            bbox[1] + cell / 2,
-            bbox[0] + cell * 1.5,
-          ])
-          const rowEdge = map.latLngToContainerPoint([
-            bbox[1] + cell * 1.5,
-            bbox[0] + cell / 2,
-          ])
-          return {
-            origin,
-            columnSpacing: Math.max(3, Math.abs(columnEdge.x - origin.x)),
-            rowSpacing: Math.max(3, Math.abs(rowEdge.y - origin.y)),
+            L.polygon(hexPositions(lat, lng, cell), {
+              renderer,
+              interactive: false,
+              bubblingMouseEvents: false,
+              stroke: false,
+              fillColor: fills[band],
+              fillOpacity: opacity,
+            }).addTo(group)
           }
         }
 
-        function pointPosition(point) {
-          return map.latLngToContainerPoint([point.lat, point.lng])
-        }
-
-        function drawPoint(target, point, index, metrics) {
-          const { value } = point
-          const position = pointPosition(point)
-          const size = map.getSize()
-          if (position.x < -40 || position.y < -40 || position.x > size.x + 40 || position.y > size.y + 40) return
-          const band = bandForRisk(value)
-          const radius = Math.min(metrics.columnSpacing, metrics.rowSpacing) * 0.58
-          const alpha = index === hoveredIndex ? Math.min(1, opacity + 0.14) : opacity
-
-          target.fillStyle = hexToRgba(colors[band], alpha)
-          target.beginPath()
-          for (let vertex = 0; vertex < 6; vertex += 1) {
-            const angle = (Math.PI / 3) * vertex
-            const x = position.x + radius * Math.cos(angle)
-            const y = position.y + radius * Math.sin(angle)
-            if (vertex === 0) target.moveTo(x, y)
-            else target.lineTo(x, y)
-          }
-          target.closePath()
-          target.fill()
-        }
-
-        function drawStatic() {
-          const size = map.getSize()
-          const metrics = getGridMetrics()
-          staticContext.clearRect(0, 0, size.x, size.y)
-          for (let index = 0; index < points.length; index += 1) {
-            if (index === hoveredIndex) continue
-            drawPoint(staticContext, points[index], index, metrics)
-          }
-        }
-
-        function draw(timestamp = 0) {
-          const size = map.getSize()
-          const metrics = getGridMetrics()
-          context.clearRect(0, 0, size.x, size.y)
-          context.drawImage(staticCanvas, 0, 0, size.x, size.y)
-          for (let index = 0; index < points.length; index += 1) {
-            if (index === hoveredIndex) drawPoint(context, points[index], index, metrics)
-          }
-        }
-
-        const scheduleRedraw = () => {
-          if (redrawFrame) return
-          redrawFrame = requestAnimationFrame(() => {
-            redrawFrame = null
-            resize()
-            drawStatic()
-            draw()
-          })
-        }
-        const handleMove = scheduleRedraw
-        const handleMouseMove = (event) => {
-          const metrics = getGridMetrics()
-          const nearest = points.reduce((best, point, index) => {
-            const position = pointPosition(point)
-            const distance = Math.hypot(
-              position.x - event.containerPoint.x,
-              position.y - event.containerPoint.y
-            )
-            return distance < best.distance ? { index, distance } : best
-          }, { index: -1, distance: 22 })
-          hoveredIndex = nearest.index
-          scheduleRedraw()
-        }
-        map.on('move zoom resize', handleMove)
-        map.on('mousemove', handleMouseMove)
-        resize()
-        drawStatic()
-        draw()
-
-        removeListeners = () => {
-          map.off('move zoom resize', handleMove)
-          map.off('mousemove', handleMouseMove)
-          if (redrawFrame) cancelAnimationFrame(redrawFrame)
-        }
+        group.addTo(map)
       })
       .catch(() => {})
 
     return () => {
       cancelled = true
-      if (removeListeners) removeListeners()
-      if (redrawFrame) cancelAnimationFrame(redrawFrame)
-      if (canvas) canvas.remove()
-      if (staticCanvas) staticCanvas.width = 0
+      if (group) map.removeLayer(group)
     }
   }, [map, opacity, theme])
 
