@@ -190,8 +190,12 @@ function FileCard({ file, result }) {
     let cancelled = false
     let objectUrl = null
 
+    if (file.previewUrl) {
+      setPreviewSrc(file.previewUrl)
+      return undefined
+    }
+
     if (file.persisted) {
-      if (file.previewUrl) setPreviewSrc(file.previewUrl)
       return undefined
     }
 
