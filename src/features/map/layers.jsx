@@ -98,7 +98,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
               stroke: false,
               radius,
               fillColor: fills[band],
-              fillOpacity: band === 'low' ? opacity * 0.42 : opacity,
+              fillOpacity: band === 'low' ? opacity * 0.65 : opacity,
             }).addTo(group)
           }
         }
