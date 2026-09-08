@@ -73,6 +73,11 @@ function readPreview(file) {
   })
 }
 
+function isHeicFile(file) {
+  return file.type === 'image/heic' || file.type === 'image/heif' ||
+    file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
+}
+
 const STORAGE_KEY = 'nightjar.lamp-observations.v1'
 
 function getStoredItems() {
@@ -97,7 +102,7 @@ function saveItems(items) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map(({ file, previewUrl, result }) => ({
       fileName: file.name,
-      fileType: file.type,
+      fileType: previewUrl ? 'image/jpeg' : file.type,
       previewUrl: previewUrl || null,
       result,
     }))))
@@ -190,7 +195,7 @@ function FileCard({ file, previewUrl, result }) {
     let cancelled = false
     let objectUrl = null
 
-    if (previewUrl) {
+    if (previewUrl && !isHeic) {
       setPreviewSrc(previewUrl)
       return undefined
     }
@@ -344,7 +349,13 @@ export default function LampUpload({ onAdd }) {
         ])
         let previewUrl = null
         try {
-          previewUrl = await readPreview(file)
+          if (isHeicFile(file)) {
+            const converted = await heicToJpeg(file, 0.8)
+            const blob = Array.isArray(converted) ? converted[0] : converted
+            previewUrl = await readPreview(blob)
+          } else {
+            previewUrl = await readPreview(file)
+          }
         } catch (error) {
           console.warn('Could not save lamp photo preview locally:', error)
         }
