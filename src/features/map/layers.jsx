@@ -89,9 +89,9 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         group = L.layerGroup()
 
         const fills = {
-          low: cssToken('--risk-ramp-low'),
-          moderate: cssToken('--risk-ramp-mid'),
-          high: cssToken('--risk-ramp-high'),
+          low: cssToken('--risk-low'),
+          moderate: cssToken('--risk-moderate'),
+          high: cssToken('--risk-high'),
         }
 
         if (!fills.low || !fills.moderate || !fills.high) return
@@ -99,8 +99,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         for (let row = 0; row < rows; row += 1) {
           for (let col = 0; col < cols; col += 1) {
             const value = data[row * cols + col]
-            // -1 marks masked water/outside cells; zero is valid low risk.
-            if (typeof value !== 'number' || value < 0) continue
+            if (typeof value !== 'number' || value <= 0) continue
 
             const lat = bbox[1] + (row + 0.5) * cell
             const lng = bbox[0] + (col + 0.5) * cell
