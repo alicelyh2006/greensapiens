@@ -57,19 +57,14 @@ export function GreenSpaceLayer() {
   )
 }
 
-function hexPositions(lat, lng, cell) {
-  const latRadius = cell * 0.46
-  const lngRadius = (cell * 0.46) / Math.cos((lat * Math.PI) / 180)
-
-  const positions = []
-  for (let i = 0; i < 6; i += 1) {
-    const angle = (Math.PI / 3) * i
-    positions.push([
-      lat + Math.sin(angle) * latRadius,
-      lng + Math.cos(angle) * lngRadius,
-    ])
-  }
-  return positions
+function cellPositions(lat, lng, cell) {
+  const halfCell = cell / 2
+  return [
+    [lat - halfCell, lng - halfCell],
+    [lat - halfCell, lng + halfCell],
+    [lat + halfCell, lng + halfCell],
+    [lat + halfCell, lng - halfCell],
+  ]
 }
 
 export function RiskLayer({ opacity = 0.86, theme }) {
@@ -107,7 +102,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
             const band = bandForRisk(value)
             const fill = fills[band]
 
-            L.polygon(hexPositions(lat, lng, cell), {
+            L.polygon(cellPositions(lat, lng, cell), {
               renderer,
               interactive: false,
               bubblingMouseEvents: false,
