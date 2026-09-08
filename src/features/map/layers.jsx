@@ -65,6 +65,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
     let canvas = null
     let staticCanvas = null
     let removeListeners = null
+    let redrawFrame = null
     let cancelled = false
     let hoveredIndex = -1
 
@@ -115,18 +116,24 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         function drawPoint(target, point, index) {
           const { lat, lng, value } = point
           const position = map.latLngToContainerPoint([lat, lng])
+          const size = map.getSize()
+          if (position.x < -40 || position.y < -40 || position.x > size.x + 40 || position.y > size.y + 40) return
           const edge = map.latLngToContainerPoint([lat, lng + cell])
           const cellPixels = Math.max(3, Math.abs(edge.x - position.x))
           const band = bandForRisk(value)
           const baseRadius = cellPixels * (0.5 + (value / 100) * 1.2)
           const radius = baseRadius * (index === hoveredIndex ? 1.12 : 1)
-          const gradient = target.createRadialGradient(position.x, position.y, 0, position.x, position.y, radius)
           const alpha = (band === 'low' ? 0.24 : band === 'moderate' ? 0.34 : 0.4) * opacity
-          gradient.addColorStop(0, hexToRgba(colors[band], alpha))
-          gradient.addColorStop(0.78, hexToRgba(colors[band], alpha * 0.72))
-          gradient.addColorStop(0.92, hexToRgba(colors[band], alpha))
-          gradient.addColorStop(1, hexToRgba(colors[band], alpha))
-          target.fillStyle = gradient
+          if (band === 'low') {
+            target.fillStyle = hexToRgba(colors.low, alpha)
+          } else {
+            const gradient = target.createRadialGradient(position.x, position.y, 0, position.x, position.y, radius)
+            gradient.addColorStop(0, hexToRgba(colors[band], alpha))
+            gradient.addColorStop(0.78, hexToRgba(colors[band], alpha * 0.72))
+            gradient.addColorStop(0.92, hexToRgba(colors[band], alpha))
+            gradient.addColorStop(1, hexToRgba(colors[band], alpha))
+            target.fillStyle = gradient
+          }
           target.beginPath()
           target.arc(position.x, position.y, radius, 0, Math.PI * 2)
           target.fill()
@@ -153,7 +160,16 @@ export function RiskLayer({ opacity = 0.86, theme }) {
           }
         }
 
-        const handleMove = () => { resize(); drawStatic(); draw() }
+        const scheduleRedraw = () => {
+          if (redrawFrame) return
+          redrawFrame = requestAnimationFrame(() => {
+            redrawFrame = null
+            resize()
+            drawStatic()
+            draw()
+          })
+        }
+        const handleMove = scheduleRedraw
         const handleMouseMove = (event) => {
           const nearest = points.reduce((best, point, index) => {
             const position = map.latLngToContainerPoint([point.lat, point.lng])
@@ -161,8 +177,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
             return distance < best.distance ? { index, distance } : best
           }, { index: -1, distance: 22 })
           hoveredIndex = nearest.index
-          drawStatic()
-          draw()
+          scheduleRedraw()
         }
         map.on('move zoom resize', handleMove)
         map.on('mousemove', handleMouseMove)
@@ -173,6 +188,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         removeListeners = () => {
           map.off('move zoom resize', handleMove)
           map.off('mousemove', handleMouseMove)
+          if (redrawFrame) cancelAnimationFrame(redrawFrame)
         }
       })
       .catch(() => {})
@@ -180,6 +196,7 @@ export function RiskLayer({ opacity = 0.86, theme }) {
     return () => {
       cancelled = true
       if (removeListeners) removeListeners()
+      if (redrawFrame) cancelAnimationFrame(redrawFrame)
       if (canvas) canvas.remove()
       if (staticCanvas) staticCanvas.width = 0
     }
