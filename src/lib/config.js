@@ -18,6 +18,12 @@
  * Multiply them and the peak lands at the edge on its own, because that is
  * the only place both are non-zero. We don't assume the answer; it emerges.
  */
+/**
+ * Display weights for the factor bars in the result panel. These are NOT used
+ * by the model — see combineFactors() in score.js, which multiplies rather
+ * than sums. Showing "40% weight" beside a factor is misleading while that is
+ * true, and the panel should stop doing it (L3).
+ */
 export const WEIGHTS = {
   habitat: 0.4,
   light: 0.35,
@@ -186,8 +192,17 @@ export const LIGHT = {
   radiusM: 250,
   /** Below this many nearby lamps the reading is labelled an estimate. */
   minSamplesForConfidence: 2,
-  /** No surveyed coverage: use a neutral factor and disclose the limitation. */
-  fallback: 1.0,
+  /**
+   * No surveyed coverage at this location. 0.5, not 1.0.
+   *
+   * 1.0 is not a neutral assumption — it is the worst case, "this location is
+   * lit by 6500K blue-white floodlights". While lamps.json is sparse that
+   * applies to nearly every point in Singapore, which pushes the whole island
+   * into the upper bands and leaves the map with no gradient to read. 0.5 says
+   * what we actually know: unsurveyed, assume ordinary lighting, and disclose
+   * it in the note the panel shows.
+   */
+  fallback: 0.5,
 }
 
 /** Peak collision months (1-indexed). */

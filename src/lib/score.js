@@ -1,7 +1,19 @@
 /**
  * F5 — the risk model. OWNER: L1 (Data & Model)
  *
- * scoreLocation() is the single scoring API used by the app.
+ * scoreLocation() is the single scoring API used by the app, and is
+ * SYNCHRONOUS — other lanes call it directly during render. Datasets are
+ * fetched once by initScoring() and held in module state.
+ *
+ * The model, in one line:
+ *
+ *   habitat (are birds here?) x density (is there anything to hit?) x light
+ *
+ * We deliberately do NOT hard-code "risk peaks at the park edge". Habitat is
+ * highest in and near green space; density is ~0 inside a reserve. Multiply
+ * them and the peak falls on the edge by itself, because that is the only
+ * place both are non-zero. The edge result is a prediction of the model, not
+ * an assumption baked into it — see combineFactors() below.
  */
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 import polygonToLine from '@turf/polygon-to-line'
@@ -11,6 +23,7 @@ import { point } from '@turf/helpers'
 
 import {
   WEIGHTS,
+  MODEL,
   HABITAT,
   SIZE_WEIGHT,
   BANDS,
@@ -240,7 +253,7 @@ export function densityAt(lat, lng) {
   return {
     value,
     weight: WEIGHTS.density,
-    note: `${DENSITY_WORDS.find(([t]) => value < t)[1]} within 300m (land-use zoning).`,
+    note: `${DENSITY_WORDS.find(([t]) => value < t)[1]} within 300m (OpenStreetMap buildings).`,
   }
 }
 
@@ -312,6 +325,35 @@ function isLand(lat, lng) {
   return singaporeBoundary.some((feature) => booleanPointInPolygon(pt, feature))
 }
 
+/**
+ * The one place the three factors are combined. Everything that produces a
+ * 0-100 risk number goes through here — scoreLocation, the light simulator,
+ * and the offline grid builder — so the model cannot drift between them.
+ *
+ * NOT a weighted sum. A sum lets one factor carry the score on its own, which
+ * puts the interior of a nature reserve — habitat 1.0, density 0.0, nothing
+ * present to collide with — at 75/100 and recommends the Town Council urgently
+ * reshield lighting in a forest. Multiplying makes habitat and density both
+ * REQUIRED: either at zero means zero risk.
+ *
+ * The square root is a geometric mean. A plain product of two sub-1 values
+ * rarely clears 0.3, so scores would never reach the bands and the tool would
+ * look broken; the geometric mean keeps "both required" while restoring a
+ * usable range.
+ *
+ * Light modulates rather than creates. It is floored at MODEL.lightFloor
+ * because an unlit facade beside a reserve still kills birds by daylight
+ * reflection, so light must never zero the result.
+ *
+ * WEIGHTS is intentionally not used here. It survives only to label the
+ * factor bars in the UI, and those labels are misleading while the model is
+ * multiplicative — see the note in config.js.
+ */
+export function combineFactors(habitat, density, light) {
+  const lightMultiplier = MODEL.lightFloor + (1 - MODEL.lightFloor) * light
+  return Math.round(Math.sqrt(habitat * density) * lightMultiplier * 100)
+}
+
 export function scoreLocation(lat, lng) {
   if (!isLand(lat, lng)) {
     return {
@@ -334,14 +376,7 @@ export function scoreLocation(lat, lng) {
     density: densityAt(lat, lng),
   }
 
-  // Single authoritative scoring formula.
-  const total = Math.round(
-    (
-      factors.habitat.value * WEIGHTS.habitat +
-      factors.light.value * WEIGHTS.light +
-      factors.density.value * WEIGHTS.density
-    ) * 100
-  )
+  const total = combineFactors(factors.habitat.value, factors.density.value, factors.light.value)
 
   return {
     total,
@@ -366,11 +401,7 @@ export function simulateLightExposure(risk, lightExposure) {
   if (!risk?.factors) return null
 
   const light = clamp01(Number(lightExposure) / 100)
-  const total = Math.round((
-    risk.factors.habitat.value * WEIGHTS.habitat +
-    light * WEIGHTS.light +
-    risk.factors.density.value * WEIGHTS.density
-  ) * 100)
+  const total = combineFactors(risk.factors.habitat.value, risk.factors.density.value, light)
 
   return {
     ...risk,
