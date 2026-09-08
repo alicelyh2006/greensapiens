@@ -121,25 +121,20 @@ export function RiskLayer({ opacity = 0.86, theme }) {
           const edge = map.latLngToContainerPoint([lat, lng + cell])
           const cellPixels = Math.max(3, Math.abs(edge.x - position.x))
           const band = bandForRisk(value)
-          const baseRadius = cellPixels * (0.5 + (value / 100) * 1.2)
-          const radius = baseRadius * (index === hoveredIndex ? 1.12 : 1)
-          const alpha = opacity
-          if (band === 'low') {
-            target.fillStyle = hexToRgba(colors.low, alpha)
-          } else {
-            const gradient = target.createRadialGradient(position.x, position.y, 0, position.x, position.y, radius)
-            gradient.addColorStop(0, hexToRgba(colors[band], alpha))
-            gradient.addColorStop(0.78, hexToRgba(colors[band], alpha * 0.72))
-            gradient.addColorStop(0.92, hexToRgba(colors[band], alpha))
-            gradient.addColorStop(1, hexToRgba(colors[band], alpha))
-            target.fillStyle = gradient
-          }
+          const radius = cellPixels * 0.58
+          const alpha = index === hoveredIndex ? Math.min(1, opacity + 0.14) : opacity
+
+          target.fillStyle = hexToRgba(colors[band], alpha)
           target.beginPath()
-          target.arc(position.x, position.y, radius, 0, Math.PI * 2)
+          for (let vertex = 0; vertex < 6; vertex += 1) {
+            const angle = (Math.PI / 3) * vertex
+            const x = position.x + radius * Math.cos(angle)
+            const y = position.y + radius * Math.sin(angle)
+            if (vertex === 0) target.moveTo(x, y)
+            else target.lineTo(x, y)
+          }
+          target.closePath()
           target.fill()
-          target.strokeStyle = hexToRgba(colors[band], Math.min(1, alpha * 1.4))
-          target.lineWidth = 1.5
-          target.stroke()
         }
 
         function drawStatic() {
