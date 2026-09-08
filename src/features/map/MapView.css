@@ -153,10 +153,20 @@
   position: absolute;
   left: var(--space-3);
   top: 50%;
+  z-index: 1;
+  display: inline-flex;
+  width: 15px;
+  height: 15px;
   transform: translateY(-50%);
-  color: var(--text-faint);
+  color: var(--accent);
   pointer-events: none;
   line-height: 1;
+}
+
+.map-search__icon svg {
+  display: block;
+  width: 15px;
+  height: 15px;
 }
 
 .map-search__results {
