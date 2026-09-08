@@ -139,6 +139,7 @@ function RiskMapView({ selected, risk, simulatedRisk, onSelect, theme, layers, o
           theme={theme}
           riskVisible={layers.risk}
           habitatVisible={layers.habitat}
+          reportsVisible={layers.reports}
           visible
         />
       </div>

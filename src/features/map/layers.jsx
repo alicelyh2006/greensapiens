@@ -10,6 +10,8 @@ import { GeoJSON, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { DATA, BANDS } from '../../lib/config.js'
 
+const REPORTS_STORAGE_KEY = 'nightjar.reports.v1'
+
 function cssToken(name) {
   if (typeof window === 'undefined') return ''
   return getComputedStyle(document.documentElement)
@@ -21,6 +23,74 @@ function bandForRisk(value) {
   if (value >= BANDS.high) return 'high'
   if (value >= BANDS.moderate) return 'moderate'
   return 'low'
+}
+
+function readReports() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(REPORTS_STORAGE_KEY) || '[]')
+    return Array.isArray(stored) ? stored : []
+  } catch {
+    return []
+  }
+}
+
+export function CollisionReportsLayer() {
+  const map = useMap()
+
+  useEffect(() => {
+    let group = null
+    let cancelled = false
+
+    function renderReports() {
+      if (cancelled) return
+      if (group) map.removeLayer(group)
+
+      group = L.layerGroup()
+      readReports().forEach((report) => {
+        const lat = Number(report.coords?.lat)
+        const lng = Number(report.coords?.lng)
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
+
+        const marker = L.circleMarker([lat, lng], {
+          radius: 7,
+          color: cssToken('--risk-high'),
+          weight: 2,
+          fillColor: cssToken('--risk-high'),
+          fillOpacity: 0.9,
+        })
+        const date = report.incidentDate
+          ? new Date(report.incidentDate).toLocaleDateString()
+          : 'Date not recorded'
+        const popup = document.createElement('div')
+        const title = document.createElement('strong')
+        title.textContent = 'Collision report'
+        popup.append(title)
+        popup.append(document.createElement('br'))
+        popup.append(document.createTextNode(report.birdSpecies || 'Unidentified bird'))
+        popup.append(document.createElement('br'))
+        popup.append(document.createTextNode(report.condition || 'Unknown condition'))
+        popup.append(document.createElement('br'))
+        popup.append(document.createTextNode(date))
+        marker.bindPopup(popup)
+        marker.addTo(group)
+      })
+
+      group.addTo(map)
+    }
+
+    renderReports()
+    window.addEventListener('nightjar:reports-changed', renderReports)
+    window.addEventListener('storage', renderReports)
+
+    return () => {
+      cancelled = true
+      window.removeEventListener('nightjar:reports-changed', renderReports)
+      window.removeEventListener('storage', renderReports)
+      if (group) map.removeLayer(group)
+    }
+  }, [map])
+
+  return null
 }
 
 function hexPositions(lat, lng, cell) {
