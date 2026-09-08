@@ -81,26 +81,33 @@ export function RiskLayer({ opacity = 0.86, theme }) {
 
         if (!fills.low || !fills.moderate || !fills.high) return
 
+        const points = []
         for (let row = 0; row < rows; row += 1) {
           for (let col = 0; col < cols; col += 1) {
             const value = data[row * cols + col]
             if (typeof value !== 'number' || value < 0) continue
-
-            const lat = bbox[1] + (row + 0.5) * cell
-            const lng = bbox[0] + (col + 0.5) * cell
-            const band = bandForRisk(value)
-            const radius = cell * 111_000 * (0.18 + (value / 100) * 0.3)
-
-            L.circle([lat, lng], {
-              renderer,
-              interactive: false,
-              bubblingMouseEvents: false,
-              stroke: false,
-              radius,
-              fillColor: fills[band],
-              fillOpacity: band === 'low' ? opacity * 0.65 : opacity,
-            }).addTo(group)
+            points.push({
+              lat: bbox[1] + (row + 0.5) * cell,
+              lng: bbox[0] + (col + 0.5) * cell,
+              value,
+            })
           }
+        }
+
+        // Paint lower-risk circles first so higher-risk colors stay visible.
+        points.sort((a, b) => a.value - b.value)
+        for (const { lat, lng, value } of points) {
+          const band = bandForRisk(value)
+          const radius = cell * 111_000 * (0.18 + (value / 100) * 0.3)
+          L.circle([lat, lng], {
+            renderer,
+            interactive: false,
+            bubblingMouseEvents: false,
+            stroke: false,
+            radius,
+            fillColor: fills[band],
+            fillOpacity: band === 'low' ? opacity * 0.65 : opacity,
+          }).addTo(group)
         }
 
         group.addTo(map)
