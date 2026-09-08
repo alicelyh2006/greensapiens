@@ -364,9 +364,9 @@
 .map-legend__items { display: flex; align-items: center; gap: 10px; white-space: nowrap; color: var(--text-dim); }
 .map-legend__items span { display: inline-flex; align-items: center; gap: 4px; }
 .legend-swatch { width: 12px; height: 8px; flex: none; border-radius: 2px; display: inline-block; }
-.legend-swatch--low { background: var(--risk-ramp-low); }
-.legend-swatch--moderate { background: var(--risk-ramp-mid); }
-.legend-swatch--high { background: var(--risk-ramp-high); }
+.legend-swatch--low { background: var(--risk-low); }
+.legend-swatch--moderate { background: var(--risk-moderate); }
+.legend-swatch--high { background: var(--risk-high); }
 @media (max-width: 30rem) { .map-legend { left: var(--space-2); bottom: var(--space-2); max-width: calc(100% - 5rem); } .map-legend__items { gap: 6px; } }
 
 
@@ -468,9 +468,9 @@
   border-radius: 2px;
 }
 
-.legend-swatch--low { background: var(--risk-ramp-low); }
-.legend-swatch--moderate { background: var(--risk-ramp-mid); }
-.legend-swatch--high { background: var(--risk-ramp-high); }
+.legend-swatch--low { background: var(--risk-low); }
+.legend-swatch--moderate { background: var(--risk-moderate); }
+.legend-swatch--high { background: var(--risk-high); }
 
 .marker-selected__dot {
   display: block;
@@ -534,9 +534,9 @@
 .map-legend__title { color:var(--text); font-size:9px; font-weight:600; margin-bottom:7px; }
 .map-legend__items { display:flex; gap:12px; font-size:8px; color:var(--text-dim); }
 .legend-swatch { width:18px; height:5px; border-radius:4px; display:inline-block; margin-right:4px; vertical-align:middle; }
-.legend-swatch--low { background:var(--risk-ramp-low); }
-.legend-swatch--moderate { background:var(--risk-ramp-mid); }
-.legend-swatch--high { background:var(--risk-ramp-high); }
+.legend-swatch--low { background:var(--risk-low); }
+.legend-swatch--moderate { background:var(--risk-moderate); }
+.legend-swatch--high { background:linear-gradient(90deg,var(--risk-high),#9f3357); }
 .marker-selected__dot { width:13px; height:13px; background:var(--accent-purple); border:2px solid var(--text); box-shadow:0 0 0 5px rgba(115,88,220,.18), 0 2px 8px rgba(0,0,0,.45); }
 .marker-selected__pulse { width:34px; height:34px; background:var(--accent-purple); }
 .map-mode-chip { display:inline-flex; align-items:center; height:34px; padding:0 11px; border:1px solid var(--line-strong); border-radius:7px; background:var(--overlay); color:var(--text); box-shadow:var(--shadow); font-size:9px; backdrop-filter:blur(10px); }
