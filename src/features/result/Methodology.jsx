@@ -46,7 +46,7 @@ export default function Methodology() {
               </tr>
               <tr>
                 <td>Light level</td>
-                <td>Multiplier ×{MODEL.lightFloor.toFixed(2)}–1.00</td>
+                <td>Multiplier</td>
                 <td>
                   Colour temperature of lamps we have photographed and classified
                   within 250 m. Where we have not surveyed, this is an estimate and
@@ -60,8 +60,9 @@ export default function Methodology() {
             means no collision risk, because a collision needs both a bird and a
             building. The forest-edge peak that the research describes is therefore
             something this model <em>produces</em> rather than something we told it.
-            Light scales that result and never zeroes it, since an unlit facade
-            still kills by daylight reflection.
+            Light scales that result between ×{MODEL.lightFloor.toFixed(2)} and ×1.00
+            and never zeroes it, since an unlit facade still kills by daylight
+            reflection.
           </p>
           <p>
             We do <strong>not</strong> use VIIRS satellite imagery to measure light,
@@ -116,12 +117,62 @@ export default function Methodology() {
         {/* Disclaimer */}
         <div className="methodology-section">
           <div className="methodology-disclaimer">
-            <strong>This score is a weighted heuristic, not a validated predictive model.</strong>{' '}
-            Weights reflect our judgement, informed by the study below but not statistically
-            derived from it. We did not discover the collision drivers — the research did.
-            This tool operationalises published findings to make them actionable. Treat
-            the output as a guide for prioritising attention, not as a precise prediction.
+            <strong>This score is a hand-tuned heuristic, not a validated predictive
+            model.</strong>{' '}
+            The thresholds, falloff distances and the light floor reflect our judgement,
+            informed by the study below but not statistically derived from it. We did not
+            discover the collision drivers — the research did. This tool operationalises
+            published findings to make them actionable. Treat the output as a guide for
+            prioritising attention, not as a precise prediction.
           </div>
+          <div className="methodology-disclaimer">
+            <strong>Lamp coverage is sparse.</strong>{' '}
+            Light is the one factor we measure ourselves, and we have classified only the
+            lamps our own field survey has reached. Everywhere else the light factor is an
+            estimate, and the result panel says so on each affected location. More survey
+            coverage will move these scores.
+          </div>
+        </div>
+
+        {/* Data sources */}
+        <div className="methodology-section">
+          <h3>Data sources</h3>
+          <table className="methodology-weight-table">
+            <thead>
+              <tr>
+                <th>Dataset</th>
+                <th>Source</th>
+                <th>Licence</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Parks, reserves, park connectors</td>
+                <td>NParks via data.gov.sg</td>
+                <td>Singapore Open Data Licence</td>
+              </tr>
+              <tr>
+                <td>Building footprints</td>
+                <td>OpenStreetMap via Overpass</td>
+                <td>ODbL</td>
+              </tr>
+              <tr>
+                <td>Land and waterbody masks</td>
+                <td>URA planning areas via data.gov.sg</td>
+                <td>Singapore Open Data Licence</td>
+              </tr>
+              <tr>
+                <td>Base map tiles</td>
+                <td>OneMap, Singapore Land Authority</td>
+                <td>SLA terms</td>
+              </tr>
+              <tr>
+                <td>Lamp classifications</td>
+                <td>Our own field survey</td>
+                <td>In this repository</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         {/* Citation */}

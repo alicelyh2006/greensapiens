@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import MapView from './features/map/MapView.jsx'
 import ResultPanel from './features/result/ResultPanel.jsx'
+import Methodology from './features/result/Methodology.jsx'
 import ReportForm from './features/capture/ReportForm.jsx'
 import LampUpload from './features/capture/LampUpload.jsx'
 import { initScoring, scoreLocation, simulateLightExposure } from './lib/score.js'
@@ -42,6 +43,7 @@ function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange
     ['map', 'Risk Map', 'risk'],
     ['eye', 'Observations', 'observations'],
     ['report', 'Report Collision', 'report'],
+    ['info', 'How It Works', 'method'],
   ]
   const layerRows = [
     ['risk', 'Risk Heatmap'],
@@ -116,6 +118,7 @@ function WorkspaceHeader({ activeTab, theme, onTheme }) {
     risk: ['Risk Map', 'Explore Singapore’s estimated bird-collision risk.'],
     observations: ['Lamp Observations', 'Review the existing field-observation gallery.'],
     report: ['Report a Collision', 'Record a local incident and keep the draft on this device.'],
+    method: ['How This Is Calculated', 'What the score is built from, and what it cannot tell you.'],
   }
   const [title, subtitle] = titles[activeTab]
   return (
@@ -287,6 +290,14 @@ export default function App() {
               submitted={reportSubmitted}
               selectedLocation={selected}
             />
+          </div>
+
+          {/* F8 — methodology and sources. N8 requires this to be reachable in
+              the app, not only in the README: the score is a hand-tuned
+              heuristic and the interface has to say so somewhere a judge or a
+              town council can actually find it. */}
+          <div className={`view-shell ${activeTab === 'method' ? 'view-shell--active' : ''}`} aria-hidden={activeTab !== 'method'}>
+            <Methodology />
           </div>
         </div>
 
