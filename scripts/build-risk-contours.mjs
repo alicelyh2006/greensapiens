@@ -28,7 +28,19 @@ import { BANDS } from '../src/lib/config.js'
 const SRC = './public/data/risk-grid.json'
 const OUT = './public/data/risk-contours.geojson'
 const UPSAMPLE = 4
-const SMOOTH_PASSES = 2
+const SMOOTH_PASSES = 4
+
+/*
+ * Smoothing here is GEOMETRY ONLY, deliberately.
+ *
+ * The obvious way to make contours rounder is to blur the field before
+ * contouring. Tried it at one cell of sigma: it wiped out the high band
+ * completely, because a blur pulls peaks down and a 55 surrounded by 30s
+ * drops below the threshold. The map would then have disagreed with the number
+ * the panel reports for the same spot, which is the exact failure we spent a
+ * day fixing. Chaikin moves the outline points without touching a value, so
+ * which regions exist is still decided entirely by the grid.
+ */
 
 const grid = JSON.parse(readFileSync(SRC, 'utf8'))
 const { bbox, cell, cols, rows, data } = grid
