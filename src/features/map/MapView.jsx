@@ -13,7 +13,7 @@ import {
 } from 'react-leaflet'
 import L from 'leaflet'
 import { MAP_DEFAULT, MAP_BOUNDS, DATA } from '../../lib/config.js'
-import { CollisionReportsLayer, GreenSpaceLayer, RiskLayer } from './layers.jsx'
+import { CollisionReportsLayer, GreenSpaceLayer, RiskLayer, SurveyedLampsLayer } from './layers.jsx'
 import './MapView.css'
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
@@ -189,7 +189,7 @@ function SearchControl({ onSelect, onMessage }) {
   )
 }
 
-export default function MapView({ selected, onSelect, theme = 'light', riskVisible = true, habitatVisible = true, reportsVisible = true, visible = true }) {
+export default function MapView({ selected, onSelect, theme = 'light', riskVisible = true, habitatVisible = true, lampsVisible = true, reportsVisible = true, visible = true }) {
   const [riskGrid, setRiskGrid] = useState(null)
   const [message, setMessage] = useState('')
 
@@ -269,6 +269,7 @@ export default function MapView({ selected, onSelect, theme = 'light', riskVisib
 
         {riskVisible && <RiskLayer theme={theme} />}
         {habitatVisible && <GreenSpaceLayer />}
+        {lampsVisible && <SurveyedLampsLayer />}
         {reportsVisible && <CollisionReportsLayer />}
         <ClickHandler onSelect={selectLocation} />
 

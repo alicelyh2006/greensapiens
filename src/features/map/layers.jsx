@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import { GeoJSON, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { DATA, BANDS } from '../../lib/config.js'
+import { DATA, BANDS, LAMP_TYPES } from '../../lib/config.js'
 
 const REPORTS_STORAGE_KEY = 'nightjar.reports.v1'
 
@@ -86,6 +86,81 @@ export function CollisionReportsLayer() {
       cancelled = true
       window.removeEventListener('nightjar:reports-changed', renderReports)
       window.removeEventListener('storage', renderReports)
+      if (group) map.removeLayer(group)
+    }
+  }, [map])
+
+  return null
+}
+
+/**
+ * F10 — the lamps we have actually been to.
+ *
+ * Reads public/data/lamps.json, the committed field survey, and draws one dot
+ * per fixture coloured by how blue it is: warm sources green, neutral amber,
+ * blue-rich red. Until now this file existed only inside the score, so a
+ * survey that took an evening to collect was invisible to anyone using the
+ * app — including anyone judging whether we had done it.
+ *
+ * Separate from the browser-local observations someone adds through the
+ * capture form. These are ours, committed, and the same for every visitor.
+ */
+export function SurveyedLampsLayer() {
+  const map = useMap()
+
+  useEffect(() => {
+    let group = null
+    let cancelled = false
+
+    fetch(DATA.lamps)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((payload) => {
+        if (cancelled || !payload?.lamps?.length) return
+
+        group = L.layerGroup()
+        for (const lamp of payload.lamps) {
+          const lat = Number(lamp.lat)
+          const lng = Number(lamp.lng)
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue
+
+          const type = LAMP_TYPES.find((t) => t.id === lamp.type)
+          const colour = cssToken(`--risk-${type?.risk ?? 'moderate'}`)
+
+          const marker = L.circleMarker([lat, lng], {
+            radius: 6,
+            color: colour,
+            weight: 2,
+            fillColor: colour,
+            fillOpacity: 0.85,
+          })
+
+          // Built as nodes rather than innerHTML — the survey notes are our own
+          // text today, but this popup would happily render anything the file
+          // contained, and lamps.json is meant to grow by contribution.
+          const popup = document.createElement('div')
+          const title = document.createElement('strong')
+          title.textContent = type?.label ?? lamp.type
+          popup.append(title)
+          const line = (text) => {
+            if (!text) return
+            popup.append(document.createElement('br'))
+            popup.append(document.createTextNode(text))
+          }
+          line(lamp.what)
+          line(type?.appearance)
+          if (lamp.kind) line(`Fixture: ${lamp.kind}`)
+          if (lamp.surveyed) line(`Surveyed ${lamp.surveyed}`)
+          if (lamp.method === 'visual') line('Classified by eye, not by the classifier')
+          marker.bindPopup(popup)
+          marker.addTo(group)
+        }
+
+        group.addTo(map)
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
       if (group) map.removeLayer(group)
     }
   }, [map])

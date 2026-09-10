@@ -48,7 +48,7 @@ function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange
     ['risk', 'Risk Heatmap'],
     ['habitat', 'Habitat (NParks)'],
     ['lamp', 'Lamp Observations'],
-    ['warning', 'Collision Reports'],
+    ['reports', 'Collision Reports'],
   ]
 
   return (
@@ -142,6 +142,7 @@ function RiskMapView({ selected, risk, simulatedRisk, onSelect, theme, layers, o
           theme={theme}
           riskVisible={layers.risk}
           habitatVisible={layers.habitat}
+          lampsVisible={layers.lamp}
           reportsVisible={layers.reports}
           visible
         />
@@ -170,7 +171,9 @@ export default function App() {
     try { return localStorage.getItem('nightjar-theme') || 'dark' } catch { return 'dark' }
   })
   const [layers, setLayers] = useState(() => {
-    const defaults = { risk: true, habitat: true, light: true, density: true, lamp: true, reports: true }
+    // Keys must match what MapView reads. 'warning' used to sit here in place
+    // of 'reports', so that checkbox wrote a key nothing consumed.
+    const defaults = { risk: true, habitat: true, lamp: true, reports: true }
     try {
       const saved = JSON.parse(localStorage.getItem('nightjar-layers'))
       return saved ? { ...defaults, ...saved } : defaults
@@ -212,7 +215,15 @@ export default function App() {
     const nextRisk = scoreLocation(location.lat, location.lng)
     setSelected(location)
     setRisk(nextRisk)
-    setSimulationLight(Math.round((nextRisk.factors?.light?.value ?? 1) * 100))
+    // Do NOT seed the simulator here. Seeding it made simulatedRisk non-null on
+    // every click, so displayRisk was always the simulated one, and
+    // simulateLightExposure overwrote the light note with "Simulated light
+    // exposure: N/100" everywhere. A measured reading from the field survey and
+    // a pure fallback guess were then worded identically, which hid the survey
+    // in the one place it would have shown up. There is also no slider in the UI
+    // yet, so nothing was ever being simulated. Left null until something calls
+    // onSimulate.
+    setSimulationLight(null)
     return location
   }
 
