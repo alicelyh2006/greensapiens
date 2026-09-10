@@ -136,8 +136,68 @@ function sizeWeight({ hectares, isReserve }) {
   return clamp01(base + (isReserve ? reserveBonus : 0))
 }
 
+/**
+ * The strongest habitat signal near a point, not the closest patch of grass.
+ *
+ * This used to read whichever green space was NEAREST, which is a different
+ * question and gives the wrong answer wherever a small park sits in front of a
+ * large one. At our own survey site on Old Upper Thomson Road the nearest
+ * polygon is Leban Park — 0.3 ha, and the point is inside it. A 0.3 ha estate
+ * playground scores zero on the size curve, so habitat collapsed to the floor
+ * and the location read 25/100, "low". Central Catchment Nature Reserve, 3,040
+ * ha, sits 152 m away, comfortably inside the 500 m falloff, and would have
+ * given 0.72 — a total of 76 and the "high" band. It was never considered,
+ * because it was not the closest thing.
+ *
+ * 323 of the 461 NParks polygons are under 1 ha, so pocket parks masking real
+ * habitat is not an edge case; those small polygons are scattered through every
+ * housing estate in Singapore, including the ones on reserve edges.
+ *
+ * Cost is contained by skipping any polygon whose bounding box is already
+ * further away than the falloff distance, since those contribute nothing.
+ */
+function bestHabitat(lat, lng) {
+  if (!greenSpaces) return null
+  const pt = point([lng, lat])
+  let best = null
+
+  for (const f of greenSpaces) {
+    if (bboxDistance(lng, lat, f._bbox) > HABITAT.falloffOutward) continue
+
+    const asLine = polygonToLine(f)
+    const lines = asLine.type === 'FeatureCollection' ? asLine.features : [asLine]
+    let metres = Infinity
+    for (const line of lines) {
+      const m = distance(pt, nearestPointOnLine(line, pt), { units: 'meters' })
+      if (m < metres) metres = m
+    }
+
+    const candidate = {
+      metres,
+      inside: booleanPointInPolygon(pt, f),
+      name: f.properties.NAME,
+      hectares: (f.properties['SHAPE_1.AREA'] ?? 0) / 10000,
+      isReserve: f.properties.N_RESERVE === 1 || f.properties.N_RESERVE === '1',
+    }
+
+    const proximity = candidate.inside
+      ? 1
+      : clamp01(1 - candidate.metres / HABITAT.falloffOutward)
+    if (proximity <= 0) continue
+
+    candidate.value = clamp01(
+      HABITAT.floor + (1 - HABITAT.floor) * proximity * sizeWeight(candidate)
+    )
+    if (!best || candidate.value > best.value) best = candidate
+  }
+
+  // Nothing within the falloff — fall back to the nearest, so the note can say
+  // how far away the closest green space actually is.
+  return best ?? nearestGreenSpace(lat, lng)
+}
+
 export function habitatAt(lat, lng) {
-  const near = nearestGreenSpace(lat, lng)
+  const near = bestHabitat(lat, lng)
   if (!near) {
     return {
       value: 0,
@@ -163,7 +223,7 @@ export function habitatAt(lat, lng) {
     proximity = clamp01(1 - near.metres / HABITAT.falloffInward)
   }
 
-  const value = clamp01(
+  const value = near.value ?? clamp01(
     HABITAT.floor + (1 - HABITAT.floor) * proximity * sizeWeight(near)
   )
 
