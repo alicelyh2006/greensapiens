@@ -280,3 +280,13 @@
   font-size: var(--text-sm);
   line-height: 1.5;
 }
+
+/* Sub-headings inside the methodology page. Introduced with the testing
+   section, which needs a level below h3 to separate the two checks. */
+.methodology-section h4 {
+  margin: var(--space-4) 0 var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-strong, var(--text));
+  letter-spacing: 0.01em;
+}
