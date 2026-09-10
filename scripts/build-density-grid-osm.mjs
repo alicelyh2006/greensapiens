@@ -66,6 +66,34 @@ const GLASS = {
   yes: 0.5, // untyped — the largest group, so keep it mid-scale
 }
 
+/**
+ * Storeys above which extra height stops adding collision hazard.
+ *
+ * This used to be uncapped: hazard was levels x glass, so a 40-storey tower
+ * counted as forty times a shophouse. That is the wrong shape for this problem
+ * and the study this project is built on says so directly — it recommends that
+ * "forest-edge buildings, especially short buildings under 20 meters in height,
+ * should be areas of high priority for deploying anti-collision measures"
+ * (Tan et al. 2024, doi:10.1111/cobi.14255).
+ *
+ * The reason is flight altitude. Birds moving between forest patches, and
+ * night migrants pulled down by light, are low; glass forty storeys up is
+ * above the traffic. The wider literature agrees that height is not the
+ * driver: in a downtown North American study building height dropped out of
+ * the final models entirely, and a British Columbia study found it inversely
+ * associated with collisions in both spring and autumn. Glass AREA is the
+ * strongest predictor in both, which is what the glass factor above is for.
+ *
+ * 6 storeys is about 20 m at a typical 3.2 m floor-to-floor. 13.4% of
+ * Singapore's 184,823 mapped buildings exceed it, and the floors above it were
+ * contributing 15.9% of all modelled hazard — weight sitting on HDB slabs and
+ * condo towers instead of the low-rise frontages the paper names.
+ *
+ * Note this caps hazard, not glass: a tall building still scores its full six
+ * storeys of facade, it just stops accumulating credit above the flight path.
+ */
+const COLLISION_HEIGHT_LEVELS = 6
+
 /** Storeys assumed when building:levels is absent (75% of the data). */
 const DEFAULT_LEVELS = {
   office: 12,
@@ -153,7 +181,8 @@ for (const b of buildings) {
       ? tagged
       : (DEFAULT_LEVELS[type] ?? DEFAULT_LEVELS.yes)
 
-  hazard[cy * cols + cx] += levels * glass
+  // Only the storeys a bird is actually flying through count. See COLLISION_HEIGHT.
+  hazard[cy * cols + cx] += Math.min(levels, COLLISION_HEIGHT_LEVELS) * glass
   placed++
 }
 console.log(`  ${placed.toLocaleString()} buildings placed into cells`)
