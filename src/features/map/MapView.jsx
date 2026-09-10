@@ -13,7 +13,7 @@ import {
 } from 'react-leaflet'
 import L from 'leaflet'
 import { MAP_DEFAULT, MAP_BOUNDS, DATA } from '../../lib/config.js'
-import { GreenSpaceLayer, RiskLayer } from './layers.jsx'
+import { CollisionReportsLayer, GreenSpaceLayer, RiskLayer } from './layers.jsx'
 import './MapView.css'
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
@@ -154,7 +154,12 @@ function SearchControl({ onSelect, onMessage }) {
 
   return (
     <form className="map-search" onSubmit={search}>
-      <span className="map-search__icon" aria-hidden="true">⌕</span>
+      <span className="map-search__icon" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-4-4" />
+        </svg>
+      </span>
       <input
         className="map-search__input"
         value={query}
@@ -184,7 +189,7 @@ function SearchControl({ onSelect, onMessage }) {
   )
 }
 
-export default function MapView({ selected, onSelect, theme = 'light', riskVisible = true, habitatVisible = true, visible = true }) {
+export default function MapView({ selected, onSelect, theme = 'light', riskVisible = true, habitatVisible = true, reportsVisible = true, visible = true }) {
   const [riskGrid, setRiskGrid] = useState(null)
   const [message, setMessage] = useState('')
 
@@ -264,6 +269,7 @@ export default function MapView({ selected, onSelect, theme = 'light', riskVisib
 
         {riskVisible && <RiskLayer theme={theme} />}
         {habitatVisible && <GreenSpaceLayer />}
+        {reportsVisible && <CollisionReportsLayer />}
         <ClickHandler onSelect={selectLocation} />
 
         {selected && (
@@ -276,10 +282,6 @@ export default function MapView({ selected, onSelect, theme = 'light', riskVisib
           </Marker>
         )}
       </MapContainer>
-
-      <div className="map-tools">
-        <span className="map-mode-chip">{theme === 'dark' ? 'Night Mode' : 'Day Mode'}</span>
-      </div>
 
       {message && <div className="map-search__error">{message}</div>}
 

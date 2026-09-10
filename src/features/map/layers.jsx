@@ -10,6 +10,8 @@ import { GeoJSON, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { DATA, BANDS } from '../../lib/config.js'
 
+const REPORTS_STORAGE_KEY = 'nightjar.reports.v1'
+
 function cssToken(name) {
   if (typeof window === 'undefined') return ''
   return getComputedStyle(document.documentElement)
@@ -21,6 +23,89 @@ function bandForRisk(value) {
   if (value >= BANDS.high) return 'high'
   if (value >= BANDS.moderate) return 'moderate'
   return 'low'
+}
+
+function readReports() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(REPORTS_STORAGE_KEY) || '[]')
+    return Array.isArray(stored) ? stored : []
+  } catch {
+    return []
+  }
+}
+
+export function CollisionReportsLayer() {
+  const map = useMap()
+
+  useEffect(() => {
+    let group = null
+    let cancelled = false
+
+    function renderReports() {
+      if (cancelled) return
+      if (group) map.removeLayer(group)
+
+      group = L.layerGroup()
+      readReports().forEach((report) => {
+        const lat = Number(report.coords?.lat)
+        const lng = Number(report.coords?.lng)
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
+
+        const marker = L.circleMarker([lat, lng], {
+          radius: 7,
+          color: cssToken('--risk-high'),
+          weight: 2,
+          fillColor: cssToken('--risk-high'),
+          fillOpacity: 0.9,
+        })
+        const date = report.incidentDate
+          ? new Date(report.incidentDate).toLocaleDateString()
+          : 'Date not recorded'
+        const popup = document.createElement('div')
+        const title = document.createElement('strong')
+        title.textContent = 'Collision report'
+        popup.append(title)
+        popup.append(document.createElement('br'))
+        popup.append(document.createTextNode(report.birdSpecies || 'Unidentified bird'))
+        popup.append(document.createElement('br'))
+        popup.append(document.createTextNode(report.condition || 'Unknown condition'))
+        popup.append(document.createElement('br'))
+        popup.append(document.createTextNode(date))
+        marker.bindPopup(popup)
+        marker.addTo(group)
+      })
+
+      group.addTo(map)
+    }
+
+    renderReports()
+    window.addEventListener('nightjar:reports-changed', renderReports)
+    window.addEventListener('storage', renderReports)
+
+    return () => {
+      cancelled = true
+      window.removeEventListener('nightjar:reports-changed', renderReports)
+      window.removeEventListener('storage', renderReports)
+      if (group) map.removeLayer(group)
+    }
+  }, [map])
+
+  return null
+}
+
+function hexPositions(lat, lng, cell) {
+  const latRadius = cell * 0.46
+  const lngRadius = (cell * 0.46) / Math.cos((lat * Math.PI) / 180)
+
+  const positions = []
+  for (let i = 0; i < 6; i += 1) {
+    const angle = (Math.PI / 3) * i
+    positions.push([
+      lat + Math.sin(angle) * latRadius,
+      lng + Math.cos(angle) * lngRadius,
+    ])
+  }
+  return positions
 }
 
 export function GreenSpaceLayer() {
@@ -57,21 +142,6 @@ export function GreenSpaceLayer() {
   )
 }
 
-function hexPositions(lat, lng, cell) {
-  const latRadius = cell * 0.46
-  const lngRadius = (cell * 0.46) / Math.cos((lat * Math.PI) / 180)
-
-  const positions = []
-  for (let i = 0; i < 6; i += 1) {
-    const angle = (Math.PI / 3) * i
-    positions.push([
-      lat + Math.sin(angle) * latRadius,
-      lng + Math.cos(angle) * lngRadius,
-    ])
-  }
-  return positions
-}
-
 export function RiskLayer({ opacity = 0.86, theme }) {
   const map = useMap()
 
@@ -87,7 +157,6 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         const { bbox, cell, cols, rows, data } = grid
         const renderer = L.canvas({ padding: 0.5 })
         group = L.layerGroup()
-
         const fills = {
           low: cssToken('--risk-low'),
           moderate: cssToken('--risk-moderate'),
@@ -99,19 +168,22 @@ export function RiskLayer({ opacity = 0.86, theme }) {
         for (let row = 0; row < rows; row += 1) {
           for (let col = 0; col < cols; col += 1) {
             const value = data[row * cols + col]
+            // Skip zero-risk cells, not just no-data ones. 4,814 of the 6,749
+            // land cells score exactly 0 — habitat or density is absent, so
+            // there is nothing to show. Drawing them buries the 210 cells that
+            // are moderate or above under three times as many blank ones.
             if (typeof value !== 'number' || value <= 0) continue
 
             const lat = bbox[1] + (row + 0.5) * cell
             const lng = bbox[0] + (col + 0.5) * cell
             const band = bandForRisk(value)
-            const fill = fills[band]
 
             L.polygon(hexPositions(lat, lng, cell), {
               renderer,
               interactive: false,
               bubblingMouseEvents: false,
               stroke: false,
-              fillColor: fill,
+              fillColor: fills[band],
               fillOpacity: opacity,
             }).addTo(group)
           }

@@ -163,6 +163,7 @@ export default function ReportForm({ onSubmit }) {
     const updated = [newReport, ...savedReports]
     setSavedReports(updated)
     saveReports(updated)
+    window.dispatchEvent(new Event('nightjar:reports-changed'))
 
     // Reset current form
     setPhoto(null)
@@ -183,6 +184,7 @@ export default function ReportForm({ onSubmit }) {
     const filtered = savedReports.filter(r => r.id !== id)
     setSavedReports(filtered)
     saveReports(filtered)
+    window.dispatchEvent(new Event('nightjar:reports-changed'))
   }
 
   return (
@@ -432,6 +434,7 @@ export default function ReportForm({ onSubmit }) {
                   if (confirm('Clear all logged collision reports on this device?')) {
                     setSavedReports([])
                     saveReports([])
+                    window.dispatchEvent(new Event('nightjar:reports-changed'))
                   }
                 }}
               >

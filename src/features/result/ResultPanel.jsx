@@ -71,6 +71,76 @@ function RecCard({ rec }) {
   )
 }
 
+/**
+ * A short "what does this mean?" disclosure under the result. Credit to L4 for
+ * the idea — reading the full page should not be necessary to trust a number.
+ *
+ * Deliberately SHORT, and it reads its numbers from config rather than
+ * hard-coding them. The version this replaced was a hardcoded copy of the whole
+ * methodology page, and the two drifted: it still advertised a 40/35/25 weighted
+ * sum, described light as coming from VIIRS satellite data, and quoted an
+ * inward-falloff distance whose feature is switched off. Anything that needs
+ * maintaining lives on the How It Works page, once.
+ */
+function Methodology() {
+  return (
+    <details className="methodology">
+      <summary className="methodology-toggle">
+        <span>What does this mean?</span>
+        <span aria-hidden="true">▸</span>
+      </summary>
+      <div className="methodology-content">
+        <section className="methodology-section">
+          <h3>How this is calculated</h3>
+          <table className="methodology-weight-table">
+            <thead>
+              <tr>
+                <th>Factor</th>
+                <th>Role</th>
+                <th>What it measures</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Habitat proximity</td>
+                <td>Required</td>
+                <td>Distance to mapped green space, scaled by its size</td>
+              </tr>
+              <tr>
+                <td>Building density</td>
+                <td>Required</td>
+                <td>OpenStreetMap footprints nearby, weighted by storeys and glazing</td>
+              </tr>
+              <tr>
+                <td>Light level</td>
+                <td>Multiplier</td>
+                <td>Colour temperature of lamps we have photographed within 250 m</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            The first two are <strong>multiplied</strong>, not added — either at zero
+            means no collision risk, because a collision needs both a bird and a
+            building. Light scales that result between ×{MODEL.lightFloor.toFixed(2)}{' '}
+            and ×1.00 and never zeroes it.
+          </p>
+        </section>
+
+        <p className="methodology-disclaimer">
+          This score is a hand-tuned heuristic, not a validated predictive model.
+          We did not discover the collision drivers — the research did. Treat the
+          output as a guide for prioritising attention, not as a prediction.
+        </p>
+
+        <p className="methodology-citation">
+          Full method, data sources and limitations are on the{' '}
+          <strong>How It Works</strong> page.
+        </p>
+      </div>
+    </details>
+  )
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export default function ResultPanel({ risk, location }) {
@@ -147,7 +217,8 @@ export default function ResultPanel({ risk, location }) {
           ))}
         </div>
       </div>
+
+      <Methodology />
     </Panel>
   )
 }
-

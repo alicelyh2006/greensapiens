@@ -64,6 +64,20 @@ const LAMP_LABEL = {
   },
 }
 
+function readPreview(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null)
+    reader.onerror = () => reject(reader.error || new Error('Could not read image preview'))
+    reader.readAsDataURL(file)
+  })
+}
+
+function isHeicFile(file) {
+  return file.type === 'image/heic' || file.type === 'image/heif' ||
+    file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
+}
+
 const STORAGE_KEY = 'nightjar.lamp-observations.v1'
 
 function getStoredItems() {
@@ -76,6 +90,7 @@ function getStoredItems() {
         type: item.fileType || '',
         persisted: true,
       },
+      previewUrl: item.previewUrl || null,
       result: item.result || { gps: null, colour: null },
     }))
   } catch {
@@ -85,9 +100,10 @@ function getStoredItems() {
 
 function saveItems(items) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map(({ file, result }) => ({
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map(({ file, previewUrl, result }) => ({
       fileName: file.name,
-      fileType: file.type,
+      fileType: previewUrl ? 'image/jpeg' : file.type,
+      previewUrl: previewUrl || null,
       result,
     }))))
   } catch (error) {
@@ -169,8 +185,8 @@ function GpsSection({ gps }) {
   )
 }
 
-function FileCard({ file, result }) {
-  const [previewSrc, setPreviewSrc] = useState(null)
+function FileCard({ file, previewUrl, result }) {
+  const [previewSrc, setPreviewSrc] = useState(() => previewUrl || null)
   const [loadingPreview, setLoadingPreview] = useState(false)
   const isHeic = file.type === 'image/heic' || file.type === 'image/heif' ||
                  file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
@@ -178,6 +194,11 @@ function FileCard({ file, result }) {
   useEffect(() => {
     let cancelled = false
     let objectUrl = null
+
+    if (previewUrl && !isHeic) {
+      setPreviewSrc(previewUrl)
+      return undefined
+    }
 
     if (file.persisted) {
       return undefined
@@ -221,7 +242,7 @@ function FileCard({ file, result }) {
       cancelled = true
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [file, isHeic])
+  }, [file, isHeic, previewUrl])
 
   return (
     <article className="card">
@@ -311,6 +332,7 @@ export default function LampUpload({ onAdd }) {
   const [lampTypeFilter, setLampTypeFilter] = useState('all')
   const [birdRiskFilter, setBirdRiskFilter] = useState('all')
   const inputRef = useRef(null)
+  const addLightRef = useRef(null)
 
   useEffect(() => {
     saveItems(items)
@@ -325,11 +347,24 @@ export default function LampUpload({ onAdd }) {
           readExifGps(file).catch(() => null),
           sampleLampColour(file).catch(() => null),
         ])
-        return { file, result: { gps, colour } }
+        let previewUrl = null
+        try {
+          if (isHeicFile(file)) {
+            const converted = await heicToJpeg(file, 0.8)
+            const blob = Array.isArray(converted) ? converted[0] : converted
+            previewUrl = await readPreview(blob)
+          } else {
+            previewUrl = await readPreview(file)
+          }
+        } catch (error) {
+          console.warn('Could not save lamp photo preview locally:', error)
+        }
+        return { file, previewUrl, result: { gps, colour } }
       })
     )
     setItems((prev) => [...results, ...prev])
     setBusy(false)
+    if (addLightRef.current) addLightRef.current.open = false
   }, [])
 
   const onDrop = useCallback((e) => {
@@ -370,7 +405,7 @@ export default function LampUpload({ onAdd }) {
               Review lamp observations collected on this device. Add a light to photograph a lamp, read its location from EXIF, and classify its colour.
             </p>
           </div>
-          <details className="add-light">
+          <details ref={addLightRef} className="add-light">
             <summary className="add-light__button">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M12 5v14M5 12h14" />
@@ -435,37 +470,6 @@ export default function LampUpload({ onAdd }) {
           )}
               </div>
 
-              <div className="add-light__filter-row" aria-label="Observation filters">
-                <div className="add-light__filter-field">
-                  <label htmlFor="modal-filter-lamp-type">Lamp type</label>
-                  <select
-                    id="modal-filter-lamp-type"
-                    value={lampTypeFilter}
-                    onChange={(e) => setLampTypeFilter(e.target.value)}
-                  >
-                    <option value="all">All Lamp Types</option>
-                    <option value="hps">High-pressure sodium (~2000K)</option>
-                    <option value="warm_led">Warm white LED (2700–3000K)</option>
-                    <option value="neutral_led">Neutral LED (~4000K)</option>
-                    <option value="cool_led">Cool white LED (5000–6500K)</option>
-                    <option value="unknown">Unknown / Unclassified</option>
-                  </select>
-                </div>
-                <div className="add-light__filter-field">
-                  <label htmlFor="modal-filter-bird-risk">Bird risk</label>
-                  <select
-                    id="modal-filter-bird-risk"
-                    value={birdRiskFilter}
-                    onChange={(e) => setBirdRiskFilter(e.target.value)}
-                  >
-                    <option value="all">All Risk Levels</option>
-                    <option value="low">Low Risk (Minimal / Low Blue)</option>
-                    <option value="medium">Medium Risk (Moderate Blue)</option>
-                    <option value="high">High Risk (High Blue)</option>
-                    <option value="unknown">Unknown Risk</option>
-                  </select>
-                </div>
-              </div>
             </div>
           </details>
         </div>
@@ -549,8 +553,8 @@ export default function LampUpload({ onAdd }) {
 
             {filteredItems.length > 0 ? (
               <div className="results__grid">
-                {filteredItems.map(({ file, result }, i) => (
-                  <FileCard key={`${file.name}-${i}`} file={file} result={result} />
+                {filteredItems.map(({ file, previewUrl, result }, i) => (
+                  <FileCard key={`${file.name}-${i}`} file={file} previewUrl={previewUrl} result={result} />
                 ))}
               </div>
             ) : (
