@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import { GeoJSON, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { DATA, BANDS, LAMP_TYPES, RISK_RENDER } from '../../lib/config.js'
+import { DATA, BANDS, LAMP_TYPES } from '../../lib/config.js'
 
 const REPORTS_STORAGE_KEY = 'nightjar.reports.v1'
 
@@ -168,25 +168,6 @@ export function SurveyedLampsLayer() {
   return null
 }
 
-/**
- * A cell drawn as the square it actually is.
- *
- * The risk grid is a square lattice. Hexagons cannot tile one — a hex grid
- * needs alternate rows offset by half a cell — so drawing hexes on it leaves
- * gaps between every cell and reads as a dot screen rather than a surface.
- * Squares tessellate exactly and are also honest about the underlying data.
- */
-function squarePositions(lat, lng, cell) {
-  const h = cell / 2
-  const w = h / Math.cos((lat * Math.PI) / 180)
-  return [
-    [lat - h, lng - w],
-    [lat - h, lng + w],
-    [lat + h, lng + w],
-    [lat + h, lng - w],
-  ]
-}
-
 function hexPositions(lat, lng, cell) {
   const latRadius = cell * 0.46
   const lngRadius = (cell * 0.46) / Math.cos((lat * Math.PI) / 180)
@@ -236,72 +217,7 @@ export function GreenSpaceLayer() {
   )
 }
 
-/**
- * F2 risk surface, drawn as contour bands rather than cells.
- *
- * The grid is 333 m squares, but risk does not have square edges — the cell
- * boundary is an artefact of how we sampled, not a feature of the world.
- * Contours say the same thing as regions you can point at: here is the
- * moderate area, here is the high area inside it. That also matches how the
- * output is meant to be read — which stretch of forest edge to look at, rather
- * than the value of one particular square.
- *
- * The bands are precomputed offline so nothing here does geometry at runtime.
- */
-function ContourLayer({ theme }) {
-  const map = useMap()
-
-  useEffect(() => {
-    let layer = null
-    let cancelled = false
-
-    fetch(DATA.riskContours)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((fc) => {
-        if (cancelled || !fc?.features?.length) return
-        const fills = {
-          moderate: cssToken('--risk-moderate'),
-          high: cssToken('--risk-high'),
-        }
-        if (!fills.moderate || !fills.high) return
-
-        layer = L.geoJSON(fc, {
-          interactive: false,
-          bubblingMouseEvents: false,
-          style: (f) => {
-            const band = f.properties.band
-            return {
-              color: fills[band],
-              weight: band === 'high' ? 1.6 : 1.1,
-              opacity: band === 'high' ? 0.95 : 0.7,
-              fillColor: fills[band],
-              fillOpacity: band === 'high' ? 0.42 : 0.24,
-            }
-          },
-        })
-        layer.addTo(map)
-        // High sits inside moderate, so it has to paint after it.
-        layer.eachLayer((l) => {
-          if (l.feature?.properties?.band === 'high') l.bringToFront()
-        })
-      })
-      .catch(() => {})
-
-    return () => {
-      cancelled = true
-      if (layer) map.removeLayer(layer)
-    }
-  }, [map, theme])
-
-  return null
-}
-
 export function RiskLayer({ opacity = 0.86, theme }) {
-  if (RISK_RENDER === 'contour') return <ContourLayer theme={theme} />
-  return <RiskCellLayer opacity={opacity} theme={theme} />
-}
-
-function RiskCellLayer({ opacity, theme }) {
   const map = useMap()
 
   useEffect(() => {
@@ -337,22 +253,13 @@ function RiskCellLayer({ opacity, theme }) {
             const lng = bbox[0] + (col + 0.5) * cell
             const band = bandForRisk(value)
 
-            // Low cells are drawn as a faint wash, not as fill. 1,480 of the
-            // 2,055 non-zero cells are low, and at any real opacity they
-            // blanket the island and bury the 575 that are moderate or above.
-            // The point of the map is where to look, not where not to.
-            const t = Math.min(1, value / BANDS.high)
-            const alpha = band === 'low'
-              ? 0.06 + 0.10 * t
-              : opacity * (0.5 + 0.5 * t)
-
-            L.polygon(squarePositions(lat, lng, cell), {
+            L.polygon(hexPositions(lat, lng, cell), {
               renderer,
               interactive: false,
               bubblingMouseEvents: false,
               stroke: false,
               fillColor: fills[band],
-              fillOpacity: alpha,
+              fillOpacity: opacity,
             }).addTo(group)
           }
         }
