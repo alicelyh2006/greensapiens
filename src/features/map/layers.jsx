@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import { GeoJSON, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { DATA, BANDS, LAMP_TYPES } from '../../lib/config.js'
+import { DATA, BANDS, LAMP_TYPES, RISK_RENDER } from '../../lib/config.js'
 
 const REPORTS_STORAGE_KEY = 'nightjar.reports.v1'
 
@@ -236,7 +236,72 @@ export function GreenSpaceLayer() {
   )
 }
 
+/**
+ * F2 risk surface, drawn as contour bands rather than cells.
+ *
+ * The grid is 333 m squares, but risk does not have square edges — the cell
+ * boundary is an artefact of how we sampled, not a feature of the world.
+ * Contours say the same thing as regions you can point at: here is the
+ * moderate area, here is the high area inside it. That also matches how the
+ * output is meant to be read — which stretch of forest edge to look at, rather
+ * than the value of one particular square.
+ *
+ * The bands are precomputed offline so nothing here does geometry at runtime.
+ */
+function ContourLayer({ theme }) {
+  const map = useMap()
+
+  useEffect(() => {
+    let layer = null
+    let cancelled = false
+
+    fetch(DATA.riskContours)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((fc) => {
+        if (cancelled || !fc?.features?.length) return
+        const fills = {
+          moderate: cssToken('--risk-moderate'),
+          high: cssToken('--risk-high'),
+        }
+        if (!fills.moderate || !fills.high) return
+
+        layer = L.geoJSON(fc, {
+          interactive: false,
+          bubblingMouseEvents: false,
+          style: (f) => {
+            const band = f.properties.band
+            return {
+              color: fills[band],
+              weight: band === 'high' ? 1.6 : 1.1,
+              opacity: band === 'high' ? 0.95 : 0.7,
+              fillColor: fills[band],
+              fillOpacity: band === 'high' ? 0.42 : 0.24,
+            }
+          },
+        })
+        layer.addTo(map)
+        // High sits inside moderate, so it has to paint after it.
+        layer.eachLayer((l) => {
+          if (l.feature?.properties?.band === 'high') l.bringToFront()
+        })
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+      if (layer) map.removeLayer(layer)
+    }
+  }, [map, theme])
+
+  return null
+}
+
 export function RiskLayer({ opacity = 0.86, theme }) {
+  if (RISK_RENDER === 'contour') return <ContourLayer theme={theme} />
+  return <RiskCellLayer opacity={opacity} theme={theme} />
+}
+
+function RiskCellLayer({ opacity, theme }) {
   const map = useMap()
 
   useEffect(() => {
