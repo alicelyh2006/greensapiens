@@ -1,18 +1,87 @@
 {
-  "note": "Field-survey lamp classifications. EMPTY until the survey is done — see README below. Real entries only; never seed this with invented data.",
+  "note": "Field-survey lamp classifications. Real observations only; never seed this with invented data. Every entry below was photographed on the date given and is traceable to a source photo.",
   "schema": {
     "lat": "number, decimal degrees",
     "lng": "number, decimal degrees",
     "type": "one of: sodium | warm-led | neutral-led | cool-led (see LAMP_TYPES in src/lib/config.js)",
     "kind": "optional, what the fixture lights: carpark | facade | signage | floodlight | sports | street | other",
-    "surveyed": "optional ISO date, e.g. 2026-09-06"
+    "surveyed": "optional ISO date, e.g. 2026-09-06",
+    "method": "how the type was decided: 'visual' (a person read the photo) or 'classifier' (F10 pixel classifier)",
+    "position": "how lat/lng was obtained: 'pluscode', 'landmark' (anchored to a named OpenStreetMap building) or 'exif'",
+    "photo": "source photograph filename",
+    "what": "plain description of the fixture"
   },
-  "example": {
-    "lat": 1.3487,
-    "lng": 103.7815,
-    "type": "cool-led",
-    "kind": "carpark",
-    "surveyed": "2026-09-06"
+  "survey": {
+    "2026-09-10": {
+      "where": "Old Upper Thomson Road / Sembawang Hills, on the eastern edge of Central Catchment Nature Reserve",
+      "why": "The risk model's highest-scoring cell in Singapore. We went to check what is actually lit there.",
+      "positions": "The camera recorded no GPS — the OnePlus wrote an empty EXIF GPS block, so no photo carries coordinates. Positions here come from a plus code read on site (9RFH+4J2, +/-3 m) and from named OpenStreetMap buildings visible in the photographs. The whole survey area spans two 333 m risk-grid cells, so this is well inside the resolution the model can use.",
+      "classification": "By eye, not by the F10 classifier. Run over these 29 photographs the classifier put 21 of 28 in 'neutral' and found no warm sources at all, because phone auto-white-balance neutralises the colour cast it is trying to measure. Its ORDERING was correct — it ranked the gold signage warmest and the teal pole lamps bluest — but its absolute thresholds assume a camera that is not white-balancing. Seeding this file with that output would have published 21 readings we know to be wrong."
+    }
   },
-  "lamps": []
+  "lamps": [
+    {
+      "lat": 1.372763, "lng": 103.829016,
+      "type": "cool-led", "kind": "street",
+      "what": "Teal-post pole lamps along the path beside Sembawang Hills Food Centre. Blue-white, unshielded, the dominant fixture here.",
+      "method": "visual", "position": "pluscode", "photo": "IMG20260910214642.jpg",
+      "surveyed": "2026-09-10"
+    },
+    {
+      "lat": 1.372700, "lng": 103.829100,
+      "type": "cool-led", "kind": "street",
+      "what": "Second teal-post lamp on the same path. Photographed with a warm pergola downlight in frame for comparison.",
+      "method": "visual", "position": "pluscode", "photo": "IMG20260910214730.jpg",
+      "surveyed": "2026-09-10"
+    },
+    {
+      "lat": 1.373080, "lng": 103.828950,
+      "type": "cool-led", "kind": "floodlight",
+      "what": "Esso forecourt canopy. Recessed white LED downlights across the whole underside, lit all night.",
+      "method": "visual", "position": "landmark", "photo": "IMG20260910214945.jpg",
+      "surveyed": "2026-09-10"
+    },
+    {
+      "lat": 1.372940, "lng": 103.828900,
+      "type": "cool-led", "kind": "signage",
+      "what": "Illuminated blue directional arrow at the car-wash entrance. Saturated blue emitter, not a white source with a colour temperature — logged as cool-led because that is its effect, see the methodology page.",
+      "method": "visual", "position": "landmark", "photo": "IMG20260910214532.jpg",
+      "surveyed": "2026-09-10"
+    },
+    {
+      "lat": 1.372940, "lng": 103.828900,
+      "type": "cool-led", "kind": "signage",
+      "what": "'Car Wash' channel lettering, blue, above the wash bay.",
+      "method": "visual", "position": "landmark", "photo": "IMG20260910214521.jpg",
+      "surveyed": "2026-09-10"
+    },
+    {
+      "lat": 1.372390, "lng": 103.828990,
+      "type": "neutral-led", "kind": "other",
+      "what": "Sembawang Hills Food Centre. Open-sided hawker centre, plain white tube lighting throughout.",
+      "method": "visual", "position": "landmark", "photo": "IMG20260910214958.jpg",
+      "surveyed": "2026-09-10"
+    },
+    {
+      "lat": 1.372790, "lng": 103.829650,
+      "type": "warm-led", "kind": "signage",
+      "what": "'tiram' restaurant, gold backlit lettering. The warmest source found on the strip.",
+      "method": "visual", "position": "landmark", "photo": "IMG20260910215007.jpg",
+      "surveyed": "2026-09-10"
+    },
+    {
+      "lat": 1.372850, "lng": 103.829650,
+      "type": "neutral-led", "kind": "signage",
+      "what": "'Bridgepoint Health' lightbox. Large white internally-lit panel facing the road.",
+      "method": "visual", "position": "landmark", "photo": "IMG20260910215016.jpg",
+      "surveyed": "2026-09-10"
+    },
+    {
+      "lat": 1.372650, "lng": 103.829650,
+      "type": "neutral-led", "kind": "facade",
+      "what": "'Nature Fresh Mart' shopfront. Exposed fluorescent tube under the awning, spilling onto the five-foot way.",
+      "method": "visual", "position": "landmark", "photo": "IMG20260910214957.jpg",
+      "surveyed": "2026-09-10"
+    }
+  ]
 }

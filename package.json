@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "4.3.4",
+    "jpeg-js": "^0.4.4",
     "mapshaper": "^0.7.56",
     "vite": "5.4.11"
   }
