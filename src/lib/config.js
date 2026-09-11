@@ -217,6 +217,19 @@ export const AGENCIES = {
   condo: 'MCST',
 }
 
+/**
+ * F11 — who owns a photographed lamp, worked out from where it is.
+ *
+ * Geodata alone cannot tell a street lamp from a void-deck light, so the
+ * only confident case is "inside an NParks-managed space". Everywhere else
+ * we offer a guess from building density and ask the photographer to
+ * confirm the light source — that one tap is the real answer.
+ */
+export const LAMP_OWNER = {
+  /** Density at or above this reads as an HDB-type estate, owner guessed as Town Council. */
+  estateDensity: 0.5,
+}
+
 export const MAP_DEFAULT = {
   center: [1.3521, 103.8198],
   zoom: 12,

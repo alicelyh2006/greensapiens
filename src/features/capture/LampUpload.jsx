@@ -1,10 +1,12 @@
 /**
- * F9 (EXIF GPS) + F10 (lamp colour classification).  OWNER: L4
+ * F9 (EXIF GPS) + F10 (lamp colour classification) + F11 (place & owner).
+ * OWNER: L4
  *
  * Reads a photo's embedded GPS, then classifies the lamp by colour. Blue
  * content, not brightness, is what predicts migrant collisions — so this needs
  * no photometry and no exposure calibration, only the colour a camera already
- * records.
+ * records. F11 then places that GPS against the committed geodata to name the
+ * nearest green space and the agency responsible — see lampContext.js.
  *
  * Mounted in the app from App.jsx. HEIC decoding is loaded on demand; see
  * heicConvert.js.
@@ -14,6 +16,8 @@ import { heicToJpeg } from './heicConvert.js'
 import { readExifGps } from './exifGps.js'
 import { sampleLampColour } from './lampColour.js'
 import { extractHeicThumbnail } from './extractHeicThumbnail.js'
+import { lampContext, formatDistance, LIGHT_SOURCES } from './lampContext.js'
+import { RiskPill } from '../../components'
 import './LampUpload.css'
 
 const LAMP_LABEL = {
@@ -80,11 +84,17 @@ function isHeicFile(file) {
 
 const STORAGE_KEY = 'nightjar.lamp-observations.v1'
 
+function newId() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
 function getStoredItems() {
   try {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
     if (!Array.isArray(stored)) return []
-    return stored.map((item) => ({
+    return stored.map((item, i) => ({
+      id: item.id || `saved-${i}`,
+      source: item.source || null,
       file: {
         name: item.fileName || 'Saved lamp observation',
         type: item.fileType || '',
@@ -100,7 +110,9 @@ function getStoredItems() {
 
 function saveItems(items) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map(({ file, previewUrl, result }) => ({
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map(({ id, source, file, previewUrl, result }) => ({
+      id,
+      source: source || null,
       fileName: file.name,
       fileType: previewUrl ? 'image/jpeg' : file.type,
       previewUrl: previewUrl || null,
@@ -185,7 +197,81 @@ function GpsSection({ gps }) {
   )
 }
 
-function FileCard({ file, previewUrl, result }) {
+const OWNER_CONFIDENCE_LABEL = {
+  confirmed: 'Confirmed by you',
+  likely: 'Likely',
+  guess: 'Best guess',
+}
+
+/**
+ * F11 — place the lamp from its GPS and say who to ask about it. Everything
+ * is computed on-device from committed geodata; see lampContext.js.
+ */
+function PlaceSection({ gps, source, onSourceChange, dataReady }) {
+  const ctx = useMemo(() => (dataReady ? lampContext(gps, source) : null), [gps, source, dataReady])
+
+  if (!gps) {
+    return (
+      <p className="place-block__miss">
+        No GPS, so the area and owner can't be worked out from this photo. Find the spot on the Risk Map instead.
+      </p>
+    )
+  }
+  if (!ctx) {
+    return <p className="place-block__miss">Loading Nightjar geodata&#8230;</p>
+  }
+
+  const { place, risk, owner } = ctx
+  const selectId = `light-source-${gps.lat.toFixed(5)}-${gps.lng.toFixed(5)}`
+
+  return (
+    <div className="place-block">
+      <dl className="card__dl card__dl--metrics">
+        <dt>Green space</dt>
+        <dd>
+          {place
+            ? place.inside
+              ? <>Inside <strong>{place.name}</strong></>
+              : <><strong>{place.name}</strong>, {formatDistance(place.metres)} from its edge</>
+            : 'None nearby'}
+        </dd>
+        <dt>Risk here</dt>
+        <dd className="place-block__risk">
+          {risk ? <><RiskPill band={risk.band} /> <span className="place-block__risk-total">{risk.total}/100, estimated</span></> : 'Outside the assessed area'}
+        </dd>
+        <dt>Contact</dt>
+        <dd>
+          {owner ? (
+            <>
+              <strong>{owner.name}</strong>
+              <span className={`place-block__confidence place-block__confidence--${owner.confidence}`}>{OWNER_CONFIDENCE_LABEL[owner.confidence]}</span>
+              <span className="place-block__reason">{owner.reason}</span>
+            </>
+          ) : (
+            <span className="place-block__reason">Choose the light source below to see who is responsible.</span>
+          )}
+        </dd>
+      </dl>
+
+      <label className="place-block__source" htmlFor={selectId}>
+        <span>What kind of light is this?</span>
+        <select
+          id={selectId}
+          className="filter-select"
+          value={source || ''}
+          onChange={(e) => onSourceChange(e.target.value || null)}
+        >
+          <option value="">Not sure</option>
+          {LIGHT_SOURCES.map((s) => (
+            <option key={s.id} value={s.id}>{s.label}</option>
+          ))}
+        </select>
+      </label>
+    </div>
+  )
+}
+
+function FileCard({ file, previewUrl, result, source, onSourceChange, dataReady }) {
   const [previewSrc, setPreviewSrc] = useState(() => previewUrl || null)
   const [loadingPreview, setLoadingPreview] = useState(false)
   const isHeic = file.type === 'image/heic' || file.type === 'image/heif' ||
@@ -274,6 +360,13 @@ function FileCard({ file, previewUrl, result }) {
 
         <section className="card__section">
           <h3 className="card__section-title">
+            <span className="badge badge--place">F11 · Place &amp; owner</span>
+          </h3>
+          <PlaceSection gps={result.gps} source={source} onSourceChange={onSourceChange} dataReady={dataReady} />
+        </section>
+
+        <section className="card__section">
+          <h3 className="card__section-title">
             <span className="badge badge--colour">F10 · Light Classification</span>
           </h3>
           {result.colour && result.colour.pixelsSampled === 0 ? (
@@ -334,7 +427,7 @@ function FileCard({ file, previewUrl, result }) {
   )
 }
 
-export default function LampUpload({ onAdd }) {
+export default function LampUpload({ dataReady = true }) {
   const [items, setItems] = useState(getStoredItems)
   const [busy, setBusy] = useState(false)
   const [lampTypeFilter, setLampTypeFilter] = useState('all')
@@ -367,7 +460,7 @@ export default function LampUpload({ onAdd }) {
         } catch (error) {
           console.warn('Could not save lamp photo preview locally:', error)
         }
-        return { file, previewUrl, result: { gps, colour } }
+        return { id: newId(), source: null, file, previewUrl, result: { gps, colour } }
       })
     )
     setItems((prev) => [...results, ...prev])
@@ -561,8 +654,16 @@ export default function LampUpload({ onAdd }) {
 
             {filteredItems.length > 0 ? (
               <div className="results__grid">
-                {filteredItems.map(({ file, previewUrl, result }, i) => (
-                  <FileCard key={`${file.name}-${i}`} file={file} previewUrl={previewUrl} result={result} />
+                {filteredItems.map(({ id, file, previewUrl, result, source }) => (
+                  <FileCard
+                    key={id}
+                    file={file}
+                    previewUrl={previewUrl}
+                    result={result}
+                    source={source}
+                    dataReady={dataReady}
+                    onSourceChange={(next) => setItems((prev) => prev.map((it) => (it.id === id ? { ...it, source: next } : it)))}
+                  />
                 ))}
               </div>
             ) : (
