@@ -91,9 +91,35 @@ export const SIZE_WEIGHT = {
   reserveBonus: 0.15,
 }
 
+/**
+ * Band thresholds. These are PRESENTATION, not risk science.
+ *
+ * The score is a 0-100 index with no absolute meaning, and its distribution
+ * across Singapore is smooth and unimodal — 2,055 assessed locations with a
+ * hard peak at 15-19, a median of 23, and a thin tail out to 71. There is no
+ * natural break anywhere, so any threshold is a convention. The honest move is
+ * to pick one that says what it means.
+ *
+ * These are percentiles of the assessed locations rather than round numbers:
+ *
+ *   high     >= 48   the worst 5%    120 locations
+ *   moderate >= 35   the worst 25%   535 locations
+ *
+ * That framing suits what the map is for. "The worst 5% of the places we
+ * assessed" is a claim someone can act on and check. "Above 60 out of 100" is
+ * not, because 60 of what is undefined.
+ *
+ * The previous values were 34 and 60. 60 had already been lowered from 67
+ * because nothing on the island ever reached it, and at 60 the high band held
+ * seven cells out of 6,749 — a category present in the legend and essentially
+ * nowhere on the map.
+ *
+ * Run scripts/report-bands.mjs after any change to the model or its data. If
+ * the distribution moves, these should move with it.
+ */
 export const BANDS = {
-  moderate: 34,
-  high: 60,
+  moderate: 35,
+  high: 48,
 }
 
 /**
