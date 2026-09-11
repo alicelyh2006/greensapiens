@@ -287,7 +287,7 @@ export default function App() {
           </div>
 
           <div className={`view-shell ${activeTab === 'observations' ? 'view-shell--active' : ''}`} aria-hidden={activeTab !== 'observations'}>
-            <LampUpload />
+            <LampUpload dataReady={ready} />
           </div>
 
           <div className={`view-shell ${activeTab === 'report' ? 'view-shell--active' : ''}`} aria-hidden={activeTab !== 'report'}>
