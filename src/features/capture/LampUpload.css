@@ -110,6 +110,10 @@
 .risk-badge--high { color: var(--risk-high); background: var(--risk-high-bg); border: 1px solid var(--line); }
 .risk-badge--unknown { color: var(--text-faint); background: var(--surface); border: 1px solid var(--line); }
 .lamp-report { display: flex; flex-direction: column; gap: 10px; }
+.lamp-warning { margin: 0; padding: 8px 10px; color: var(--risk-moderate); background: var(--risk-moderate-bg); border: 1px solid var(--line); border-radius: 9px; font-size: 9px; line-height: 1.45; }
+.lamp-warning--block { display: flex; flex-direction: column; gap: 2px; }
+.lamp-warning__title { margin: 0; font-weight: 600; }
+.lamp-warning__body { margin: 0; color: var(--text-dim); }
 .font-mono { font-family: var(--font-mono); font-size: 8px; }
 .btn-ghost { min-height: 31px; padding: 5px 9px; color: var(--text-dim); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 6px; font: inherit; font-size: 9px; cursor: pointer; }
 .btn-ghost:hover { color: var(--text); background: var(--surface-3); }

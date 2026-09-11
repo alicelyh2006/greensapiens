@@ -276,7 +276,12 @@ function FileCard({ file, previewUrl, result }) {
           <h3 className="card__section-title">
             <span className="badge badge--colour">F10 · Light Classification</span>
           </h3>
-          {result.colour ? (
+          {result.colour && result.colour.pixelsSampled === 0 ? (
+            <div className="lamp-warning lamp-warning--block" role="note">
+              <p className="lamp-warning__title">Could not read a colour</p>
+              <p className="lamp-warning__body">{result.colour.warning || 'No usable pixels in this photo.'}</p>
+            </div>
+          ) : result.colour ? (
             (() => {
               const info = LAMP_LABEL[result.colour.type] || LAMP_LABEL.unknown
               return (
@@ -314,6 +319,9 @@ function FileCard({ file, previewUrl, result }) {
                       R:{result.colour.avgR} G:{result.colour.avgG} B:{result.colour.avgB}
                     </dd>
                   </dl>
+                  {result.colour.warning && (
+                    <p className="lamp-warning" role="note">{result.colour.warning}</p>
+                  )}
                 </div>
               )
             })()
