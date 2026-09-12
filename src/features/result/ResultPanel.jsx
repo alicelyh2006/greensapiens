@@ -206,7 +206,7 @@ export default function ResultPanel({ risk, baseRisk = risk, location, onClose, 
       )}
 
       {risk.isMock && (
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-faint)' }}>
+        <p className="result-panel__data-note">
           Habitat and building density use real data. Light is estimated until
           our field survey is complete, so this score will change.
         </p>

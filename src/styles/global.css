@@ -49,7 +49,7 @@ button:not(:disabled) {
 
 ::selection {
   color: var(--text);
-  background: var(--accent-purple-soft, var(--accent-soft));
+  background: var(--accent-neutral-soft, var(--accent-soft));
 }
 
 * { scrollbar-color: var(--line-strong, var(--line)) transparent; scrollbar-width: thin; }
@@ -59,6 +59,7 @@ button:not(:disabled) {
   outline-offset: 2px;
   border-radius: var(--radius);
 }
+
 
 /* Typography baseline shared by map, result, reporting and contribution views. */
 body { text-rendering: optimizeLegibility; }
@@ -82,3 +83,42 @@ button { font-weight: 600; }
   width: 100%;
   background: var(--surface-2);
 }
+
+/* Restore typography from original Greensapiens code. */
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+button {
+  font: inherit;
+}
+body {
+  text-rendering: optimizeLegibility;
+}
+h1 {
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+h2 {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+h3 {
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+button {
+  font-weight: 600;
+}
+

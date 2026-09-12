@@ -271,7 +271,7 @@ function PlaceSection({ gps, source, onSourceChange, dataReady }) {
   )
 }
 
-function FileCard({ file, previewUrl, result, source, onSourceChange, onRemove, dataReady }) {
+function FileCard({ id, file, previewUrl, result, source, onSourceChange, onRemove, dataReady }) {
   const [previewSrc, setPreviewSrc] = useState(() => previewUrl || null)
   const [loadingPreview, setLoadingPreview] = useState(false)
   const isHeic = file.type === 'image/heic' || file.type === 'image/heif' ||
@@ -357,23 +357,14 @@ function FileCard({ file, previewUrl, result, source, onSourceChange, onRemove, 
         </div>
 
         <section className="card__section">
-          <h3 className="card__section-title">
-            <span className="badge badge--gps">F9 · GPS</span>
-          </h3>
           <GpsSection gps={result.gps} />
         </section>
 
         <section className="card__section">
-          <h3 className="card__section-title">
-            <span className="badge badge--place">F11 · Place &amp; owner</span>
-          </h3>
           <PlaceSection gps={result.gps} source={source} onSourceChange={onSourceChange} dataReady={dataReady} />
         </section>
 
         <section className="card__section">
-          <h3 className="card__section-title">
-            <span className="badge badge--colour">F10 · Light Classification</span>
-          </h3>
           {result.colour && result.colour.pixelsSampled === 0 ? (
             <div className="lamp-warning lamp-warning--block" role="note">
               <p className="lamp-warning__title">Could not read a colour</p>
@@ -427,6 +418,10 @@ function FileCard({ file, previewUrl, result, source, onSourceChange, onRemove, 
             <p className="card__miss">Colour sampling failed</p>
           )}
         </section>
+
+        <div className="card__footer">
+          <span className="card__id">Observation ID: #{String(id).slice(-8)}</span>
+        </div>
       </div>
     </article>
   )
@@ -470,7 +465,6 @@ export default function LampUpload({ dataReady = true }) {
     )
     setItems((prev) => [...results, ...prev])
     setBusy(false)
-    if (inputRef.current) inputRef.current.value = ''
     if (addLightRef.current) addLightRef.current.open = false
   }, [])
 
@@ -504,14 +498,7 @@ export default function LampUpload({ dataReady = true }) {
   return (
     <div className="spike">
       <section className="observation-panel">
-        <div className="observation-panel__intro">
-          <div>
-            <span className="observation-panel__eyebrow">FIELD SURVEY</span>
-            <h2 className="observation-panel__title">Lamp observations</h2>
-            <p className="observation-panel__sub">
-              Review lamp observations collected on this device. Add a light to photograph a lamp, read its location from EXIF, and classify its colour.
-            </p>
-          </div>
+        <div className="observation-panel__actions">
           <details ref={addLightRef} className="add-light">
             <summary className="add-light__button">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -663,6 +650,7 @@ export default function LampUpload({ dataReady = true }) {
                 {filteredItems.map(({ id, file, previewUrl, result, source }) => (
                   <FileCard
                     key={id}
+                    id={id}
                     file={file}
                     previewUrl={previewUrl}
                     result={result}

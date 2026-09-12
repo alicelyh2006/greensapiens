@@ -11,7 +11,7 @@ import './result.css'
 
 export default function Methodology() {
   return (
-    <Panel title="How this is calculated">
+    <Panel>
       <div className="methodology-content">
 
         {/* The three factors */}

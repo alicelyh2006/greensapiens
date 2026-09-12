@@ -50,14 +50,14 @@
 
 .app__inspector .factor-list { gap: 13px; }
 .app__inspector .factor-item { gap: 5px; }
-.app__inspector .factor-header { font-size: 11px; }
+.app__inspector .factor-header { font-size: var(--text-xs); }
 .app__inspector .factor-name { color: var(--text-dim); font-weight: 600; }
-.app__inspector .factor-weight { font-size: 10px; }
+.app__inspector .factor-weight { font-size: var(--text-xs); }
 .app__inspector .factor-bar { height: 5px; background: var(--surface-3); }
 .app__inspector .factor-note { display: none; }
-.app__inspector .factor-model-note { padding: 11px 0 0; border-top: 1px solid var(--line); font-size: 10px; }
+.app__inspector .factor-model-note { padding: 11px 0 0; border-top: 1px solid var(--line); font-size: var(--text-xs); }
 .app__inspector .rec-item { border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.02); padding: 11px; }
-.app__inspector .rec-action { font-size: 12px; }.app__inspector .rec-why { font-size: 10px; }.app__inspector .owner-badge,.app__inspector .horizon-tag { font-size: 9px; }
+.app__inspector .rec-action { font-size:var(--text-xs); }.app__inspector .rec-why { font-size: var(--text-xs); }.app__inspector .owner-badge,.app__inspector .horizon-tag { font-size: var(--text-xs); }
 .app__inspector .season-alert { border-color: var(--risk-moderate); border-radius: 10px; padding: 11px; }
 
 .factor-note {
@@ -317,12 +317,12 @@
 .result-panel__eyebrow {
   display: block;
   color: var(--text-faint);
-  font: 700 8px/1 var(--font-mono);
+  font: 700 var(--text-2xs)/1 var(--font-mono);
   letter-spacing: .12em;
   text-transform: uppercase;
 }
-.result-panel__header h2 { margin: 7px 0 0; font-size: 18px; letter-spacing: -.03em; }
-.result-panel__header p { margin-top: 4px; color: var(--text-faint); font-size: 10px; }
+.result-panel__header h2 { margin: 7px 0 0; font-size:var(--text-lg); letter-spacing: -.03em; }
+.result-panel__header p { margin-top: 4px; color: var(--text-faint); font-size: var(--text-xs); }
 .result-panel__close {
   display: grid;
   width: 28px;
@@ -334,7 +334,7 @@
   border-radius: 8px;
   background: var(--surface-2);
   color: var(--text-dim);
-  font-size: 19px;
+  font-size:var(--text-lg);
   line-height: 1;
   cursor: pointer;
 }
@@ -351,15 +351,15 @@
   border-radius: 12px;
   background: linear-gradient(135deg, var(--surface-2), var(--surface));
 }
-.result-hero__score > span { display: block; color: var(--text-faint); font: 700 8px/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; }
+.result-hero__score > span { display: block; color: var(--text-faint); font: 700 var(--text-2xs)/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; }
 .result-hero__value { display: flex; align-items: baseline; gap: 4px; margin-top: 8px; }
 .result-hero__value strong { color: var(--text); font-size: 42px; line-height: .85; letter-spacing: -.07em; }
-.result-hero__value small { color: var(--text-faint); font-size: 12px; }
+.result-hero__value small { color: var(--text-faint); font-size:var(--text-xs); }
 .app__inspector .result-hero .pill { margin: 10px 0 0; }
-.result-hero__band { display: flex; align-items: center; gap: 7px; }.result-hero__band em { color: var(--accent-warm); font-size: 8px; font-style: normal; }
+.result-hero__band { display: flex; align-items: center; gap: 7px; }.result-hero__band em { color: var(--accent-warm); font-size: var(--text-2xs); font-style: normal; }
 .app__inspector .risk-ring { width: 78px; height: 78px; flex: 0 0 auto; }.app__inspector .risk-ring::after { inset: 6px; }.app__inspector .risk-ring > div { font-size: 30px; font-weight: 700; }
-.app__inspector .result-panel__data-note { margin: 10px 18px 0; color: var(--text-faint); font-size: 10px; line-height: 1.45; }
-.app__inspector .season-alert { margin: 12px 18px 0; }.app__inspector .season-alert__heading { font-size: 10px; }.app__inspector .season-alert__body { font-size: 10px; }
+.app__inspector .result-panel__data-note { margin: 10px 18px 0; color: var(--text-faint); font-size: var(--text-xs); line-height: 1.45; }
+.app__inspector .season-alert { margin: 12px 18px 0; }.app__inspector .season-alert__heading { font-size: var(--text-xs); }.app__inspector .season-alert__body { font-size: var(--text-xs); }
 
 .lighting-test {
   margin: 14px 18px 0;
@@ -368,8 +368,8 @@
   border-radius: 11px;
   background: linear-gradient(135deg, var(--surface-2), var(--surface));
 }
-.lighting-test__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }.lighting-test__head span { color: var(--text); font-size: 11px; font-weight: 700; }.lighting-test__head p { margin-top: 4px; color: var(--text-faint); font-size: 9px; line-height: 1.35; }.lighting-test output { color: var(--text); font-size: 17px; font-weight: 700; }.lighting-test output small { color: var(--text-faint); font-size: 8px; }
-.lighting-test .risk-slider { display: block; width: 100%; margin: 12px 0 0; accent-color: var(--accent-purple); cursor: pointer; }.lighting-test__reset { margin-top: 10px; padding: 0; border: 0; background: transparent; color: var(--accent-purple); font-size: 9px; cursor: pointer; }.lighting-test__reset:hover { color: var(--text); text-decoration: underline; }
+.lighting-test__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }.lighting-test__head span { color: var(--text); font-size: var(--text-xs); font-weight: 700; }.lighting-test__head p { margin-top: 4px; color: var(--text-faint); font-size: var(--text-xs); line-height: 1.35; }.lighting-test output { color: var(--text); font-size:var(--text-base); font-weight: 700; }.lighting-test output small { color: var(--text-faint); font-size: var(--text-2xs); }
+.lighting-test .risk-slider { display: block; width: 100%; margin: 12px 0 0; accent-color: var(--text); cursor: pointer; }.lighting-test__reset { margin-top: 10px; padding: 0; border: 0; background: transparent; color: var(--text); font-size: var(--text-xs); cursor: pointer; }.lighting-test__reset:hover { color: var(--text); text-decoration: underline; }
 
 @media (max-width: 820px) { .app__inspector .result-hero { margin-top: 12px; }.result-hero__value strong { font-size: 38px; } }
 
@@ -382,7 +382,7 @@
   min-height: 24px;
   margin-bottom: 9px !important;
   color: var(--text-faint) !important;
-  font: 700 8px/1 var(--font-mono) !important;
+  font: 700 var(--text-2xs)/1 var(--font-mono) !important;
   letter-spacing: .11em;
   text-transform: uppercase;
 }
@@ -409,7 +409,7 @@
   border-radius: 5px;
   background: var(--surface-2);
   color: var(--text-faint);
-  font-size: 10px;
+  font-size: var(--text-xs);
   content: '⌁';
 }
 .app__inspector .factor-item:nth-child(2) .factor-name::before { color: var(--density); content: '▦'; }
@@ -428,14 +428,14 @@
   width: 3px;
   height: 26px;
   border-radius: 0 4px 4px 0;
-  background: var(--accent-purple);
+  background: var(--text);
   content: '';
 }
-.app__inspector .rec-action { padding-right: 4px; color: var(--text); font-size: 12px; font-weight: 700; line-height: 1.35; }
-.app__inspector .rec-why { color: var(--text-dim); font-size: 10px; line-height: 1.5; }
+.app__inspector .rec-action { padding-right: 4px; color: var(--text); font-size:var(--text-xs); font-weight: 700; line-height: 1.35; }
+.app__inspector .rec-why { color: var(--text-dim); font-size: var(--text-xs); line-height: 1.5; }
 .app__inspector .rec-meta { gap: 6px; padding-top: 2px; }
-.app__inspector .owner-badge { padding: 4px 7px; background: var(--accent-purple-soft); color: var(--accent-purple); font-size: 8px; }
-.app__inspector .horizon-tag { padding: 3px 6px; border-radius: 999px; font-size: 8px; }
+.app__inspector .owner-badge { padding: 4px 7px; background: var(--surface-2); color: var(--text); font-size: var(--text-2xs); }
+.app__inspector .horizon-tag { padding: 3px 6px; border-radius: 999px; font-size: var(--text-2xs); }
 
 .app__inspector .methodology {
   margin: 14px 18px 18px;
@@ -448,7 +448,7 @@
   padding: 12px;
   border: 0;
   color: var(--text-dim);
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: 700;
 }
 .app__inspector .methodology-toggle span:last-child {
@@ -462,22 +462,284 @@
 }
 .app__inspector .methodology[open] .methodology-toggle { border-bottom: 1px solid var(--line); color: var(--text); }
 .app__inspector .methodology-content { gap: 12px; padding: 13px; background: var(--surface); }
-.app__inspector .methodology-section h3 { margin-bottom: 8px; font-size: 8px; }
+.app__inspector .methodology-section h3 { margin-bottom: 8px; font-size: var(--text-2xs); }
 .app__inspector .methodology-section p,
 .app__inspector .methodology-section li,
-.app__inspector .methodology-weight-table { font-size: 10px; line-height: 1.5; }
+.app__inspector .methodology-weight-table { font-size: var(--text-xs); line-height: 1.5; }
 .app__inspector .methodology-weight-table { display: block; overflow-x: auto; }
-.app__inspector .methodology-disclaimer { padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); font-size: 10px; }
-.app__inspector .methodology-citation { font-size: 9px; }
+.app__inspector .methodology-disclaimer { padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); font-size: var(--text-xs); }
+.app__inspector .methodology-citation { font-size: var(--text-xs); }
 
 @media (max-width: 420px) {
   .app__inspector .result-section { margin-left: 12px; margin-right: 12px; }
   .app__inspector .factor-header { align-items: flex-start; }
-  .app__inspector .factor-weight { max-width: 92px; font-size: 9px; line-height: 1.25; }
+  .app__inspector .factor-weight { max-width: 92px; font-size: var(--text-xs); line-height: 1.25; }
 }
 
 @media (max-width: 420px) {
   .app__inspector .result-panel__header { padding: 15px; }
   .app__inspector .result-hero, .lighting-test, .app__inspector .season-alert, .app__inspector .methodology { margin-left: 12px; margin-right: 12px; }
   .app__inspector .panel > div, .app__inspector > .panel > p { margin-left: 12px; margin-right: 12px; }
+}
+
+/* Restore typography from original Greensapiens code. */
+.factor-header {
+  font-size: var(--text-sm);
+}
+.factor-name {
+  font-weight: 600;
+}
+.factor-weight {
+  font-size: var(--text-sm);
+}
+.app__inspector .factor-header {
+  font-size: 11px;
+}
+.app__inspector .factor-name {
+  font-weight: 600;
+}
+.app__inspector .factor-weight {
+  font-size: 10px;
+}
+.app__inspector .factor-model-note {
+  font-size: 10px;
+}
+.app__inspector .rec-action {
+  font-size: 12px;
+}
+.app__inspector .rec-why {
+  font-size: 10px;
+}
+.app__inspector .owner-badge,.app__inspector .horizon-tag {
+  font-size: 9px;
+}
+.factor-note {
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+.rec-action {
+  font-size: var(--text-base);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.rec-why {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+.owner-badge {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.horizon-tag {
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.season-alert__heading {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.season-alert__body {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+.methodology-toggle {
+  font-size: var(--text-sm);
+}
+.methodology-section h3 {
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.methodology-section p,
+.methodology-section li {
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+.methodology-weight-table {
+  font-size: var(--text-sm);
+}
+.methodology-weight-table th {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  letter-spacing: 0.04em;
+}
+.methodology-weight-table td:first-child {
+  font-weight: 600;
+}
+.methodology-disclaimer {
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+.methodology-citation {
+  font-size: var(--text-sm);
+  font-style: italic;
+}
+.factor-model-note {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+.methodology-section h4 {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.result-panel__eyebrow {
+  font: 700 8px/1 var(--font-mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.result-panel__header h2 {
+  font-size: 18px;
+  letter-spacing: -.03em;
+}
+.result-panel__header p {
+  font-size: 10px;
+}
+.result-panel__close {
+  font-size: 19px;
+  line-height: 1;
+}
+.result-hero__score > span {
+  font: 700 8px/1 var(--font-mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.result-hero__value strong {
+  font-size: 42px;
+  line-height: .85;
+  letter-spacing: -.07em;
+}
+.result-hero__value small {
+  font-size: 12px;
+}
+.result-hero__band em {
+  font-size: 8px;
+  font-style: normal;
+}
+.app__inspector .risk-ring > div {
+  font-size: 30px;
+  font-weight: 700;
+}
+.app__inspector .result-panel__data-note {
+  font-size: 10px;
+  line-height: 1.45;
+}
+.app__inspector .season-alert__heading {
+  font-size: 10px;
+}
+.app__inspector .season-alert__body {
+  font-size: 10px;
+}
+.lighting-test__head span {
+  font-size: 11px;
+  font-weight: 700;
+}
+.lighting-test__head p {
+  font-size: 9px;
+  line-height: 1.35;
+}
+.lighting-test output {
+  font-size: 17px;
+  font-weight: 700;
+}
+.lighting-test output small {
+  font-size: 8px;
+}
+.lighting-test__reset {
+  font-size: 9px;
+}
+.app__inspector .result-section__title {
+  font: 700 8px/1 var(--font-mono) !important;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+.app__inspector .factor-name {
+  line-height: 1.25;
+}
+.app__inspector .factor-model-note {
+  line-height: 1.55;
+}
+.app__inspector .factor-name::before {
+  font-size: 10px;
+}
+.app__inspector .rec-action {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.app__inspector .rec-why {
+  font-size: 10px;
+  line-height: 1.5;
+}
+.app__inspector .owner-badge {
+  font-size: 8px;
+}
+.app__inspector .horizon-tag {
+  font-size: 8px;
+}
+.app__inspector .methodology-toggle {
+  font-size: 10px;
+  font-weight: 700;
+}
+.app__inspector .methodology-section h3 {
+  font-size: 8px;
+}
+.app__inspector .methodology-section p,
+.app__inspector .methodology-section li,
+.app__inspector .methodology-weight-table {
+  font-size: 10px;
+  line-height: 1.5;
+}
+.app__inspector .methodology-disclaimer {
+  font-size: 10px;
+}
+.app__inspector .methodology-citation {
+  font-size: 9px;
+}
+
+@media (max-width: 820px) {
+  .result-hero__value strong {
+    font-size: 38px;
+  }
+}
+
+@media (max-width: 420px) {
+  .app__inspector .factor-weight {
+    font-size: 9px;
+    line-height: 1.25;
+  }
+}
+
+
+
+/* Screenshot-matched typography: mock-score note follows the original compact body style. */
+.result-panel__data-note {
+  margin-top: 12px;
+  color: var(--text-faint);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+/* Original Greensapiens capture typography for the filter and light-source controls. */
+.filter-label {
+  font-family: var(--font-mono) !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: .06em !important;
+  text-transform: uppercase !important;
+}
+.filter-select {
+  font-family: var(--font-sans) !important;
+  font-size: 9px !important;
+}
+.place-block__source {
+  font-family: var(--font-sans) !important;
+  font-size: 9px !important;
+}
+.place-block__source .filter-select {
+  font-family: var(--font-sans) !important;
+  font-size: 9px !important;
 }

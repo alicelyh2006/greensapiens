@@ -45,6 +45,8 @@
   --lamp-cool: #6b9fe0;
 
   /* --- type scale --- */
+  /* Shared UI type scale: 12 / 14 / 16 / 20 / 28px. */
+  --text-2xs: 0.75rem;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -72,9 +74,13 @@
   --overlay: rgba(255, 255, 255, 0.86);
   --line-strong: #b7c1cf;
   --density: #557fbd;
-  --accent-purple: #7358dc;
-  --accent-purple-soft: #ebe5ff;
+  --accent-neutral: #161c26;
+  --accent-neutral-soft: #e8ecf2;
   --accent-warm: #e8a24f;
+
+  /* Peak migration card gradient — intentionally subtle in light and dark mode. */
+  --season-start: #ffffff;
+  --season-end: #e8ecf2;
 
   color-scheme: light dark;
 }
@@ -116,9 +122,11 @@
     --overlay: rgba(14, 19, 28, 0.88);
     --line-strong: #40506a;
     --density: #7fb2ff;
-    --accent-purple: #9a82ff;
-    --accent-purple-soft: rgba(154, 130, 255, 0.18);
+    --accent-neutral: #e6e8ec;
+    --accent-neutral-soft: #1f2836;
     --accent-warm: #e8a24f;
+    --season-start: #202a39;
+    --season-end: #303b4d;
   }
 }
 
@@ -157,7 +165,9 @@
   --overlay: rgba(14, 19, 28, 0.88);
   --line-strong: #40506a;
   --density: #7fb2ff;
-  --accent-purple: #9a82ff;
-  --accent-purple-soft: rgba(154, 130, 255, 0.18);
+  --accent-neutral: #e6e8ec;
+  --accent-neutral-soft: #1f2836;
   --accent-warm: #e8a24f;
+  --season-start: #202a39;
+  --season-end: #303b4d;
 }
