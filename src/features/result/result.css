@@ -48,6 +48,18 @@
 .factor-fill--moderate { background: var(--risk-moderate); }
 .factor-fill--high     { background: var(--risk-high); }
 
+.app__inspector .factor-list { gap: 13px; }
+.app__inspector .factor-item { gap: 5px; }
+.app__inspector .factor-header { font-size: 11px; }
+.app__inspector .factor-name { color: var(--text-dim); font-weight: 600; }
+.app__inspector .factor-weight { font-size: 10px; }
+.app__inspector .factor-bar { height: 5px; background: var(--surface-3); }
+.app__inspector .factor-note { display: none; }
+.app__inspector .factor-model-note { padding: 11px 0 0; border-top: 1px solid var(--line); font-size: 10px; }
+.app__inspector .rec-item { border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.02); padding: 11px; }
+.app__inspector .rec-action { font-size: 12px; }.app__inspector .rec-why { font-size: 10px; }.app__inspector .owner-badge,.app__inspector .horizon-tag { font-size: 9px; }
+.app__inspector .season-alert { border-color: var(--risk-moderate); border-radius: 10px; padding: 11px; }
+
 .factor-note {
   font-size: var(--text-sm);
   color: var(--text-faint);
@@ -289,4 +301,183 @@
   font-weight: 600;
   color: var(--text-strong, var(--text));
   letter-spacing: 0.01em;
+}
+
+/* Selected-location console. The score is deliberately the first and largest
+   element, matching the map dashboard's decision-making flow. */
+.app__inspector .result-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.result-panel__eyebrow {
+  display: block;
+  color: var(--text-faint);
+  font: 700 8px/1 var(--font-mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.result-panel__header h2 { margin: 7px 0 0; font-size: 18px; letter-spacing: -.03em; }
+.result-panel__header p { margin-top: 4px; color: var(--text-faint); font-size: 10px; }
+.result-panel__close {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+}
+.result-panel__close:hover { border-color: var(--line-strong); background: var(--surface-3); color: var(--text); }
+
+.app__inspector .result-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 13px 18px 0;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--surface-2), var(--surface));
+}
+.result-hero__score > span { display: block; color: var(--text-faint); font: 700 8px/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; }
+.result-hero__value { display: flex; align-items: baseline; gap: 4px; margin-top: 8px; }
+.result-hero__value strong { color: var(--text); font-size: 42px; line-height: .85; letter-spacing: -.07em; }
+.result-hero__value small { color: var(--text-faint); font-size: 12px; }
+.app__inspector .result-hero .pill { margin: 10px 0 0; }
+.result-hero__band { display: flex; align-items: center; gap: 7px; }.result-hero__band em { color: var(--accent-warm); font-size: 8px; font-style: normal; }
+.app__inspector .risk-ring { width: 78px; height: 78px; flex: 0 0 auto; }.app__inspector .risk-ring::after { inset: 6px; }.app__inspector .risk-ring > div { font-size: 30px; font-weight: 700; }
+.app__inspector .result-panel__data-note { margin: 10px 18px 0; color: var(--text-faint); font-size: 10px; line-height: 1.45; }
+.app__inspector .season-alert { margin: 12px 18px 0; }.app__inspector .season-alert__heading { font-size: 10px; }.app__inspector .season-alert__body { font-size: 10px; }
+
+.lighting-test {
+  margin: 14px 18px 0;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--surface-2), var(--surface));
+}
+.lighting-test__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }.lighting-test__head span { color: var(--text); font-size: 11px; font-weight: 700; }.lighting-test__head p { margin-top: 4px; color: var(--text-faint); font-size: 9px; line-height: 1.35; }.lighting-test output { color: var(--text); font-size: 17px; font-weight: 700; }.lighting-test output small { color: var(--text-faint); font-size: 8px; }
+.lighting-test .risk-slider { display: block; width: 100%; margin: 12px 0 0; accent-color: var(--accent-purple); cursor: pointer; }.lighting-test__reset { margin-top: 10px; padding: 0; border: 0; background: transparent; color: var(--accent-purple); font-size: 9px; cursor: pointer; }.lighting-test__reset:hover { color: var(--text); text-decoration: underline; }
+
+@media (max-width: 820px) { .app__inspector .result-hero { margin-top: 12px; }.result-hero__value strong { font-size: 38px; } }
+
+/* Recommendation and disclosure blocks share the same quiet, bordered rhythm
+   as the score card: one primary action, then supporting ownership detail. */
+.app__inspector .rec-list { gap: 8px; }
+.app__inspector .result-section__title {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  margin-bottom: 9px !important;
+  color: var(--text-faint) !important;
+  font: 700 8px/1 var(--font-mono) !important;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+.app__inspector .result-section {
+  margin: 19px 18px 0;
+  padding-top: 0;
+}
+.app__inspector .result-section--recommendations { margin-top: 21px; }
+.app__inspector .result-section .factor-list,
+.app__inspector .result-section .rec-list,
+.app__inspector .result-section .factor-model-note { margin-left: 0; margin-right: 0; }
+.app__inspector .factor-list { gap: 14px; }
+.app__inspector .factor-header { min-height: 18px; align-items: center; }
+.app__inspector .factor-name { display: inline-flex; align-items: center; min-width: 0; line-height: 1.25; }
+.app__inspector .factor-weight { flex: 0 0 auto; margin-left: 8px; text-align: right; }
+.app__inspector .factor-model-note { margin-top: 14px; padding-top: 12px; line-height: 1.55; }
+.app__inspector .factor-name::before {
+  display: inline-grid;
+  width: 17px;
+  height: 17px;
+  margin-right: 6px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface-2);
+  color: var(--text-faint);
+  font-size: 10px;
+  content: '⌁';
+}
+.app__inspector .factor-item:nth-child(2) .factor-name::before { color: var(--density); content: '▦'; }
+.app__inspector .factor-item:nth-child(3) .factor-name::before { color: var(--lamp-warm); content: '☾'; }
+.app__inspector .rec-item {
+  position: relative;
+  gap: 7px;
+  padding: 13px 12px 12px 15px;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--surface-2), var(--surface));
+}
+.app__inspector .rec-item::before {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  width: 3px;
+  height: 26px;
+  border-radius: 0 4px 4px 0;
+  background: var(--accent-purple);
+  content: '';
+}
+.app__inspector .rec-action { padding-right: 4px; color: var(--text); font-size: 12px; font-weight: 700; line-height: 1.35; }
+.app__inspector .rec-why { color: var(--text-dim); font-size: 10px; line-height: 1.5; }
+.app__inspector .rec-meta { gap: 6px; padding-top: 2px; }
+.app__inspector .owner-badge { padding: 4px 7px; background: var(--accent-purple-soft); color: var(--accent-purple); font-size: 8px; }
+.app__inspector .horizon-tag { padding: 3px 6px; border-radius: 999px; font-size: 8px; }
+
+.app__inspector .methodology {
+  margin: 14px 18px 18px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.app__inspector .methodology-toggle {
+  padding: 12px;
+  border: 0;
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 700;
+}
+.app__inspector .methodology-toggle span:last-child {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-3);
+}
+.app__inspector .methodology[open] .methodology-toggle { border-bottom: 1px solid var(--line); color: var(--text); }
+.app__inspector .methodology-content { gap: 12px; padding: 13px; background: var(--surface); }
+.app__inspector .methodology-section h3 { margin-bottom: 8px; font-size: 8px; }
+.app__inspector .methodology-section p,
+.app__inspector .methodology-section li,
+.app__inspector .methodology-weight-table { font-size: 10px; line-height: 1.5; }
+.app__inspector .methodology-weight-table { display: block; overflow-x: auto; }
+.app__inspector .methodology-disclaimer { padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); font-size: 10px; }
+.app__inspector .methodology-citation { font-size: 9px; }
+
+@media (max-width: 420px) {
+  .app__inspector .result-section { margin-left: 12px; margin-right: 12px; }
+  .app__inspector .factor-header { align-items: flex-start; }
+  .app__inspector .factor-weight { max-width: 92px; font-size: 9px; line-height: 1.25; }
+}
+
+@media (max-width: 420px) {
+  .app__inspector .result-panel__header { padding: 15px; }
+  .app__inspector .result-hero, .lighting-test, .app__inspector .season-alert, .app__inspector .methodology { margin-left: 12px; margin-right: 12px; }
+  .app__inspector .panel > div, .app__inspector > .panel > p { margin-left: 12px; margin-right: 12px; }
 }

@@ -148,3 +148,16 @@
   .saved-header { align-items: flex-start; flex-direction: column; }
   .saved-grid { grid-template-columns: 1fr; }
 }
+
+/* Match the contribution workflow to the map dashboard without changing form flow. */
+.collision-header { background: linear-gradient(180deg, var(--surface-2), var(--ground)); }
+.collision-title { letter-spacing: -.035em; }.collision-sub { color: var(--text-faint); }
+.form-card, .report-card { border-radius: 14px; }.form-card { background: linear-gradient(135deg, var(--surface), var(--surface-2)); }
+.form-card__title, .saved-title { letter-spacing: -.02em; }
+.collision-dropzone { border-radius: 12px; background: var(--surface); }
+.collision-dropzone:hover, .collision-dropzone[data-over="true"] { box-shadow: var(--shadow); }
+.form-input, .form-select, .form-textarea { border-radius: 9px; background: var(--surface); }
+.form-input:focus, .form-select:focus, .form-textarea:focus { background: var(--surface-2); }
+.btn-primary { border-radius: 9px; background: var(--accent-purple); box-shadow: 0 8px 20px var(--accent-purple-soft); }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.08); }.btn-ghost { border-radius: 9px; }.btn-ghost:hover { background: var(--surface-3); }
+.preview-container, .loc-banner { border-radius: 10px; }.report-card { transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }.report-card:hover { transform: translateY(-2px); border-color: var(--line-strong); }

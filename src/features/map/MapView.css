@@ -610,3 +610,15 @@
 .legend-swatch--high { background:linear-gradient(90deg,var(--risk-high),#9f3357); }
 .marker-selected__dot { width:13px; height:13px; background:var(--accent-purple); border:2px solid var(--text); box-shadow:0 0 0 5px rgba(115,88,220,.18), 0 2px 8px rgba(0,0,0,.45); }
 .marker-selected__pulse { width:34px; height:34px; background:var(--accent-purple); }
+
+/* Frosted map controls keep the geographic view visually dominant. */
+.map-search__input, .layer-toggle, .leaflet-control-zoom a, .map-legend {
+  background: var(--overlay) !important;
+  border-color: var(--line-strong) !important;
+  backdrop-filter: blur(12px);
+}
+.map-search__input { border-radius: 10px; }
+.layer-toggle { border-radius: 10px; }
+.map-legend { border-radius: 12px; }
+.leaflet-control-zoom { border-radius: 12px !important; }
+.leaflet-control-attribution { background: var(--overlay) !important; color: var(--text-faint) !important; }

@@ -67,6 +67,15 @@
 
   --shadow: 0 1px 3px rgba(16, 22, 32, 0.12), 0 4px 12px rgba(16, 22, 32, 0.08);
 
+  /* Dashboard surface extensions used by the map-first layout. */
+  --surface-3: #dce3eb;
+  --overlay: rgba(255, 255, 255, 0.86);
+  --line-strong: #b7c1cf;
+  --density: #557fbd;
+  --accent-purple: #7358dc;
+  --accent-purple-soft: #ebe5ff;
+  --accent-warm: #e8a24f;
+
   color-scheme: light dark;
 }
 
@@ -103,6 +112,13 @@
     --lamp-cool: #7fb2ff;
 
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.35);
+    --surface-3: #293549;
+    --overlay: rgba(14, 19, 28, 0.88);
+    --line-strong: #40506a;
+    --density: #7fb2ff;
+    --accent-purple: #9a82ff;
+    --accent-purple-soft: rgba(154, 130, 255, 0.18);
+    --accent-warm: #e8a24f;
   }
 }
 
@@ -137,4 +153,11 @@
   --lamp-cool: #7fb2ff;
 
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --surface-3: #293549;
+  --overlay: rgba(14, 19, 28, 0.88);
+  --line-strong: #40506a;
+  --density: #7fb2ff;
+  --accent-purple: #9a82ff;
+  --accent-purple-soft: rgba(154, 130, 255, 0.18);
+  --accent-warm: #e8a24f;
 }

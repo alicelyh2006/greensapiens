@@ -39,11 +39,33 @@ button {
   font: inherit;
 }
 
+button, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled) {
+  transition: background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+
+::selection {
+  color: var(--text);
+  background: var(--accent-purple-soft, var(--accent-soft));
+}
+
+* { scrollbar-color: var(--line-strong, var(--line)) transparent; scrollbar-width: thin; }
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--radius);
 }
+
+/* Typography baseline shared by map, result, reporting and contribution views. */
+body { text-rendering: optimizeLegibility; }
+h1 { font-weight: 750; letter-spacing: -0.035em; }
+h2 { font-weight: 700; letter-spacing: -0.025em; }
+h3 { font-weight: 650; letter-spacing: -0.015em; }
+button { font-weight: 600; }
 
 @media (prefers-reduced-motion: reduce) {
   *,

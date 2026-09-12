@@ -92,3 +92,20 @@
 .score-band--low { color:var(--risk-low) !important; }
 .score-band--moderate { color:var(--risk-moderate) !important; }
 .score-band--high { color:var(--risk-high) !important; }
+
+/* Right-side risk console: denser hierarchy and translucent dashboard panels. */
+.panel { border-color: var(--line); border-radius: 14px; background: var(--surface); }
+.app__inspector .panel { padding: 0; gap: 0; background: linear-gradient(180deg, var(--surface), var(--surface-2)); }
+.app__inspector .panel__title { padding: 18px 18px 13px; border-bottom: 1px solid var(--line); font-size: 16px; letter-spacing: -.02em; }
+.app__inspector .pill { margin: 14px 18px 0; width: fit-content; }
+.app__inspector .factor-list,
+.app__inspector .rec-list,
+.app__inspector .season-alert,
+.app__inspector .methodology,
+.app__inspector .factor-model-note,
+.app__inspector > .panel > div,
+.app__inspector > .panel > p { margin-left: 18px; margin-right: 18px; }
+.app__inspector .empty { min-height: 100%; padding: 30px 24px; }
+.app__inspector .empty__title { font-size: 17px; }
+.card { border-radius: 10px; background: var(--surface-2); }
+.btn, .btn--primary { border-radius: 9px; }

@@ -143,7 +143,7 @@ function Methodology() {
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
-export default function ResultPanel({ risk, location }) {
+export default function ResultPanel({ risk, baseRisk = risk, location, onClose, onSimulate }) {
   if (!risk) {
     return (
       <Panel>
@@ -159,10 +159,51 @@ export default function ResultPanel({ risk, location }) {
   const peakSeason = isPeakSeason()
   const lightMultiplier =
     MODEL.lightFloor + (1 - MODEL.lightFloor) * risk.factors.light.value
+  const locationName = location?.label || 'Selected location'
+  const score = Math.round(risk.total)
+  const isSimulated = risk !== baseRisk
+  const scoreStyle = { '--risk-angle': `${Math.max(0, Math.min(100, score)) * 3.6}deg` }
 
   return (
-    <Panel title="Collision risk">
-      <RiskPill band={risk.band} />
+    <Panel>
+      <header className="result-panel__header">
+        <div>
+          <span className="result-panel__eyebrow">Location details</span>
+          <h2>{locationName}</h2>
+          {location && <p>{location.lat.toFixed(4)}, {location.lng.toFixed(4)} · Singapore</p>}
+        </div>
+        <button className="result-panel__close" type="button" onClick={onClose} aria-label="Clear selected location">×</button>
+      </header>
+
+      <section className={`result-hero result-hero--${risk.band}`}>
+        <div className="result-hero__score">
+          <span>Nightjar risk</span>
+          <div className="result-hero__value"><strong>{score}</strong><small>/100</small></div>
+          <div className="result-hero__band"><RiskPill band={risk.band} />{isSimulated && <em>Simulated lighting</em>}</div>
+        </div>
+        <div className={`risk-ring risk-ring--${risk.band}`} style={scoreStyle} aria-label={`Risk score ${score} out of 100`}>
+          <div aria-hidden="true">⌁</div>
+        </div>
+      </section>
+
+      {onSimulate && (
+        <section className="lighting-test">
+          <div className="lighting-test__head">
+            <div><span>What if we dim the lights?</span><p>Preview the light factor for this location.</p></div>
+            <output>{Math.round(risk.factors.light.value * 100)}<small>/100</small></output>
+          </div>
+          <input
+            className="risk-slider"
+            type="range"
+            min="0"
+            max="100"
+            value={Math.round(risk.factors.light.value * 100)}
+            onChange={(event) => onSimulate(Number(event.target.value))}
+            aria-label="Simulate light exposure"
+          />
+          {isSimulated && <button type="button" className="lighting-test__reset" onClick={() => onSimulate(null)}>Reset to observed lighting</button>}
+        </section>
+      )}
 
       {risk.isMock && (
         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-faint)' }}>
@@ -183,9 +224,9 @@ export default function ResultPanel({ risk, location }) {
       )}
 
       {/* F5 — factor breakdown */}
-      <div>
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-faint)', marginBottom: 'var(--space-2)' }}>
-          Why this score
+      <div className="result-section">
+        <p className="result-section__title" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-faint)', marginBottom: 'var(--space-2)' }}>
+          Why this location?
         </p>
         <div className="factor-list">
           <FactorBar name="Habitat proximity" factor={risk.factors.habitat} role="Required" />
@@ -207,9 +248,9 @@ export default function ResultPanel({ risk, location }) {
       </div>
 
       {/* F6 — recommendations */}
-      <div>
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-faint)', marginBottom: 'var(--space-2)' }}>
-          What would help
+      <div className="result-section result-section--recommendations">
+        <p className="result-section__title" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-faint)', marginBottom: 'var(--space-2)' }}>
+          Recommended action
         </p>
         <div className="rec-list">
           {recommendations.map((rec, i) => (

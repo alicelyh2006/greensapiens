@@ -311,3 +311,33 @@
   .add-light__filter-row { grid-template-columns: 1fr; }
   .add-light__filter-field { grid-template-columns: 1fr; }
 }
+
+/* Shared application treatment for contribution surfaces and controls. */
+.observation-panel, .filter-bar, .results__empty, .add-light__filter-row { border-radius: 12px; }
+.observation-panel { border-color: var(--line); box-shadow: var(--shadow); }
+.add-light__button, .btn-ghost, .filter-select { border-radius: 9px; }
+.filter-bar { padding: 12px; background: linear-gradient(135deg, var(--surface-2), var(--surface)); }
+.filter-label { font-family: var(--font-mono); letter-spacing: .06em; text-transform: uppercase; }
+.filter-select { min-height: 34px; background: var(--surface); transition: border-color .15s ease, background .15s ease; }
+.filter-select:hover, .btn-ghost:hover { border-color: var(--line-strong); background: var(--surface-3); }
+.results__title, .observation-panel__title { letter-spacing: -.02em; }
+.card { border-radius: 12px; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.card__section { padding-top: 10px; border-top: 1px solid var(--line); }.card__section:first-of-type { padding-top: 0; border-top: 0; }
+.badge, .lamp-type, .risk-pill { border-radius: 999px; }
+.card__topline { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.card__topline .card__filename { min-width: 0; flex: 1; }
+.card__remove {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-faint);
+  font: inherit;
+  font-size: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.card__remove:hover { border-color: var(--risk-high); background: var(--risk-high-bg); color: var(--risk-high); }
+.card__remove:focus-visible { outline: 2px solid var(--risk-high); outline-offset: 2px; }

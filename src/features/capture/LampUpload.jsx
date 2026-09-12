@@ -271,7 +271,7 @@ function PlaceSection({ gps, source, onSourceChange, dataReady }) {
   )
 }
 
-function FileCard({ file, previewUrl, result, source, onSourceChange, dataReady }) {
+function FileCard({ file, previewUrl, result, source, onSourceChange, onRemove, dataReady }) {
   const [previewSrc, setPreviewSrc] = useState(() => previewUrl || null)
   const [loadingPreview, setLoadingPreview] = useState(false)
   const isHeic = file.type === 'image/heic' || file.type === 'image/heif' ||
@@ -349,7 +349,12 @@ function FileCard({ file, previewUrl, result, source, onSourceChange, dataReady 
       </div>
 
       <div className="card__body">
-        <p className="card__filename">{file.name}</p>
+        <div className="card__topline">
+          <p className="card__filename">{file.name}</p>
+          <button className="card__remove" type="button" onClick={onRemove} aria-label={`Remove ${file.name}`}>
+            Remove
+          </button>
+        </div>
 
         <section className="card__section">
           <h3 className="card__section-title">
@@ -465,6 +470,7 @@ export default function LampUpload({ dataReady = true }) {
     )
     setItems((prev) => [...results, ...prev])
     setBusy(false)
+    if (inputRef.current) inputRef.current.value = ''
     if (addLightRef.current) addLightRef.current.open = false
   }, [])
 
@@ -663,6 +669,7 @@ export default function LampUpload({ dataReady = true }) {
                     source={source}
                     dataReady={dataReady}
                     onSourceChange={(next) => setItems((prev) => prev.map((it) => (it.id === id ? { ...it, source: next } : it)))}
+                    onRemove={() => setItems((prev) => prev.filter((it) => it.id !== id))}
                   />
                 ))}
               </div>
