@@ -188,7 +188,7 @@
 .sidebar-about p { font-size: var(--text-xs); }
 
 .app__workspace { gap: 12px; padding: 14px; }
-.workspace-header { min-height: 40px; padding: 0 4px 0 6px; }
+.workspace-header { min-height: 40px; padding: 10px 4px 0 6px; }
 .workspace-header__eyebrow { color: var(--accent-warm); font-size: var(--text-xs); }
 .workspace-header h1 { font-size:var(--text-xl); letter-spacing: -.035em; }
 .workspace-header p { font-size: var(--text-xs); }
@@ -444,6 +444,7 @@
 }
 .sidebar-nav__item {
   font-size: 12px;
+  padding-left: 15px;
 }
 .sidebar-section__title {
   font-size: 9px;

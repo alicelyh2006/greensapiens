@@ -289,17 +289,20 @@ export default function ReportForm({ onSubmit }) {
             <div className="form-grid">
               <div className="form-field">
                 <label className="form-label" htmlFor="field-condition">Bird Condition</label>
-                <select
-                  id="field-condition"
-                  className="form-select"
-                  value={condition}
-                  onChange={(e) => setCondition(e.target.value)}
-                >
-                  <option value="dead">Dead / Fatal Collision</option>
-                  <option value="stunned">Stunned / Unable to fly</option>
-                  <option value="injured">Visibly Injured</option>
-                  <option value="unknown">Unknown / Not Sure</option>
-                </select>
+                <div className="form-select-wrapper">
+                  <select
+                    id="field-condition"
+                    className="form-select"
+                    value={condition}
+                    onChange={(e) => setCondition(e.target.value)}
+                  >
+                    <option value="dead">Dead / Fatal Collision</option>
+                    <option value="stunned">Stunned / Unable to fly</option>
+                    <option value="injured">Visibly Injured</option>
+                    <option value="unknown">Unknown / Not Sure</option>
+                  </select>
+                  <span className="form-select-arrow">▸</span>
+                </div>
               </div>
 
               <div className="form-field">

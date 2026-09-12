@@ -255,17 +255,20 @@ function PlaceSection({ gps, source, onSourceChange, dataReady }) {
 
       <label className="place-block__source" htmlFor={selectId}>
         <span>What kind of light is this?</span>
-        <select
-          id={selectId}
-          className="filter-select"
-          value={source || ''}
-          onChange={(e) => onSourceChange(e.target.value || null)}
-        >
-          <option value="">Not sure</option>
-          {LIGHT_SOURCES.map((s) => (
-            <option key={s.id} value={s.id}>{s.label}</option>
-          ))}
-        </select>
+        <div className="filter-select-wrapper">
+          <select
+            id={selectId}
+            className="filter-select"
+            value={source || ''}
+            onChange={(e) => onSourceChange(e.target.value || null)}
+          >
+            <option value="">Not sure</option>
+            {LIGHT_SOURCES.map((s) => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
+          </select>
+          <span className="filter-select-arrow">▸</span>
+        </div>
       </label>
     </div>
   )
@@ -499,6 +502,56 @@ export default function LampUpload({ dataReady = true }) {
     <div className="spike">
       <section className="observation-panel">
         <div className="observation-panel__actions">
+          
+        </div>
+
+        {/* Persistent Filter Toolbar */}
+        <div className="filter-bar">
+          <div className="filter-group">
+            <label htmlFor="filter-lamp-type" className="filter-label">
+              Lamp type:
+            </label>
+            <div className="filter-select-wrapper">
+              <select
+                id="filter-lamp-type"
+                className="filter-select"
+                value={lampTypeFilter}
+                onChange={(e) => setLampTypeFilter(e.target.value)}
+              >
+                <option value="all">All Lamp Types</option>
+                <option value="hps">High-pressure sodium (~2000K)</option>
+                <option value="warm_led">Warm white LED (2700–3000K)</option>
+                <option value="neutral_led">Neutral LED (~4000K)</option>
+                <option value="cool_led">Cool white LED (5000–6500K)</option>
+                <option value="unknown">Unknown / Unclassified</option>
+              </select>
+
+              <span className="filter-select-arrow">▸</span>
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="filter-bird-risk" className="filter-label">
+              Bird risk:
+            </label>
+            <div className="filter-select-wrapper">
+              <select
+                id="filter-bird-risk"
+                className="filter-select"
+                value={birdRiskFilter}
+                onChange={(e) => setBirdRiskFilter(e.target.value)}
+              >
+                <option value="all">All Risk Levels</option>
+                <option value="low">Low Risk (Minimal / Low Blue)</option>
+                <option value="medium">Medium Risk (Moderate Blue)</option>
+                <option value="high">High Risk (High Blue)</option>
+                <option value="unknown">Unknown Risk</option>
+              </select>
+
+              <span className="filter-select-arrow">▸</span>
+            </div>
+          </div>
+
           <details ref={addLightRef} className="add-light">
             <summary className="add-light__button">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -566,46 +619,6 @@ export default function LampUpload({ dataReady = true }) {
 
             </div>
           </details>
-        </div>
-
-        {/* Persistent Filter Toolbar */}
-        <div className="filter-bar">
-          <div className="filter-group">
-            <label htmlFor="filter-lamp-type" className="filter-label">
-              Lamp type:
-            </label>
-            <select
-              id="filter-lamp-type"
-              className="filter-select"
-              value={lampTypeFilter}
-              onChange={(e) => setLampTypeFilter(e.target.value)}
-            >
-              <option value="all">All Lamp Types</option>
-              <option value="hps">High-pressure sodium (~2000K)</option>
-              <option value="warm_led">Warm white LED (2700–3000K)</option>
-              <option value="neutral_led">Neutral LED (~4000K)</option>
-              <option value="cool_led">Cool white LED (5000–6500K)</option>
-              <option value="unknown">Unknown / Unclassified</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label htmlFor="filter-bird-risk" className="filter-label">
-              Bird risk:
-            </label>
-            <select
-              id="filter-bird-risk"
-              className="filter-select"
-              value={birdRiskFilter}
-              onChange={(e) => setBirdRiskFilter(e.target.value)}
-            >
-              <option value="all">All Risk Levels</option>
-              <option value="low">Low Risk (Minimal / Low Blue)</option>
-              <option value="medium">Medium Risk (Moderate Blue)</option>
-              <option value="high">High Risk (High Blue)</option>
-              <option value="unknown">Unknown Risk</option>
-            </select>
-          </div>
 
           {hasActiveFilters && (
             <button

@@ -89,13 +89,29 @@
 }
 .select-wrap > select { appearance: none; }
 
+.form-select-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.form-select-arrow {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  color: var(--text-faint);
+  font-size: 12px;
+  pointer-events: none;
+}
+
 .form-input,
 .form-select,
 .form-textarea {
   width: 100%; padding: 9px 11px; color: var(--text); background: var(--surface-2);
   border: 1px solid var(--line-strong); border-radius: 8px; outline: none;
   font: inherit; font-size:var(--text-xs); padding-right: 48px;
-  transition: border-color .15s, box-shadow .15s, background .15s;
+  transition: border-color .15s, box-shadow .15s, background .15s; appearance: none;
+  -webkit-appearance: none;
 }
 .form-input::placeholder, .form-textarea::placeholder { color: var(--text-faint); }
 .form-input:hover, .form-select:hover, .form-textarea:hover { border-color: var(--text-faint); }
