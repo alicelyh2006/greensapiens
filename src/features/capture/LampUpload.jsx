@@ -255,23 +255,26 @@ function PlaceSection({ gps, source, onSourceChange, dataReady }) {
 
       <label className="place-block__source" htmlFor={selectId}>
         <span>What kind of light is this?</span>
-        <select
-          id={selectId}
-          className="filter-select"
-          value={source || ''}
-          onChange={(e) => onSourceChange(e.target.value || null)}
-        >
-          <option value="">Not sure</option>
-          {LIGHT_SOURCES.map((s) => (
-            <option key={s.id} value={s.id}>{s.label}</option>
-          ))}
-        </select>
+        <div className="filter-select-wrapper">
+          <select
+            id={selectId}
+            className="filter-select"
+            value={source || ''}
+            onChange={(e) => onSourceChange(e.target.value || null)}
+          >
+            <option value="">Not sure</option>
+            {LIGHT_SOURCES.map((s) => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
+          </select>
+          <span className="filter-select-arrow">▸</span>
+        </div>
       </label>
     </div>
   )
 }
 
-function FileCard({ file, previewUrl, result, source, onSourceChange, dataReady }) {
+function FileCard({ id, file, previewUrl, result, source, onSourceChange, onRemove, dataReady }) {
   const [previewSrc, setPreviewSrc] = useState(() => previewUrl || null)
   const [loadingPreview, setLoadingPreview] = useState(false)
   const isHeic = file.type === 'image/heic' || file.type === 'image/heif' ||
@@ -349,26 +352,22 @@ function FileCard({ file, previewUrl, result, source, onSourceChange, dataReady 
       </div>
 
       <div className="card__body">
-        <p className="card__filename">{file.name}</p>
+        <div className="card__topline">
+          <p className="card__filename">{file.name}</p>
+          <button className="card__remove" type="button" onClick={onRemove} aria-label={`Remove ${file.name}`}>
+            Remove
+          </button>
+        </div>
 
         <section className="card__section">
-          <h3 className="card__section-title">
-            <span className="badge badge--gps">F9 · GPS</span>
-          </h3>
           <GpsSection gps={result.gps} />
         </section>
 
         <section className="card__section">
-          <h3 className="card__section-title">
-            <span className="badge badge--place">F11 · Place &amp; owner</span>
-          </h3>
           <PlaceSection gps={result.gps} source={source} onSourceChange={onSourceChange} dataReady={dataReady} />
         </section>
 
         <section className="card__section">
-          <h3 className="card__section-title">
-            <span className="badge badge--colour">F10 · Light Classification</span>
-          </h3>
           {result.colour && result.colour.pixelsSampled === 0 ? (
             <div className="lamp-warning lamp-warning--block" role="note">
               <p className="lamp-warning__title">Could not read a colour</p>
@@ -422,6 +421,10 @@ function FileCard({ file, previewUrl, result, source, onSourceChange, dataReady 
             <p className="card__miss">Colour sampling failed</p>
           )}
         </section>
+
+        <div className="card__footer">
+          <span className="card__id">Observation ID: #{String(id).slice(-8)}</span>
+        </div>
       </div>
     </article>
   )
@@ -498,14 +501,57 @@ export default function LampUpload({ dataReady = true }) {
   return (
     <div className="spike">
       <section className="observation-panel">
-        <div className="observation-panel__intro">
-          <div>
-            <span className="observation-panel__eyebrow">FIELD SURVEY</span>
-            <h2 className="observation-panel__title">Lamp observations</h2>
-            <p className="observation-panel__sub">
-              Review lamp observations collected on this device. Add a light to photograph a lamp, read its location from EXIF, and classify its colour.
-            </p>
+        <div className="observation-panel__actions">
+          
+        </div>
+
+        {/* Persistent Filter Toolbar */}
+        <div className="filter-bar">
+          <div className="filter-group">
+            <label htmlFor="filter-lamp-type" className="filter-label">
+              Lamp type:
+            </label>
+            <div className="filter-select-wrapper">
+              <select
+                id="filter-lamp-type"
+                className="filter-select"
+                value={lampTypeFilter}
+                onChange={(e) => setLampTypeFilter(e.target.value)}
+              >
+                <option value="all">All Lamp Types</option>
+                <option value="hps">High-pressure sodium (~2000K)</option>
+                <option value="warm_led">Warm white LED (2700–3000K)</option>
+                <option value="neutral_led">Neutral LED (~4000K)</option>
+                <option value="cool_led">Cool white LED (5000–6500K)</option>
+                <option value="unknown">Unknown / Unclassified</option>
+              </select>
+
+              <span className="filter-select-arrow">▸</span>
+            </div>
           </div>
+
+          <div className="filter-group">
+            <label htmlFor="filter-bird-risk" className="filter-label">
+              Bird risk:
+            </label>
+            <div className="filter-select-wrapper">
+              <select
+                id="filter-bird-risk"
+                className="filter-select"
+                value={birdRiskFilter}
+                onChange={(e) => setBirdRiskFilter(e.target.value)}
+              >
+                <option value="all">All Risk Levels</option>
+                <option value="low">Low Risk (Minimal / Low Blue)</option>
+                <option value="medium">Medium Risk (Moderate Blue)</option>
+                <option value="high">High Risk (High Blue)</option>
+                <option value="unknown">Unknown Risk</option>
+              </select>
+
+              <span className="filter-select-arrow">▸</span>
+            </div>
+          </div>
+
           <details ref={addLightRef} className="add-light">
             <summary className="add-light__button">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -573,46 +619,6 @@ export default function LampUpload({ dataReady = true }) {
 
             </div>
           </details>
-        </div>
-
-        {/* Persistent Filter Toolbar */}
-        <div className="filter-bar">
-          <div className="filter-group">
-            <label htmlFor="filter-lamp-type" className="filter-label">
-              Lamp type:
-            </label>
-            <select
-              id="filter-lamp-type"
-              className="filter-select"
-              value={lampTypeFilter}
-              onChange={(e) => setLampTypeFilter(e.target.value)}
-            >
-              <option value="all">All Lamp Types</option>
-              <option value="hps">High-pressure sodium (~2000K)</option>
-              <option value="warm_led">Warm white LED (2700–3000K)</option>
-              <option value="neutral_led">Neutral LED (~4000K)</option>
-              <option value="cool_led">Cool white LED (5000–6500K)</option>
-              <option value="unknown">Unknown / Unclassified</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label htmlFor="filter-bird-risk" className="filter-label">
-              Bird risk:
-            </label>
-            <select
-              id="filter-bird-risk"
-              className="filter-select"
-              value={birdRiskFilter}
-              onChange={(e) => setBirdRiskFilter(e.target.value)}
-            >
-              <option value="all">All Risk Levels</option>
-              <option value="low">Low Risk (Minimal / Low Blue)</option>
-              <option value="medium">Medium Risk (Moderate Blue)</option>
-              <option value="high">High Risk (High Blue)</option>
-              <option value="unknown">Unknown Risk</option>
-            </select>
-          </div>
 
           {hasActiveFilters && (
             <button
@@ -657,12 +663,14 @@ export default function LampUpload({ dataReady = true }) {
                 {filteredItems.map(({ id, file, previewUrl, result, source }) => (
                   <FileCard
                     key={id}
+                    id={id}
                     file={file}
                     previewUrl={previewUrl}
                     result={result}
                     source={source}
                     dataReady={dataReady}
                     onSourceChange={(next) => setItems((prev) => prev.map((it) => (it.id === id ? { ...it, source: next } : it)))}
+                    onRemove={() => setItems((prev) => prev.filter((it) => it.id !== id))}
                   />
                 ))}
               </div>

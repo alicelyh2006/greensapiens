@@ -41,7 +41,7 @@ function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange
   const nav = [
     ['map', 'Risk Map', 'risk'],
     ['eye', 'Lamp Observations', 'observations'],
-    ['report', 'Report Collision', 'report'],
+    ['report', 'Report a Bird Collision', 'report'],
     ['info', 'How It Works', 'method'],
   ]
   const layerRows = [
@@ -112,17 +112,21 @@ function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange
 function WorkspaceHeader({ activeTab, theme, onTheme }) {
   const titles = {
     risk: ['Risk Map', 'Explore Singapore’s estimated bird-collision risk.'],
-    observations: ['Lamp Observations', 'Review the existing field-observation gallery.'],
-    report: ['Report a Collision', 'Record a local incident and keep the draft on this device.'],
+    observations: ['Lamp Observations', 'Review lamp observations collected on this device. Add a light to photograph a lamp, read its location from EXIF, and classify its colour.'],
+    report: ['Report a Collision', 'Found a dead or stunned bird near a building? Logging it builds the evidence base Singapore does not currently have.'],
     method: ['How This Is Calculated', 'What the score is built from, and what it cannot tell you.'],
   }
   const [title, subtitle] = titles[activeTab]
+
   return (
-    <header className="workspace-header">
+    <header className="workspace-header" aria-label="Workspace controls">
       <div>
         <div className="workspace-header__eyebrow">NIGHTJAR / {activeTab === 'risk' ? 'MAP' : activeTab.toUpperCase()}</div>
         <h1>{title}</h1>
         <p>{subtitle}</p>
+        {activeTab === 'report' && (
+          <p className="workspace-header__privacy"><strong>Privacy:</strong> reports stay on this device and are never uploaded.</p>
+        )}
       </div>
       <button className="workspace-header__theme" type="button" onClick={onTheme}>
         <Icon name="moon" size={14} />
