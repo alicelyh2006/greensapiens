@@ -291,6 +291,8 @@ export const DATA = {
   lamps: `${BASE}data/lamps.json`,
   /** Precomputed risk surface. Built by scripts/build-risk-grid.mjs. */
   riskGrid: `${BASE}data/risk-grid.json`,
+  /** F13 priority list. Built by scripts/build-hotspots.mjs from the risk grid. */
+  hotspots: `${BASE}data/hotspots.json`,
   /** Land mask, also used to reject clicks on water. */
   boundary: `${BASE}data/singapore-boundary.geojson`,
 }

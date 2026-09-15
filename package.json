@@ -9,11 +9,12 @@
     "build": "vite build",
     "preview": "vite preview",
     "data:simplify": "mapshaper data-raw/parks-raw.geojson -simplify 10% keep-shapes -o public/data/green-spaces.geojson",
-    "data:risk": "node scripts/build-risk-grid.mjs",
+    "data:risk": "node scripts/build-risk-grid.mjs && node scripts/build-risk-contours.mjs && node --max-old-space-size=8192 scripts/build-hotspots.mjs",
     "data:density": "node --max-old-space-size=12288 scripts/build-density-grid-glass.mjs",
     "data:density:zoning": "node --max-old-space-size=8192 scripts/build-density-grid.mjs data-raw/landuse-raw.geojson public/data/density-grid.json",
     "data:fetch:geom": "node --max-old-space-size=8192 scripts/fetch-osm-geometry.mjs",
-    "data:density:storeys": "node --max-old-space-size=8192 scripts/build-density-grid-osm.mjs"
+    "data:density:storeys": "node --max-old-space-size=8192 scripts/build-density-grid-osm.mjs",
+    "data:hotspots": "node --max-old-space-size=8192 scripts/build-hotspots.mjs"
   },
   "dependencies": {
     "@turf/boolean-point-in-polygon": "^7.4.0",
