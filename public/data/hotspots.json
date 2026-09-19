@@ -6,6 +6,7 @@
  "sites": [
   {
    "rank": 1,
+   "area": "Ang Mo Kio",
    "lat": 1.3735,
    "lng": 103.8265,
    "score": 71,
@@ -21,6 +22,7 @@
   },
   {
    "rank": 2,
+   "area": "Bukit Timah",
    "lat": 1.3195,
    "lng": 103.7845,
    "score": 62,
@@ -36,6 +38,7 @@
   },
   {
    "rank": 3,
+   "area": "Central Water Catchment",
    "lat": 1.3495,
    "lng": 103.8325,
    "score": 62,
@@ -51,6 +54,7 @@
   },
   {
    "rank": 4,
+   "area": "Bukit Panjang",
    "lat": 1.3465,
    "lng": 103.7755,
    "score": 58,
@@ -66,6 +70,7 @@
   },
   {
    "rank": 5,
+   "area": "Bishan",
    "lat": 1.3585,
    "lng": 103.8265,
    "score": 58,
@@ -81,6 +86,7 @@
   },
   {
    "rank": 6,
+   "area": "Central Water Catchment",
    "lat": 1.3885,
    "lng": 103.7755,
    "score": 58,
@@ -96,6 +102,7 @@
   },
   {
    "rank": 7,
+   "area": "Bukit Panjang",
    "lat": 1.3585,
    "lng": 103.7695,
    "score": 57,
@@ -111,6 +118,7 @@
   },
   {
    "rank": 8,
+   "area": "Pasir Ris",
    "lat": 1.3765,
    "lng": 103.9495,
    "score": 55,
@@ -126,6 +134,7 @@
   },
   {
    "rank": 9,
+   "area": "Bukit Merah",
    "lat": 1.2775,
    "lng": 103.8265,
    "score": 54,
@@ -141,6 +150,7 @@
   },
   {
    "rank": 10,
+   "area": "Bukit Merah",
    "lat": 1.2835,
    "lng": 103.8115,
    "score": 54,
@@ -156,6 +166,7 @@
   },
   {
    "rank": 11,
+   "area": "Museum",
    "lat": 1.2925,
    "lng": 103.8475,
    "score": 54,
@@ -171,6 +182,7 @@
   },
   {
    "rank": 12,
+   "area": "Queenstown",
    "lat": 1.2985,
    "lng": 103.7605,
    "score": 54,
@@ -186,6 +198,7 @@
   },
   {
    "rank": 13,
+   "area": "Queenstown",
    "lat": 1.2985,
    "lng": 103.7965,
    "score": 54,
@@ -201,6 +214,7 @@
   },
   {
    "rank": 14,
+   "area": "Choa Chu Kang",
    "lat": 1.4005,
    "lng": 103.7515,
    "score": 54,
@@ -216,6 +230,7 @@
   },
   {
    "rank": 15,
+   "area": "Queenstown",
    "lat": 1.2865,
    "lng": 103.7755,
    "score": 53,
@@ -231,6 +246,7 @@
   },
   {
    "rank": 16,
+   "area": "Jurong West",
    "lat": 1.3315,
    "lng": 103.7245,
    "score": 53,
@@ -246,6 +262,7 @@
   },
   {
    "rank": 17,
+   "area": "Tampines",
    "lat": 1.3465,
    "lng": 103.9285,
    "score": 53,
@@ -261,6 +278,7 @@
   },
   {
    "rank": 18,
+   "area": "Punggol",
    "lat": 1.4155,
    "lng": 103.9135,
    "score": 53,
@@ -276,6 +294,7 @@
   },
   {
    "rank": 19,
+   "area": "Queenstown",
    "lat": 1.2835,
    "lng": 103.7875,
    "score": 52,
@@ -291,6 +310,7 @@
   },
   {
    "rank": 20,
+   "area": "Queenstown",
    "lat": 1.2865,
    "lng": 103.7995,
    "score": 52,

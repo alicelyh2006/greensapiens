@@ -16,9 +16,16 @@ import { DATA } from '../../lib/config.js'
 import './priority.css'
 
 function SiteRow({ site, onOpen }) {
-  const where = site.inside
-    ? `Inside ${site.place}`
-    : `${site.metres} m from ${site.place}`
+  // The planning area is the name a person can place; the green space says why
+  // the model is interested. Titling by the green space alone does not work —
+  // the Rail Corridor runs the length of the island and is nearest to seven of
+  // these twenty, so seven rows would have carried the same name.
+  const title = site.area || site.place || 'Unnamed location'
+  const beside = site.place
+    ? site.inside
+      ? `inside ${site.place}`
+      : `${site.metres} m from ${site.place}`
+    : null
 
   return (
     <li className="priority-row">
@@ -26,9 +33,10 @@ function SiteRow({ site, onOpen }) {
 
       <div className="priority-row__body">
         <div className="priority-row__head">
-          <h3 className="priority-row__where">{where}</h3>
+          <h3 className="priority-row__where">{title}</h3>
           <RiskPill band={site.band} />
         </div>
+        {beside && <p className="priority-row__beside">{beside}</p>}
 
         <dl className="priority-row__factors">
           <div><dt>Habitat</dt><dd>{site.habitat}</dd></div>

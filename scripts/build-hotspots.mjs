@@ -17,6 +17,8 @@
  * Source: derived from public/data/risk-grid.json.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
+import { point } from '@turf/helpers'
 import { BANDS } from '../src/lib/config.js'
 
 globalThis.fetch = async (u) => {
@@ -59,6 +61,44 @@ for (const cand of candidates) {
 }
 console.log(`${picked.length} distinct sites at ${MIN_SPACING_KM} km spacing`)
 
+/**
+ * Which URA planning area a site sits in — Bukit Panjang, Ang Mo Kio, Clementi.
+ *
+ * The list used to title each row by its nearest green space and how far away
+ * it was: "25 m from Central Catchment Nature Reserve". That is precise and
+ * almost useless for finding the place, and it repeats — seven of the twenty
+ * sites are near the Rail Corridor, which runs the length of the island, so
+ * seven rows carried the same name. A planning area is what a person actually
+ * uses to say where something is.
+ *
+ * From the same URA boundaries the risk grid already uses as its land mask, so
+ * this adds no data and no network call.
+ */
+const planningAreas = JSON.parse(
+  readFileSync('./scripts/data/land-mask.geojson', 'utf8')
+).features
+for (const f of planningAreas) {
+  let x0 = 180, y0 = 90, x1 = -180, y1 = -90
+  const walk = (c) => {
+    if (typeof c[0] === 'number') {
+      if (c[0] < x0) x0 = c[0]; if (c[0] > x1) x1 = c[0]
+      if (c[1] < y0) y0 = c[1]; if (c[1] > y1) y1 = c[1]
+    } else c.forEach(walk)
+  }
+  walk(f.geometry.coordinates)
+  f._bbox = [x0, y0, x1, y1]
+}
+
+function planningAreaAt(lat, lng) {
+  const pt = point([lng, lat])
+  for (const f of planningAreas) {
+    const [x0, y0, x1, y1] = f._bbox
+    if (lng < x0 || lng > x1 || lat < y0 || lat > y1) continue
+    if (booleanPointInPolygon(pt, f)) return f.properties.PLN_AREA_N
+  }
+  return null
+}
+
 /** 'JLN LEBAN PG' -> 'Jalan Leban Playground'. Mirrors lampContext's formatter. */
 const ABBR = {
   PK: 'Park', PG: 'Playground', OS: 'Open Space', RD: 'Road', JLN: 'Jalan',
@@ -76,6 +116,7 @@ const sites = picked.map((p, i) => {
   const near = nearestGreenSpace(p.lat, p.lng)
   return {
     rank: i + 1,
+    area: titleCase(planningAreaAt(p.lat, p.lng) ?? ''),
     lat: +p.lat.toFixed(5),
     lng: +p.lng.toFixed(5),
     score: s.total,
@@ -94,7 +135,8 @@ const sites = picked.map((p, i) => {
 for (const s of sites) {
   console.log(
     `  ${String(s.rank).padStart(2)}. ${String(s.score).padStart(3)}  ` +
-    `${(s.inside ? 'in ' : s.metres + 'm from ')}${s.place}`.padEnd(46) +
+    (s.area || '—').padEnd(20) +
+    `${(s.inside ? 'in ' : s.metres + 'm from ')}${s.place}`.padEnd(44) +
     `light ${s.lightConfidence}`
   )
 }
