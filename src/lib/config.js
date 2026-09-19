@@ -95,25 +95,27 @@ export const SIZE_WEIGHT = {
  * Band thresholds. These are PRESENTATION, not risk science.
  *
  * The score is a 0-100 index with no absolute meaning, and its distribution
- * across Singapore is smooth and unimodal — a hard peak at 15-19 and a long
- * tail, with no natural break anywhere. So any threshold is a convention, and
- * the honest thing is to pick one that says what it means.
+ * across Singapore is smooth and unimodal — 2,055 assessed locations with a
+ * hard peak at 15-19, a median of 23, and a thin tail out to 71. There is no
+ * natural break anywhere, so any threshold is a convention. The honest move is
+ * to pick one that says what it means.
  *
- * These are percentiles of the 2,055 assessed locations, not round numbers:
+ * These are percentiles of the assessed locations rather than round numbers:
  *
- *   high     >= 48   top 5%    ~120 locations
- *   moderate >= 35   top 25%   ~535 locations
+ *   high     >= 48   the worst 5%    120 locations
+ *   moderate >= 35   the worst 25%   535 locations
  *
- * That framing suits what the map is for. "The worst 5% of places we assessed"
- * is a statement someone can act on and check; "above 60 out of 100" is not.
+ * That framing suits what the map is for. "The worst 5% of the places we
+ * assessed" is a claim someone can act on and check. "Above 60 out of 100" is
+ * not, because 60 of what is undefined.
  *
- * The previous values were 34 and 60, and 60 had been lowered from 67 because
- * nothing on the island ever reached it. At 60 the high band contained seven
- * cells out of 6,749 — a category that existed in the legend and almost nowhere
- * on the map.
+ * The previous values were 34 and 60. 60 had already been lowered from 67
+ * because nothing on the island ever reached it, and at 60 the high band held
+ * seven cells out of 6,749 — a category present in the legend and essentially
+ * nowhere on the map.
  *
- * Rerun scripts/report-bands.mjs after any model change; if the distribution
- * moves, these should move with it.
+ * Run scripts/report-bands.mjs after any change to the model or its data. If
+ * the distribution moves, these should move with it.
  */
 export const BANDS = {
   moderate: 35,
@@ -242,14 +244,17 @@ export const AGENCIES = {
 }
 
 /**
- * How to draw the risk surface.
+ * F11 — who owns a photographed lamp, worked out from where it is.
  *
- * 'contour' — smoothed bands, the way a weather warning map reads. Risk has no
- *   square edges in the world; the cell boundary is an artefact of sampling.
- * 'cells'   — the 333 m grid squares themselves. Blockier, but it shows exactly
- *   what was computed and where the resolution limit is.
+ * Geodata alone cannot tell a street lamp from a void-deck light, so the
+ * only confident case is "inside an NParks-managed space". Everywhere else
+ * we offer a guess from building density and ask the photographer to
+ * confirm the light source — that one tap is the real answer.
  */
-export const RISK_RENDER = 'contour'
+export const LAMP_OWNER = {
+  /** Density at or above this reads as an HDB-type estate, owner guessed as Town Council. */
+  estateDensity: 0.5,
+}
 
 export const MAP_DEFAULT = {
   center: [1.3521, 103.8198],
@@ -286,8 +291,8 @@ export const DATA = {
   lamps: `${BASE}data/lamps.json`,
   /** Precomputed risk surface. Built by scripts/build-risk-grid.mjs. */
   riskGrid: `${BASE}data/risk-grid.json`,
-  /** Smoothed contour bands over that surface. See scripts/build-risk-contours.mjs. */
-  riskContours: `${BASE}data/risk-contours.geojson`,
+  /** F13 priority list. Built by scripts/build-hotspots.mjs from the risk grid. */
+  hotspots: `${BASE}data/hotspots.json`,
   /** Land mask, also used to reject clicks on water. */
   boundary: `${BASE}data/singapore-boundary.geojson`,
 }

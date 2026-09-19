@@ -118,7 +118,7 @@ export function nearestGreenSpace(lat, lng) {
         best = {
           metres: m,
           inside: booleanPointInPolygon(pt, f),
-          name: f.properties.NAME,
+          name: displayGreenSpaceName(f.properties.NAME),
           hectares: (f.properties['SHAPE_1.AREA'] ?? 0) / 10000,
           isReserve: f.properties.N_RESERVE === 1 || f.properties.N_RESERVE === '1',
         }
@@ -126,6 +126,25 @@ export function nearestGreenSpace(lat, lng) {
     }
   }
   return best
+}
+
+/**
+ * NParks ships four Botanic Gardens polygons under internal sub-zone codes —
+ * "SBG LC ZONE 1 (TNC)", "SBG LC ARBO/PRC/PRU" and so on. Left alone they reach
+ * the UI verbatim, and a reader has no way to tell that is the Botanic Gardens.
+ * Mapped here rather than edited into the data, so the committed GeoJSON stays
+ * exactly as published.
+ */
+const NAME_OVERRIDES = [
+  [/^SBG\b/i, 'Singapore Botanic Gardens'],
+]
+
+export function displayGreenSpaceName(raw) {
+  const name = String(raw ?? '')
+  for (const [pattern, label] of NAME_OVERRIDES) {
+    if (pattern.test(name)) return label
+  }
+  return name
 }
 
 function sizeWeight({ hectares, isReserve }) {
@@ -175,7 +194,7 @@ function bestHabitat(lat, lng) {
     const candidate = {
       metres,
       inside: booleanPointInPolygon(pt, f),
-      name: f.properties.NAME,
+      name: displayGreenSpaceName(f.properties.NAME),
       hectares: (f.properties['SHAPE_1.AREA'] ?? 0) / 10000,
       isReserve: f.properties.N_RESERVE === 1 || f.properties.N_RESERVE === '1',
     }

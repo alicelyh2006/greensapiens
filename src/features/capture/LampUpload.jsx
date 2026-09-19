@@ -1,10 +1,12 @@
 /**
- * F9 (EXIF GPS) + F10 (lamp colour classification).  OWNER: L4
+ * F9 (EXIF GPS) + F10 (lamp colour classification) + F11 (place & owner).
+ * OWNER: L4
  *
  * Reads a photo's embedded GPS, then classifies the lamp by colour. Blue
  * content, not brightness, is what predicts migrant collisions — so this needs
  * no photometry and no exposure calibration, only the colour a camera already
- * records.
+ * records. F11 then places that GPS against the committed geodata to name the
+ * nearest green space and the agency responsible — see lampContext.js.
  *
  * Mounted in the app from App.jsx. HEIC decoding is loaded on demand; see
  * heicConvert.js.
@@ -14,6 +16,8 @@ import { heicToJpeg } from './heicConvert.js'
 import { readExifGps } from './exifGps.js'
 import { sampleLampColour } from './lampColour.js'
 import { extractHeicThumbnail } from './extractHeicThumbnail.js'
+import { lampContext, formatDistance, primeRiskGrid, LIGHT_SOURCES } from './lampContext.js'
+import { RiskPill } from '../../components'
 import './LampUpload.css'
 
 const LAMP_LABEL = {
@@ -80,11 +84,17 @@ function isHeicFile(file) {
 
 const STORAGE_KEY = 'nightjar.lamp-observations.v1'
 
+function newId() {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
 function getStoredItems() {
   try {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
     if (!Array.isArray(stored)) return []
-    return stored.map((item) => ({
+    return stored.map((item, i) => ({
+      id: item.id || `saved-${i}`,
+      source: item.source || null,
       file: {
         name: item.fileName || 'Saved lamp observation',
         type: item.fileType || '',
@@ -100,7 +110,9 @@ function getStoredItems() {
 
 function saveItems(items) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map(({ file, previewUrl, result }) => ({
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map(({ id, source, file, previewUrl, result }) => ({
+      id,
+      source: source || null,
       fileName: file.name,
       fileType: previewUrl ? 'image/jpeg' : file.type,
       previewUrl: previewUrl || null,
@@ -185,7 +197,98 @@ function GpsSection({ gps }) {
   )
 }
 
-function FileCard({ file, previewUrl, result }) {
+const OWNER_CONFIDENCE_LABEL = {
+  confirmed: 'Confirmed by you',
+  likely: 'Likely',
+  guess: 'Best guess',
+}
+
+/**
+ * F11 — place the lamp from its GPS and say who to ask about it. Everything
+ * is computed on-device from committed geodata; see lampContext.js.
+ */
+function PlaceSection({ gps, source, onSourceChange, dataReady }) {
+  // The risk grid is what lets a photo be scored at the same resolution the map
+  // draws. Fetched once; re-running the context when it lands.
+  const [gridReady, setGridReady] = useState(false)
+  useEffect(() => { let live = true; primeRiskGrid().then(() => live && setGridReady(true)); return () => { live = false } }, [])
+
+  const ctx = useMemo(
+    () => (dataReady ? lampContext(gps, source) : null),
+    [gps, source, dataReady, gridReady]
+  )
+
+  if (!gps) {
+    return (
+      <p className="place-block__miss">
+        No GPS, so the area and owner can't be worked out from this photo. Find the spot on the Risk Map instead.
+      </p>
+    )
+  }
+  if (!ctx) {
+    return <p className="place-block__miss">Loading Nightjar geodata&#8230;</p>
+  }
+
+  const { place, risk, owner, habitatNote } = ctx
+  const selectId = `light-source-${gps.lat.toFixed(5)}-${gps.lng.toFixed(5)}`
+
+  return (
+    <div className="place-block">
+      <dl className="card__dl card__dl--metrics">
+        <dt>Green space</dt>
+        <dd>
+          {place
+            ? place.inside
+              ? <>Inside <strong>{place.name}</strong></>
+              : <><strong>{place.name}</strong>, {formatDistance(place.metres)} from its edge</>
+            : 'None nearby'}
+          {/* The nearest green space is often not the one driving the score — a
+              pocket playground can sit in front of a nature reserve. Show what
+              the model is actually reacting to when they differ. */}
+          {habitatNote && place && !habitatNote.includes(place.name) && (
+            <span className="place-block__reason">Scored on: {habitatNote}</span>
+          )}
+        </dd>
+        <dt>Risk here</dt>
+        <dd className="place-block__risk">
+          {risk ? <><RiskPill band={risk.band} /> <span className="place-block__risk-total">{risk.total}/100</span></> : 'Outside the assessed area'}
+        </dd>
+        <dt>Contact</dt>
+        <dd>
+          {owner ? (
+            <>
+              <strong>{owner.name}</strong>
+              <span className={`place-block__confidence place-block__confidence--${owner.confidence}`}>{OWNER_CONFIDENCE_LABEL[owner.confidence]}</span>
+              <span className="place-block__reason">{owner.reason}</span>
+            </>
+          ) : (
+            <span className="place-block__reason">Choose the light source below to see who is responsible.</span>
+          )}
+        </dd>
+      </dl>
+
+      <label className="place-block__source" htmlFor={selectId}>
+        <span>What kind of light is this?</span>
+        <div className="filter-select-wrapper">
+          <select
+            id={selectId}
+            className="filter-select"
+            value={source || ''}
+            onChange={(e) => onSourceChange(e.target.value || null)}
+          >
+            <option value="">Not sure</option>
+            {LIGHT_SOURCES.map((s) => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
+          </select>
+          <span className="filter-select-arrow">▸</span>
+        </div>
+      </label>
+    </div>
+  )
+}
+
+function FileCard({ id, file, previewUrl, result, source, onSourceChange, onRemove, dataReady }) {
   const [previewSrc, setPreviewSrc] = useState(() => previewUrl || null)
   const [loadingPreview, setLoadingPreview] = useState(false)
   const isHeic = file.type === 'image/heic' || file.type === 'image/heif' ||
@@ -263,20 +366,28 @@ function FileCard({ file, previewUrl, result }) {
       </div>
 
       <div className="card__body">
-        <p className="card__filename">{file.name}</p>
+        <div className="card__topline">
+          <p className="card__filename">{file.name}</p>
+          <button className="card__remove" type="button" onClick={onRemove} aria-label={`Remove ${file.name}`}>
+            Remove
+          </button>
+        </div>
 
         <section className="card__section">
-          <h3 className="card__section-title">
-            <span className="badge badge--gps">F9 · GPS</span>
-          </h3>
           <GpsSection gps={result.gps} />
         </section>
 
         <section className="card__section">
-          <h3 className="card__section-title">
-            <span className="badge badge--colour">F10 · Light Classification</span>
-          </h3>
-          {result.colour ? (
+          <PlaceSection gps={result.gps} source={source} onSourceChange={onSourceChange} dataReady={dataReady} />
+        </section>
+
+        <section className="card__section">
+          {result.colour && result.colour.pixelsSampled === 0 ? (
+            <div className="lamp-warning lamp-warning--block" role="note">
+              <p className="lamp-warning__title">Could not read a colour</p>
+              <p className="lamp-warning__body">{result.colour.warning || 'No usable pixels in this photo.'}</p>
+            </div>
+          ) : result.colour ? (
             (() => {
               const info = LAMP_LABEL[result.colour.type] || LAMP_LABEL.unknown
               return (
@@ -314,6 +425,9 @@ function FileCard({ file, previewUrl, result }) {
                       R:{result.colour.avgR} G:{result.colour.avgG} B:{result.colour.avgB}
                     </dd>
                   </dl>
+                  {result.colour.warning && (
+                    <p className="lamp-warning" role="note">{result.colour.warning}</p>
+                  )}
                 </div>
               )
             })()
@@ -321,12 +435,16 @@ function FileCard({ file, previewUrl, result }) {
             <p className="card__miss">Colour sampling failed</p>
           )}
         </section>
+
+        <div className="card__footer">
+          <span className="card__id">Observation ID: #{String(id).slice(-8)}</span>
+        </div>
       </div>
     </article>
   )
 }
 
-export default function LampUpload({ onAdd }) {
+export default function LampUpload({ dataReady = true }) {
   const [items, setItems] = useState(getStoredItems)
   const [busy, setBusy] = useState(false)
   const [lampTypeFilter, setLampTypeFilter] = useState('all')
@@ -359,7 +477,7 @@ export default function LampUpload({ onAdd }) {
         } catch (error) {
           console.warn('Could not save lamp photo preview locally:', error)
         }
-        return { file, previewUrl, result: { gps, colour } }
+        return { id: newId(), source: null, file, previewUrl, result: { gps, colour } }
       })
     )
     setItems((prev) => [...results, ...prev])
@@ -397,14 +515,57 @@ export default function LampUpload({ onAdd }) {
   return (
     <div className="spike">
       <section className="observation-panel">
-        <div className="observation-panel__intro">
-          <div>
-            <span className="observation-panel__eyebrow">FIELD SURVEY</span>
-            <h2 className="observation-panel__title">Lamp observations</h2>
-            <p className="observation-panel__sub">
-              Review lamp observations collected on this device. Add a light to photograph a lamp, read its location from EXIF, and classify its colour.
-            </p>
+        <div className="observation-panel__actions">
+          
+        </div>
+
+        {/* Persistent Filter Toolbar */}
+        <div className="filter-bar">
+          <div className="filter-group">
+            <label htmlFor="filter-lamp-type" className="filter-label">
+              Lamp type:
+            </label>
+            <div className="filter-select-wrapper">
+              <select
+                id="filter-lamp-type"
+                className="filter-select"
+                value={lampTypeFilter}
+                onChange={(e) => setLampTypeFilter(e.target.value)}
+              >
+                <option value="all">All Lamp Types</option>
+                <option value="hps">High-pressure sodium (~2000K)</option>
+                <option value="warm_led">Warm white LED (2700–3000K)</option>
+                <option value="neutral_led">Neutral LED (~4000K)</option>
+                <option value="cool_led">Cool white LED (5000–6500K)</option>
+                <option value="unknown">Unknown / Unclassified</option>
+              </select>
+
+              <span className="filter-select-arrow">▸</span>
+            </div>
           </div>
+
+          <div className="filter-group">
+            <label htmlFor="filter-bird-risk" className="filter-label">
+              Bird risk:
+            </label>
+            <div className="filter-select-wrapper">
+              <select
+                id="filter-bird-risk"
+                className="filter-select"
+                value={birdRiskFilter}
+                onChange={(e) => setBirdRiskFilter(e.target.value)}
+              >
+                <option value="all">All Risk Levels</option>
+                <option value="low">Low Risk (Minimal / Low Blue)</option>
+                <option value="medium">Medium Risk (Moderate Blue)</option>
+                <option value="high">High Risk (High Blue)</option>
+                <option value="unknown">Unknown Risk</option>
+              </select>
+
+              <span className="filter-select-arrow">▸</span>
+            </div>
+          </div>
+
           <details ref={addLightRef} className="add-light">
             <summary className="add-light__button">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -472,46 +633,6 @@ export default function LampUpload({ onAdd }) {
 
             </div>
           </details>
-        </div>
-
-        {/* Persistent Filter Toolbar */}
-        <div className="filter-bar">
-          <div className="filter-group">
-            <label htmlFor="filter-lamp-type" className="filter-label">
-              Lamp type:
-            </label>
-            <select
-              id="filter-lamp-type"
-              className="filter-select"
-              value={lampTypeFilter}
-              onChange={(e) => setLampTypeFilter(e.target.value)}
-            >
-              <option value="all">All Lamp Types</option>
-              <option value="hps">High-pressure sodium (~2000K)</option>
-              <option value="warm_led">Warm white LED (2700–3000K)</option>
-              <option value="neutral_led">Neutral LED (~4000K)</option>
-              <option value="cool_led">Cool white LED (5000–6500K)</option>
-              <option value="unknown">Unknown / Unclassified</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label htmlFor="filter-bird-risk" className="filter-label">
-              Bird risk:
-            </label>
-            <select
-              id="filter-bird-risk"
-              className="filter-select"
-              value={birdRiskFilter}
-              onChange={(e) => setBirdRiskFilter(e.target.value)}
-            >
-              <option value="all">All Risk Levels</option>
-              <option value="low">Low Risk (Minimal / Low Blue)</option>
-              <option value="medium">Medium Risk (Moderate Blue)</option>
-              <option value="high">High Risk (High Blue)</option>
-              <option value="unknown">Unknown Risk</option>
-            </select>
-          </div>
 
           {hasActiveFilters && (
             <button
@@ -553,8 +674,18 @@ export default function LampUpload({ onAdd }) {
 
             {filteredItems.length > 0 ? (
               <div className="results__grid">
-                {filteredItems.map(({ file, previewUrl, result }, i) => (
-                  <FileCard key={`${file.name}-${i}`} file={file} previewUrl={previewUrl} result={result} />
+                {filteredItems.map(({ id, file, previewUrl, result, source }) => (
+                  <FileCard
+                    key={id}
+                    id={id}
+                    file={file}
+                    previewUrl={previewUrl}
+                    result={result}
+                    source={source}
+                    dataReady={dataReady}
+                    onSourceChange={(next) => setItems((prev) => prev.map((it) => (it.id === id ? { ...it, source: next } : it)))}
+                    onRemove={() => setItems((prev) => prev.filter((it) => it.id !== id))}
+                  />
                 ))}
               </div>
             ) : (

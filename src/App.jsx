@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import MapView from './features/map/MapView.jsx'
 import ResultPanel from './features/result/ResultPanel.jsx'
+import PrioritySites from './features/result/PrioritySites.jsx'
 import Methodology from './features/result/Methodology.jsx'
 import ReportForm from './features/capture/ReportForm.jsx'
 import LampUpload from './features/capture/LampUpload.jsx'
@@ -40,8 +41,9 @@ function Icon({ name, size = 16 }) {
 function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange }) {
   const nav = [
     ['map', 'Risk Map', 'risk'],
+    ['filter', 'Priority Sites', 'priority'],
     ['eye', 'Lamp Observations', 'observations'],
-    ['report', 'Report Collision', 'report'],
+    ['report', 'Report a Bird Collision', 'report'],
     ['info', 'How It Works', 'method'],
   ]
   const layerRows = [
@@ -112,17 +114,22 @@ function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange
 function WorkspaceHeader({ activeTab, theme, onTheme }) {
   const titles = {
     risk: ['Risk Map', 'Explore Singapore’s estimated bird-collision risk.'],
-    observations: ['Lamp Observations', 'Review the existing field-observation gallery.'],
-    report: ['Report a Collision', 'Record a local incident and keep the draft on this device.'],
+    priority: ['Priority Sites', 'The twenty highest-scoring places in Singapore, ranked — where to look first.'],
+    observations: ['Lamp Observations', 'Review lamp observations collected on this device. Add a light to photograph a lamp, read its location from EXIF, and classify its colour.'],
+    report: ['Report a Collision', 'Found a dead or stunned bird near a building? Logging it builds the evidence base Singapore does not currently have.'],
     method: ['How This Is Calculated', 'What the score is built from, and what it cannot tell you.'],
   }
   const [title, subtitle] = titles[activeTab]
+
   return (
-    <header className="workspace-header">
+    <header className="workspace-header" aria-label="Workspace controls">
       <div>
         <div className="workspace-header__eyebrow">NIGHTJAR / {activeTab === 'risk' ? 'MAP' : activeTab.toUpperCase()}</div>
         <h1>{title}</h1>
         <p>{subtitle}</p>
+        {activeTab === 'report' && (
+          <p className="workspace-header__privacy"><strong>Privacy:</strong> reports stay on this device and are never uploaded.</p>
+        )}
       </div>
       <button className="workspace-header__theme" type="button" onClick={onTheme}>
         <Icon name="moon" size={14} />
@@ -227,6 +234,19 @@ export default function App() {
     return location
   }
 
+  /**
+   * F13 — open a priority site on the map.
+   *
+   * Goes through handleSelect rather than setting state directly, so a site
+   * picked from the list is scored by exactly the same path as a click on the
+   * map. A row that produced a different number from the map would be worse
+   * than no list at all.
+   */
+  function handleOpenSite(site) {
+    const placed = handleSelect({ lat: site.lat, lng: site.lng, label: site.place })
+    if (placed) setActiveTab('risk')
+  }
+
   function handleLayerChange(key, value) {
     setLayers((current) => ({ ...current, [key]: value }))
   }
@@ -286,8 +306,12 @@ export default function App() {
             />
           </div>
 
+          <div className={`view-shell ${activeTab === 'priority' ? 'view-shell--active' : ''}`} aria-hidden={activeTab !== 'priority'}>
+            <PrioritySites onOpen={handleOpenSite} />
+          </div>
+
           <div className={`view-shell ${activeTab === 'observations' ? 'view-shell--active' : ''}`} aria-hidden={activeTab !== 'observations'}>
-            <LampUpload />
+            <LampUpload dataReady={ready} />
           </div>
 
           <div className={`view-shell ${activeTab === 'report' ? 'view-shell--active' : ''}`} aria-hidden={activeTab !== 'report'}>

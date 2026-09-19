@@ -189,19 +189,6 @@ export default function ReportForm({ onSubmit }) {
 
   return (
     <div className="collision-page">
-      {/* Header */}
-      <header className="collision-header">
-        <div className="collision-header__inner">
-          <h1 className="collision-title">Report a Bird Collision</h1>
-          <p className="collision-sub">
-            Found a dead or stunned bird near a building? Logging it builds the
-            evidence base Singapore does not currently have.
-            <br />
-            <strong>Privacy:</strong> reports stay on this device and are never uploaded.
-          </p>
-        </div>
-      </header>
-
       <main className="collision-main">
         {statusMessage && (
           <div className="loc-banner loc-banner--found">
@@ -302,17 +289,20 @@ export default function ReportForm({ onSubmit }) {
             <div className="form-grid">
               <div className="form-field">
                 <label className="form-label" htmlFor="field-condition">Bird Condition</label>
-                <select
-                  id="field-condition"
-                  className="form-select"
-                  value={condition}
-                  onChange={(e) => setCondition(e.target.value)}
-                >
-                  <option value="dead">Dead / Fatal Collision</option>
-                  <option value="stunned">Stunned / Unable to fly</option>
-                  <option value="injured">Visibly Injured</option>
-                  <option value="unknown">Unknown / Not Sure</option>
-                </select>
+                <div className="form-select-wrapper">
+                  <select
+                    id="field-condition"
+                    className="form-select"
+                    value={condition}
+                    onChange={(e) => setCondition(e.target.value)}
+                  >
+                    <option value="dead">Dead / Fatal Collision</option>
+                    <option value="stunned">Stunned / Unable to fly</option>
+                    <option value="injured">Visibly Injured</option>
+                    <option value="unknown">Unknown / Not Sure</option>
+                  </select>
+                  <span className="form-select-arrow">▸</span>
+                </div>
               </div>
 
               <div className="form-field">
@@ -484,9 +474,14 @@ export default function ReportForm({ onSubmit }) {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="collision-header__link"
-                          style={{ fontSize: '0.75rem', marginTop: '2px', display: 'inline-block' }}
+                          style={{ fontSize: '0.75rem', marginTop: '2px' }}
                         >
-                          View on map &rarr;
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                            <polyline points="15 3 21 3 21 9"/>
+                            <line x1="10" y1="14" x2="21" y2="3"/>
+                          </svg>
+                          View on Google Maps
                         </a>
                       </div>
                     ) : (

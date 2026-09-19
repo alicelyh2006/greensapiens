@@ -32,12 +32,15 @@ export async function sampleLampColour(file) {
                  file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
 
   if (isHeic) {
-    // 1. Try instant thumbnail extraction (~5-10ms)
+    // 1. Embedded JPEG preview, if the camera wrote one — ~5-15 ms.
+    //    Current iPhones do not: their thumbnail is HEVC like the full image,
+    //    so this returns null on most files we see. See extractHeicThumbnail.js.
     const fastThumb = await extractHeicThumbnail(file).catch(() => null)
     if (fastThumb) {
       imageBlob = fastThumb
     } else {
-      // 2. Fallback to heic2any with reduced quality for speed
+      // 2. The usual path in practice — full HEVC decode via heic2any, at
+      //    reduced quality because we only sample colour from it.
       try {
         const converted = await heicToJpeg(file, 0.5)
         imageBlob = Array.isArray(converted) ? converted[0] : converted

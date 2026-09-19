@@ -1,0 +1,154 @@
+/* F13 priority list. Colours come from tokens.css — house rule 1. */
+
+.priority-intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.priority-intro p {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-faint);
+  line-height: 1.6;
+  max-width: 68ch;
+}
+
+.priority-intro__caveat {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--risk-moderate);
+}
+
+.priority-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  counter-reset: none;
+}
+
+.priority-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--surface);
+}
+
+.priority-row__rank {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+  min-width: 2ch;
+  text-align: right;
+}
+
+.priority-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.priority-row__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.priority-row__where {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+/* Factor strip. Tabular figures so the columns line up down the list. */
+.priority-row__factors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.priority-row__factors div {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1, 4px);
+}
+
+.priority-row__factors dt {
+  font-size: var(--text-xs, 11px);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+.priority-row__factors dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.priority-row__score {
+  font-weight: 600;
+}
+
+.priority-row__conf {
+  margin-left: var(--space-1, 4px);
+  font-size: var(--text-xs, 11px);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Surveyed light is the thing we actually measured; estimated is an
+   assumption. They must not read the same. */
+.priority-row__conf--measured { color: var(--risk-low); }
+.priority-row__conf--estimated { color: var(--text-faint); }
+
+.priority-row__open {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.priority-row__open:hover { background: var(--surface-hover, var(--bg)); }
+.priority-row__open:focus-visible {
+  outline: 2px solid var(--risk-moderate);
+  outline-offset: 2px;
+}
+
+.priority-foot {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-xs, 11px);
+  color: var(--text-faint);
+}
+
+.priority-foot code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: inherit;
+}
+
+@media (max-width: 560px) {
+  .priority-row {
+    grid-template-columns: auto 1fr;
+    row-gap: var(--space-2);
+  }
+  .priority-row__open { grid-column: 1 / -1; }
+}

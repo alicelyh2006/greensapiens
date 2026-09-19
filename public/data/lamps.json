@@ -9,7 +9,8 @@
     "method": "how the type was decided: 'visual' (a person read the photo) or 'classifier' (F10 pixel classifier)",
     "position": "how lat/lng was obtained: 'pluscode', 'landmark' (anchored to a named OpenStreetMap building) or 'exif'",
     "photo": "source photograph filename",
-    "what": "plain description of the fixture"
+    "what": "plain description of the fixture",
+    "classifier": "optional, what the F10 classifier read for this photo: its blueRatio and the bucket it chose. Recorded even where it disagrees with the eye, because the disagreements are the useful part."
   },
   "survey": {
     "2026-09-10": {
@@ -17,71 +18,243 @@
       "why": "The risk model's highest-scoring cell in Singapore. We went to check what is actually lit there.",
       "positions": "The camera recorded no GPS — the OnePlus wrote an empty EXIF GPS block, so no photo carries coordinates. Positions here come from a plus code read on site (9RFH+4J2, +/-3 m) and from named OpenStreetMap buildings visible in the photographs. The whole survey area spans two 333 m risk-grid cells, so this is well inside the resolution the model can use.",
       "classification": "By eye, not by the F10 classifier. Run over these 29 photographs the classifier put 21 of 28 in 'neutral' and found no warm sources at all, because phone auto-white-balance neutralises the colour cast it is trying to measure. Its ORDERING was correct — it ranked the gold signage warmest and the teal pole lamps bluest — but its absolute thresholds assume a camera that is not white-balancing. Seeding this file with that output would have published 21 readings we know to be wrong."
+    },
+    "2026-09-19": {
+      "where": "Yew Tee: Choa Chu Kang North 6 / Yew Tee Primary School, north-west Singapore",
+      "why": "Second survey. Chosen to contrast with Sembawang Hills, which was low-rise shophouses beside a nature reserve. This is high-rise HDB, a multi-storey carpark and a school, 250 m from the Rail Corridor. The first survey site the model pointed at scored 0 — Yew Tee Primary School's west side is more than 500 m from any mapped green space — but its east gate falls in a cell scoring 56, the top 5% of everywhere assessed. We photographed the east end.",
+      "positions": "From EXIF this time. All 29 photographs carry GPS, read by the app's own HEIC parser — the camera's location setting had been off for the 10 September survey and every frame then was written with an empty GPS block. Accurate to a few metres.",
+      "classification": "By eye, with the F10 classifier run alongside for comparison rather than in place of it. Of the eight fixtures below the classifier agreed on six. Both disagreements were the same error in the same direction — a visibly warm lamp read as neutral — which is what auto-white-balance predicts, and matches what the 10 September photographs showed. Its one confident call, the cool-white clinic lightbox at blueRatio 0.418, was correct."
     }
   },
   "lamps": [
     {
-      "lat": 1.372763, "lng": 103.829016,
-      "type": "cool-led", "kind": "street",
+      "lat": 1.372763,
+      "lng": 103.829016,
+      "type": "cool-led",
+      "kind": "street",
       "what": "Teal-post pole lamps along the path beside Sembawang Hills Food Centre. Blue-white, unshielded, the dominant fixture here.",
-      "method": "visual", "position": "pluscode", "photo": "IMG20260910214642.jpg",
+      "method": "visual",
+      "position": "pluscode",
+      "photo": "IMG20260910214642.jpg",
       "surveyed": "2026-09-10"
     },
     {
-      "lat": 1.372700, "lng": 103.829100,
-      "type": "cool-led", "kind": "street",
+      "lat": 1.3727,
+      "lng": 103.8291,
+      "type": "cool-led",
+      "kind": "street",
       "what": "Second teal-post lamp on the same path. Photographed with a warm pergola downlight in frame for comparison.",
-      "method": "visual", "position": "pluscode", "photo": "IMG20260910214730.jpg",
+      "method": "visual",
+      "position": "pluscode",
+      "photo": "IMG20260910214730.jpg",
       "surveyed": "2026-09-10"
     },
     {
-      "lat": 1.373080, "lng": 103.828950,
-      "type": "cool-led", "kind": "floodlight",
+      "lat": 1.37308,
+      "lng": 103.82895,
+      "type": "cool-led",
+      "kind": "floodlight",
       "what": "Esso forecourt canopy. Recessed white LED downlights across the whole underside, lit all night.",
-      "method": "visual", "position": "landmark", "photo": "IMG20260910214945.jpg",
+      "method": "visual",
+      "position": "landmark",
+      "photo": "IMG20260910214945.jpg",
       "surveyed": "2026-09-10"
     },
     {
-      "lat": 1.372940, "lng": 103.828900,
-      "type": "cool-led", "kind": "signage",
+      "lat": 1.37294,
+      "lng": 103.8289,
+      "type": "cool-led",
+      "kind": "signage",
       "what": "Illuminated blue directional arrow at the car-wash entrance. Saturated blue emitter, not a white source with a colour temperature — logged as cool-led because that is its effect, see the methodology page.",
-      "method": "visual", "position": "landmark", "photo": "IMG20260910214532.jpg",
+      "method": "visual",
+      "position": "landmark",
+      "photo": "IMG20260910214532.jpg",
       "surveyed": "2026-09-10"
     },
     {
-      "lat": 1.372940, "lng": 103.828900,
-      "type": "cool-led", "kind": "signage",
+      "lat": 1.37294,
+      "lng": 103.8289,
+      "type": "cool-led",
+      "kind": "signage",
       "what": "'Car Wash' channel lettering, blue, above the wash bay.",
-      "method": "visual", "position": "landmark", "photo": "IMG20260910214521.jpg",
+      "method": "visual",
+      "position": "landmark",
+      "photo": "IMG20260910214521.jpg",
       "surveyed": "2026-09-10"
     },
     {
-      "lat": 1.372390, "lng": 103.828990,
-      "type": "neutral-led", "kind": "other",
+      "lat": 1.37239,
+      "lng": 103.82899,
+      "type": "neutral-led",
+      "kind": "other",
       "what": "Sembawang Hills Food Centre. Open-sided hawker centre, plain white tube lighting throughout.",
-      "method": "visual", "position": "landmark", "photo": "IMG20260910214958.jpg",
+      "method": "visual",
+      "position": "landmark",
+      "photo": "IMG20260910214958.jpg",
       "surveyed": "2026-09-10"
     },
     {
-      "lat": 1.372790, "lng": 103.829650,
-      "type": "warm-led", "kind": "signage",
+      "lat": 1.37279,
+      "lng": 103.82965,
+      "type": "warm-led",
+      "kind": "signage",
       "what": "'tiram' restaurant, gold backlit lettering. The warmest source found on the strip.",
-      "method": "visual", "position": "landmark", "photo": "IMG20260910215007.jpg",
+      "method": "visual",
+      "position": "landmark",
+      "photo": "IMG20260910215007.jpg",
       "surveyed": "2026-09-10"
     },
     {
-      "lat": 1.372850, "lng": 103.829650,
-      "type": "neutral-led", "kind": "signage",
+      "lat": 1.37285,
+      "lng": 103.82965,
+      "type": "neutral-led",
+      "kind": "signage",
       "what": "'Bridgepoint Health' lightbox. Large white internally-lit panel facing the road.",
-      "method": "visual", "position": "landmark", "photo": "IMG20260910215016.jpg",
+      "method": "visual",
+      "position": "landmark",
+      "photo": "IMG20260910215016.jpg",
       "surveyed": "2026-09-10"
     },
     {
-      "lat": 1.372650, "lng": 103.829650,
-      "type": "neutral-led", "kind": "facade",
+      "lat": 1.37265,
+      "lng": 103.82965,
+      "type": "neutral-led",
+      "kind": "facade",
       "what": "'Nature Fresh Mart' shopfront. Exposed fluorescent tube under the awning, spilling onto the five-foot way.",
-      "method": "visual", "position": "landmark", "photo": "IMG20260910214957.jpg",
+      "method": "visual",
+      "position": "landmark",
+      "photo": "IMG20260910214957.jpg",
       "surveyed": "2026-09-10"
+    },
+    {
+      "lat": 1.39611,
+      "lng": 103.74954,
+      "type": "cool-led",
+      "kind": "signage",
+      "what": "Pinnacle Family Clinic lightbox, a large internally-lit panel in an HDB void deck. The bluest source found on either survey.",
+      "method": "visual",
+      "position": "exif",
+      "photo": "IMG_5704.HEIC",
+      "classifier": {
+        "blueRatio": 0.4175,
+        "read": "cool_led",
+        "agrees": true
+      },
+      "surveyed": "2026-09-19"
+    },
+    {
+      "lat": 1.39617,
+      "lng": 103.74992,
+      "type": "warm-led",
+      "kind": "street",
+      "what": "Estate path lamp directly beneath a mature tree canopy — warm, and lighting the tree itself.",
+      "method": "visual",
+      "position": "exif",
+      "photo": "IMG_5706.HEIC",
+      "classifier": {
+        "blueRatio": 0.2524,
+        "read": "warm_led",
+        "agrees": true
+      },
+      "surveyed": "2026-09-19"
+    },
+    {
+      "lat": 1.39613,
+      "lng": 103.7489,
+      "type": "warm-led",
+      "kind": "facade",
+      "what": "\"Welcome to Yew Tee\" gateway structure, warm amber wash over the canopy.",
+      "method": "visual",
+      "position": "exif",
+      "photo": "IMG_5701.HEIC",
+      "classifier": {
+        "blueRatio": 0.272,
+        "read": "warm_led",
+        "agrees": true
+      },
+      "surveyed": "2026-09-19"
+    },
+    {
+      "lat": 1.3962,
+      "lng": 103.7501,
+      "type": "warm-led",
+      "kind": "facade",
+      "what": "Decorative lantern on a condominium boundary wall by the car park entrance. Visibly amber.",
+      "method": "visual",
+      "position": "exif",
+      "photo": "IMG_5707.HEIC",
+      "classifier": {
+        "blueRatio": 0.3031,
+        "read": "neutral_led",
+        "agrees": false,
+        "note": "Read neutral. It is plainly warm to the eye — auto-white-balance."
+      },
+      "surveyed": "2026-09-19"
+    },
+    {
+      "lat": 1.39689,
+      "lng": 103.75008,
+      "type": "neutral-led",
+      "kind": "signage",
+      "what": "Yew Tee Primary School name sign, lit by white downlights.",
+      "method": "visual",
+      "position": "exif",
+      "photo": "IMG_5708.HEIC",
+      "classifier": {
+        "blueRatio": 0.3036,
+        "read": "neutral_led",
+        "agrees": true
+      },
+      "surveyed": "2026-09-19"
+    },
+    {
+      "lat": 1.39711,
+      "lng": 103.75019,
+      "type": "neutral-led",
+      "kind": "street",
+      "what": "White bowl uplighter at the school's east gate, 16-storey condominium towers behind it.",
+      "method": "visual",
+      "position": "exif",
+      "photo": "IMG_5710.HEIC",
+      "classifier": {
+        "blueRatio": 0.295,
+        "read": "neutral_led",
+        "agrees": true
+      },
+      "surveyed": "2026-09-19"
+    },
+    {
+      "lat": 1.39712,
+      "lng": 103.75018,
+      "type": "neutral-led",
+      "kind": "carpark",
+      "what": "HDB multi-storey car park, every deck lit end to end with white tube fittings. The first carpark deck either survey has reached, and the category this project has been calling uninventoried since the start.",
+      "method": "visual",
+      "position": "exif",
+      "photo": "IMG_5711.HEIC",
+      "classifier": {
+        "blueRatio": 0.305,
+        "read": "neutral_led",
+        "agrees": true
+      },
+      "surveyed": "2026-09-19"
+    },
+    {
+      "lat": 1.39713,
+      "lng": 103.75017,
+      "type": "warm-led",
+      "kind": "street",
+      "what": "LTA road lamp on the arterial road beside the HDB blocks, amber. Consistent with the published policy of 3000K on minor roads.",
+      "method": "visual",
+      "position": "exif",
+      "photo": "IMG_5712.HEIC",
+      "classifier": {
+        "blueRatio": 0.3062,
+        "read": "neutral_led",
+        "agrees": false,
+        "note": "Read neutral. Amber to the eye — the same auto-white-balance error."
+      },
+      "surveyed": "2026-09-19"
     }
   ]
 }
