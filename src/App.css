@@ -499,3 +499,52 @@
   }
 }
 
+
+/* Temporary — the contour / grid comparison switch in the sidebar.
+   Remove along with the switch once the team has picked one. */
+.render-switch {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.render-switch__label {
+  font-size: var(--text-xs, 11px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.render-switch__options {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.render-switch__button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--text-faint);
+  font: inherit;
+  font-size: var(--text-sm);
+  padding: var(--space-1, 4px) var(--space-2);
+  border-radius: calc(var(--radius-sm, 6px) - 2px);
+  cursor: pointer;
+}
+
+.render-switch__button--active {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.render-switch__button:focus-visible {
+  outline: 2px solid var(--risk-moderate);
+  outline-offset: 1px;
+}

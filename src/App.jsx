@@ -6,6 +6,7 @@ import Methodology from './features/result/Methodology.jsx'
 import ReportForm from './features/capture/ReportForm.jsx'
 import LampUpload from './features/capture/LampUpload.jsx'
 import { initScoring, scoreLocation, simulateLightExposure } from './lib/score.js'
+import { RISK_RENDER } from './lib/config.js'
 import './App.css'
 
 const DEFAULT_REPORT = {
@@ -38,7 +39,7 @@ function Icon({ name, size = 16 }) {
   )
 }
 
-function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange }) {
+function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange, riskRender, onRiskRender }) {
   const nav = [
     ['map', 'Risk Map', 'risk'],
     ['filter', 'Priority Sites', 'priority'],
@@ -92,6 +93,26 @@ function Sidebar({ theme, onTheme, activeTab, onTabChange, layers, onLayerChange
             </label>
           ))}
         </div>
+
+        {/* Temporary: two ways of drawing the same numbers, so the team can
+            compare them on the live site instead of checking out a branch.
+            Once they pick one, set RISK_RENDER in config.js and delete this. */}
+        <div className="render-switch" role="group" aria-label="Risk surface style">
+          <span className="render-switch__label">Risk surface</span>
+          <div className="render-switch__options">
+            {[['cells', 'Grid'], ['contour', 'Regions']].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                className={`render-switch__button ${riskRender === value ? 'render-switch__button--active' : ''}`}
+                aria-pressed={riskRender === value}
+                onClick={() => onRiskRender(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
       </section>
 
       <div className="season-card">
@@ -139,7 +160,7 @@ function WorkspaceHeader({ activeTab, theme, onTheme }) {
   )
 }
 
-function RiskMapView({ selected, risk, simulatedRisk, onSelect, theme, layers, onClear, onSimulate }) {
+function RiskMapView({ selected, risk, simulatedRisk, onSelect, theme, layers, riskRender, onClear, onSimulate }) {
   return (
     <section className="risk-view">
       <div className="risk-view__map">
@@ -151,6 +172,7 @@ function RiskMapView({ selected, risk, simulatedRisk, onSelect, theme, layers, o
           habitatVisible={layers.habitat}
           lampsVisible={layers.lamp}
           reportsVisible={layers.reports}
+          riskRender={riskRender}
           visible
         />
       </div>
@@ -188,6 +210,13 @@ export default function App() {
       return defaults
     }
   })
+  const [riskRender, setRiskRender] = useState(() => {
+    try { return localStorage.getItem('nightjar-risk-render') || RISK_RENDER } catch { return RISK_RENDER }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('nightjar-risk-render', riskRender) } catch { /* private browsing */ }
+  }, [riskRender])
+
   const [reportDraft, setReportDraft] = useState(DEFAULT_REPORT)
   const [reportSubmitted, setReportSubmitted] = useState(false)
 
@@ -283,6 +312,8 @@ export default function App() {
         onTabChange={setActiveTab}
         layers={layers}
         onLayerChange={handleLayerChange}
+        riskRender={riskRender}
+        onRiskRender={setRiskRender}
       />
 
       <main className="app__workspace">
@@ -301,6 +332,7 @@ export default function App() {
               onSelect={handleSelect}
               theme={theme}
               layers={layers}
+              riskRender={riskRender}
               onClear={() => handleSelect(null)}
               onSimulate={setSimulationLight}
             />

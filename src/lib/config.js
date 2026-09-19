@@ -257,14 +257,19 @@ export const LAMP_OWNER = {
 }
 
 /**
- * How to draw the risk surface.
+ * How to draw the risk surface, and which way round the choice starts.
  *
+ * 'cells'   — the 333 m grid squares themselves. Shows exactly what was
+ *   computed, and where the resolution limit is.
  * 'contour' — smoothed bands, the way a weather warning map reads. Risk has no
  *   square edges in the world; the cell boundary is an artefact of sampling.
- * 'cells'   — the 333 m grid squares themselves. Blockier, but it shows exactly
- *   what was computed and where the resolution limit is.
+ *
+ * DEFAULT IS 'cells', deliberately. Both renderers ship, and the sidebar
+ * switches between them, so the team can compare the two on the live site and
+ * pick one — rather than have either imposed by whoever merged last. Whatever
+ * they settle on, set it here and the switch can come out.
  */
-export const RISK_RENDER = 'contour'
+export const RISK_RENDER = 'cells'
 
 export const MAP_DEFAULT = {
   center: [1.3521, 103.8198],

@@ -203,7 +203,7 @@ function SearchControl({ onSelect, onMessage }) {
   )
 }
 
-export default function MapView({ selected, onSelect, theme = 'light', riskVisible = true, habitatVisible = true, lampsVisible = true, reportsVisible = true, visible = true }) {
+export default function MapView({ selected, onSelect, theme = 'light', riskVisible = true, habitatVisible = true, lampsVisible = true, reportsVisible = true, riskRender, visible = true }) {
   const [riskGrid, setRiskGrid] = useState(null)
   const [message, setMessage] = useState('')
 
@@ -281,7 +281,7 @@ export default function MapView({ selected, onSelect, theme = 'light', riskVisib
 
         <SearchControl onSelect={selectLocation} onMessage={setMessage} />
 
-        {riskVisible && <RiskLayer theme={theme} />}
+        {riskVisible && <RiskLayer theme={theme} render={riskRender} />}
         {habitatVisible && <GreenSpaceLayer />}
         {lampsVisible && <SurveyedLampsLayer />}
         {reportsVisible && <CollisionReportsLayer />}

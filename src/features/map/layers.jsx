@@ -300,8 +300,8 @@ function ContourLayer({ theme }) {
   return null
 }
 
-export function RiskLayer({ opacity = 0.86, theme }) {
-  if (RISK_RENDER === 'contour') return <ContourLayer theme={theme} />
+export function RiskLayer({ opacity = 0.86, theme, render = RISK_RENDER }) {
+  if (render === 'contour') return <ContourLayer theme={theme} />
   return <RiskCellLayer opacity={opacity} theme={theme} />
 }
 
