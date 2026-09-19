@@ -136,8 +136,9 @@
       "position": "exif",
       "photo": "IMG_5704.HEIC",
       "classifier": {
-        "blueRatio": 0.4175,
-        "read": "cool_led",
+        "blueRatio": 0.4837,
+        "read": "cool-led",
+        "confidence": "confident",
         "agrees": true
       },
       "surveyed": "2026-09-19"
@@ -152,8 +153,9 @@
       "position": "exif",
       "photo": "IMG_5706.HEIC",
       "classifier": {
-        "blueRatio": 0.2524,
-        "read": "warm_led",
+        "blueRatio": 0.2059,
+        "read": "warm-led",
+        "confidence": "confident",
         "agrees": true
       },
       "surveyed": "2026-09-19"
@@ -168,8 +170,9 @@
       "position": "exif",
       "photo": "IMG_5701.HEIC",
       "classifier": {
-        "blueRatio": 0.272,
-        "read": "warm_led",
+        "blueRatio": 0.2257,
+        "read": "warm-led",
+        "confidence": "confident",
         "agrees": true
       },
       "surveyed": "2026-09-19"
@@ -184,10 +187,14 @@
       "position": "exif",
       "photo": "IMG_5707.HEIC",
       "classifier": {
-        "blueRatio": 0.3031,
-        "read": "neutral_led",
-        "agrees": false,
-        "note": "Read neutral. It is plainly warm to the eye — auto-white-balance."
+        "blueRatio": 0.2712,
+        "read": "uncertain",
+        "confidence": "uncertain",
+        "between": [
+          "warm-led",
+          "neutral-led"
+        ],
+        "agrees": null
       },
       "surveyed": "2026-09-19"
     },
@@ -201,8 +208,9 @@
       "position": "exif",
       "photo": "IMG_5708.HEIC",
       "classifier": {
-        "blueRatio": 0.3036,
-        "read": "neutral_led",
+        "blueRatio": 0.284,
+        "read": "neutral-led",
+        "confidence": "confident",
         "agrees": true
       },
       "surveyed": "2026-09-19"
@@ -217,9 +225,14 @@
       "position": "exif",
       "photo": "IMG_5710.HEIC",
       "classifier": {
-        "blueRatio": 0.295,
-        "read": "neutral_led",
-        "agrees": true
+        "blueRatio": 0.2542,
+        "read": "uncertain",
+        "confidence": "uncertain",
+        "between": [
+          "warm-led",
+          "neutral-led"
+        ],
+        "agrees": null
       },
       "surveyed": "2026-09-19"
     },
@@ -233,8 +246,9 @@
       "position": "exif",
       "photo": "IMG_5711.HEIC",
       "classifier": {
-        "blueRatio": 0.305,
-        "read": "neutral_led",
+        "blueRatio": 0.2925,
+        "read": "neutral-led",
+        "confidence": "confident",
         "agrees": true
       },
       "surveyed": "2026-09-19"
@@ -249,10 +263,14 @@
       "position": "exif",
       "photo": "IMG_5712.HEIC",
       "classifier": {
-        "blueRatio": 0.3062,
-        "read": "neutral_led",
-        "agrees": false,
-        "note": "Read neutral. Amber to the eye — the same auto-white-balance error."
+        "blueRatio": 0.2776,
+        "read": "uncertain",
+        "confidence": "uncertain",
+        "between": [
+          "warm-led",
+          "neutral-led"
+        ],
+        "agrees": null
       },
       "surveyed": "2026-09-19"
     }

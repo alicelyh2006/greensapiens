@@ -205,6 +205,101 @@ export const LAMP_TYPES = [
 ]
 
 /**
+ * Where the lamp classifier's boundaries sit, and how far we trust each one.
+ *
+ * These are blue ratios — B / (R + G + B) of the brightest unclipped pixels,
+ * measured in LINEAR light, not in the gamma-encoded bytes the file stores.
+ *
+ * Why they are not the published colour temperatures. A phone applies auto
+ * white balance before it writes the file: it decides the scene ought to look
+ * neutral and applies per-channel gains to make it so. The lamp's actual
+ * colour is largely gone by the time we see a pixel. Deriving a correlated
+ * colour temperature from these photographs returns 4600-5700 K for every
+ * fixture we shot, warm and cool alike — that is daylight, which is what the
+ * camera normalised to, not what was on the pole. Textbook colorimetry
+ * measures the white balance algorithm here, not the lamp.
+ *
+ * What survives is a residue: AWB does not fully succeed, and warm lamps land
+ * a little lower on this ratio than neutral ones. That residue is a weaker
+ * signal than a colour temperature would be, and it is specific to phone
+ * photographs, so the boundaries have to come from our own labelled lamps
+ * rather than from a lamp specification.
+ *
+ * Read the note on each boundary before quoting any of this. Of the three,
+ * one was fitted to data, one is a guess and one is openly unknown.
+ */
+export const LAMP_COLOUR = {
+  /**
+   * Each boundary carries its own uncertainty, because they rest on wildly
+   * different amounts of evidence and pretending otherwise would be the whole
+   * problem in miniature. A reading within `uncertainty` of `at` is reported
+   * as undecided rather than bucketed.
+   */
+  boundaries: [
+    {
+      below: 'sodium',
+      above: 'warm-led',
+      /**
+       * GUESSED. Not one high-pressure sodium lamp appeared in either survey,
+       * so there is nothing to fit to. Placed below the lowest warm LED we
+       * measured (0.206); the uncertainty is a stand-in for "we have never
+       * tested this", not a measurement.
+       */
+      at: 0.15,
+      uncertainty: 0.03,
+    },
+    {
+      below: 'warm-led',
+      above: 'neutral-led',
+      /**
+       * FITTED to the eight lamps we photographed and also identified by eye.
+       * Warm readings ran 0.206-0.278 and neutral readings 0.254-0.293: the
+       * classes overlap, so no single line separates them. `at` is the centre
+       * of that overlap and `uncertainty` its half-width, which makes every
+       * reading inside it an abstention.
+       *
+       * Fitted, not validated — these are the same eight lamps that set the
+       * numbers, so the classifier scoring well on them proves nothing. It
+       * needs lamps it has not seen.
+       */
+      at: 0.266,
+      uncertainty: 0.012,
+    },
+    {
+      below: 'neutral-led',
+      above: 'cool-led',
+      /**
+       * UNKNOWN, and the uncertainty says so. We have exactly one cool-white
+       * fixture — a clinic lightbox at 0.484 — and no reading whatsoever
+       * between 0.293 and 0.484. The boundary is somewhere in that gap. `at`
+       * is its midpoint and `uncertainty` spans that gap stopping just short of
+       * the two readings that bound it, so anything landing inside is reported
+       * as undecided — which is the truth — while the lamps we did measure are
+       * still answered.
+       *
+       * This is the costly one: neutral and cool differ by 0.4 of the blue
+       * factor, so guessing here would move scores more than any other call
+       * the classifier makes.
+       */
+      at: 0.388,
+      uncertainty: 0.094,
+    },
+  ],
+
+  /** Above this fraction of blown-out pixels, the photo cannot be read. */
+  clippedLimit: 0.05,
+
+  /** Any channel at or above this has clipped and lost its colour. */
+  saturatedAt: 250,
+
+  /** Fraction of the brightest unclipped pixels to average. */
+  brightestFraction: 0.1,
+
+  /** Square edge the image is sampled at. Averaging needs no more. */
+  sampleSize: 200,
+}
+
+/**
  * Light comes from our own field survey — a sparse set of classified lamps,
  * not island-wide coverage. So the factor reports whether it actually KNOWS.
  *

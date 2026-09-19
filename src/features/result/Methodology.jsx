@@ -237,8 +237,10 @@ export default function Methodology() {
           <h3>What does not work yet</h3>
           <p>
             The lamp classifier — the part that reads a photograph and decides
-            how blue a light is — <strong>does not reliably work</strong>, and
-            we would rather say so than let the numbers imply otherwise.
+            how blue a light is — <strong>cannot recover a lamp's true
+            colour</strong>, and we would rather say so than let the numbers
+            imply otherwise. What follows is how we found that out and what we
+            did about it.
           </p>
           <p>
             Run over the 29 photographs from our first field survey it put 21 of
@@ -260,15 +262,48 @@ export default function Methodology() {
           <p>
             The second survey let us check that properly. For eight fixtures we
             have both a photograph we looked at and a classifier reading, so the
-            two can be compared directly. <strong>It agreed on six of
-            eight.</strong> Its one confident call — a cool-white clinic
-            lightbox at a blue ratio of 0.42 — was correct. Both failures were
-            the same error in the same direction: a visibly amber lamp read as
-            neutral, once a decorative lantern and once an LTA road lamp. That
-            is exactly what auto-white-balance predicts, and it means the
-            classifier does not merely add noise, it is biased toward calling
-            warm lights neutral. Each lamp entry records what the classifier
-            read alongside what we saw, including where they disagree.
+            two can be compared directly. The original version agreed on six of
+            eight, and both failures were the same error in the same direction:
+            a visibly amber lamp read as neutral, once a decorative lantern and
+            once an LTA road lamp — which is what auto-white-balance predicts.
+            It was not merely noisy, it was biased toward calling warm lights
+            neutral.
+          </p>
+          <p>
+            We tried to fix that with better colour science and it made things
+            worse. Converting properly to CIE chromaticity and deriving a
+            correlated colour temperature — the textbook approach — returned
+            4,600–5,700 K for every fixture we shot, warm and cool alike. That
+            is daylight: it is the temperature the camera normalised to, not the
+            temperature of the lamp. <strong>Rigorous colorimetry on a
+            white-balanced photograph measures the white balance.</strong> It
+            scored one in eight.
+          </p>
+          <p>
+            What worked was giving up on measuring colour temperature and
+            measuring the residue instead. The boundary between warm and neutral
+            was moved to where our own labelled lamps actually divide, and —
+            more usefully — the classifier now <strong>declines to answer</strong>{' '}
+            when a reading falls in the range where the two classes overlap.
+            Against the same eight lamps it now answers five and abstains on
+            three, with no wrong answers. Every error it used to make has become
+            an admission that it cannot tell.
+          </p>
+          <p>
+            Two warnings about that number. Those eight lamps are what the
+            boundaries were fitted to, so five out of five is{' '}
+            <strong>calibration, not validation</strong> — the classifier has
+            not yet been tested on a lamp it has not seen. And one of the three
+            boundaries rests on a single fixture: we photographed exactly one
+            cool-white source, so the line between neutral and cool sits
+            somewhere in a gap we have no readings in at all. That boundary is
+            set wide enough to abstain across the whole gap.
+          </p>
+          <p>
+            Each lamp entry records what the classifier read alongside what we
+            saw, including where it declined. The readings are reproducible:{' '}
+            <code>scripts/classify-lamps.mjs</code> runs the same module the
+            app runs.
           </p>
         </div>
 

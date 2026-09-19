@@ -15,6 +15,7 @@
     "data:fetch:geom": "node --max-old-space-size=8192 scripts/fetch-osm-geometry.mjs",
     "data:density:storeys": "node --max-old-space-size=8192 scripts/build-density-grid-osm.mjs",
     "data:contours": "node scripts/build-risk-contours.mjs",
+    "data:classify": "node scripts/classify-lamps.mjs",
     "data:hotspots": "node --max-old-space-size=8192 scripts/build-hotspots.mjs"
   },
   "dependencies": {
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@vitejs/plugin-react": "4.3.4",
     "d3-contour": "^4.0.2",
+    "heic-decode": "^2.1.0",
     "jpeg-js": "^0.4.4",
     "mapshaper": "^0.7.56",
     "vite": "5.4.11"
