@@ -194,7 +194,8 @@
           "warm-led",
           "neutral-led"
         ],
-        "agrees": null
+        "agrees": null,
+        "note": "Declines between warm and neutral. Plainly warm to the eye — a decorative lantern. Sits inside the fitted overlap, which is where auto-white-balance puts amber lamps."
       },
       "surveyed": "2026-09-19"
     },
@@ -232,7 +233,8 @@
           "warm-led",
           "neutral-led"
         ],
-        "agrees": null
+        "agrees": null,
+        "note": "Declines between warm and neutral. Neutral to the eye, and the lowest-reading neutral we have — it is what sets the bottom of the overlap."
       },
       "surveyed": "2026-09-19"
     },
@@ -270,7 +272,8 @@
           "warm-led",
           "neutral-led"
         ],
-        "agrees": null
+        "agrees": null,
+        "note": "Declines between warm and neutral. Amber to the eye, an LTA road lamp. Same auto-white-balance shift as IMG_5707."
       },
       "surveyed": "2026-09-19"
     }
