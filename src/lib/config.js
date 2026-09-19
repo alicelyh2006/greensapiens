@@ -256,6 +256,21 @@ export const LAMP_OWNER = {
   estateDensity: 0.5,
 }
 
+/**
+ * How to draw the risk surface, and which way round the choice starts.
+ *
+ * 'cells'   — the 333 m grid squares themselves. Shows exactly what was
+ *   computed, and where the resolution limit is.
+ * 'contour' — smoothed bands, the way a weather warning map reads. Risk has no
+ *   square edges in the world; the cell boundary is an artefact of sampling.
+ *
+ * DEFAULT IS 'cells', deliberately. Both renderers ship, and the sidebar
+ * switches between them, so the team can compare the two on the live site and
+ * pick one — rather than have either imposed by whoever merged last. Whatever
+ * they settle on, set it here and the switch can come out.
+ */
+export const RISK_RENDER = 'cells'
+
 export const MAP_DEFAULT = {
   center: [1.3521, 103.8198],
   zoom: 12,
@@ -291,6 +306,8 @@ export const DATA = {
   lamps: `${BASE}data/lamps.json`,
   /** Precomputed risk surface. Built by scripts/build-risk-grid.mjs. */
   riskGrid: `${BASE}data/risk-grid.json`,
+  /** Smoothed contour bands over that surface. See scripts/build-risk-contours.mjs. */
+  riskContours: `${BASE}data/risk-contours.geojson`,
   /** F13 priority list. Built by scripts/build-hotspots.mjs from the risk grid. */
   hotspots: `${BASE}data/hotspots.json`,
   /** Land mask, also used to reject clicks on water. */

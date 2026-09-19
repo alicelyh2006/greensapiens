@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import { GeoJSON, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { DATA, BANDS, LAMP_TYPES } from '../../lib/config.js'
+import { DATA, BANDS, LAMP_TYPES, RISK_RENDER } from '../../lib/config.js'
 
 const REPORTS_STORAGE_KEY = 'nightjar.reports.v1'
 
@@ -217,7 +217,76 @@ export function GreenSpaceLayer() {
   )
 }
 
-export function RiskLayer({ opacity = 0.86, theme }) {
+/**
+ * F2 risk surface, drawn as contour bands rather than cells.
+ *
+ * The grid is 333 m squares, but risk does not have square edges — the cell
+ * boundary is an artefact of how we sampled, not a feature of the world.
+ * Contours say the same thing as regions you can point at: here is the
+ * moderate area, here is the high area inside it. That also matches how the
+ * output is meant to be read — which stretch of forest edge to look at, rather
+ * than the value of one particular square.
+ *
+ * The bands are precomputed offline so nothing here does geometry at runtime.
+ */
+function ContourLayer({ theme }) {
+  const map = useMap()
+
+  useEffect(() => {
+    let layer = null
+    let cancelled = false
+
+    fetch(DATA.riskContours)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((fc) => {
+        if (cancelled || !fc?.features?.length) return
+        const fills = {
+          low: cssToken('--risk-low'),
+          moderate: cssToken('--risk-moderate'),
+          high: cssToken('--risk-high'),
+        }
+        if (!fills.low || !fills.moderate || !fills.high) return
+
+        layer = L.geoJSON(fc, {
+          interactive: false,
+          bubblingMouseEvents: false,
+          // Low is a wash with a hairline edge: it says "we looked here and
+          // there is little", which is information, without competing with the
+          // two bands that say where to go.
+          style: (f) => {
+            const band = f.properties.band
+            const weight = band === 'high' ? 1.6 : band === 'moderate' ? 1.1 : 0.6
+            const opacity = band === 'high' ? 0.95 : band === 'moderate' ? 0.7 : 0.4
+            const fillOpacity = band === 'high' ? 0.42 : band === 'moderate' ? 0.24 : 0.12
+            return { color: fills[band], weight, opacity, fillColor: fills[band], fillOpacity }
+          },
+        })
+        layer.addTo(map)
+        // High sits inside moderate, so it has to paint after it.
+        // Painted outermost first: low contains moderate contains high.
+        for (const band of ['moderate', 'high']) {
+          layer.eachLayer((l) => {
+            if (l.feature?.properties?.band === band) l.bringToFront()
+          })
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+      if (layer) map.removeLayer(layer)
+    }
+  }, [map, theme])
+
+  return null
+}
+
+export function RiskLayer({ opacity = 0.86, theme, render = RISK_RENDER }) {
+  if (render === 'contour') return <ContourLayer theme={theme} />
+  return <RiskCellLayer opacity={opacity} theme={theme} />
+}
+
+function RiskCellLayer({ opacity, theme }) {
   const map = useMap()
 
   useEffect(() => {
