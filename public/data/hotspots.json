@@ -1,6 +1,6 @@
 {
  "note": "Priority sites: the highest-scoring cells in the risk grid, thinned so each entry is a distinct place rather than a neighbour of the one above it. Derived from risk-grid.json by scripts/build-hotspots.mjs — no new modelling.",
- "generated": "2026-09-15",
+ "generated": "2026-09-19",
  "threshold": 48,
  "spacingKm": 1.2,
  "sites": [
@@ -111,21 +111,6 @@
   },
   {
    "rank": 8,
-   "lat": 1.3975,
-   "lng": 103.7515,
-   "score": 56,
-   "band": "high",
-   "place": "Rail Corridor",
-   "metres": 86,
-   "inside": false,
-   "isReserve": false,
-   "habitat": 80,
-   "density": 74,
-   "light": 50,
-   "lightConfidence": "estimated"
-  },
-  {
-   "rank": 9,
    "lat": 1.3765,
    "lng": 103.9495,
    "score": 55,
@@ -140,7 +125,7 @@
    "lightConfidence": "estimated"
   },
   {
-   "rank": 10,
+   "rank": 9,
    "lat": 1.2775,
    "lng": 103.8265,
    "score": 54,
@@ -155,7 +140,7 @@
    "lightConfidence": "estimated"
   },
   {
-   "rank": 11,
+   "rank": 10,
    "lat": 1.2835,
    "lng": 103.8115,
    "score": 54,
@@ -170,7 +155,7 @@
    "lightConfidence": "estimated"
   },
   {
-   "rank": 12,
+   "rank": 11,
    "lat": 1.2925,
    "lng": 103.8475,
    "score": 54,
@@ -185,7 +170,7 @@
    "lightConfidence": "estimated"
   },
   {
-   "rank": 13,
+   "rank": 12,
    "lat": 1.2985,
    "lng": 103.7605,
    "score": 54,
@@ -200,7 +185,7 @@
    "lightConfidence": "estimated"
   },
   {
-   "rank": 14,
+   "rank": 13,
    "lat": 1.2985,
    "lng": 103.7965,
    "score": 54,
@@ -211,6 +196,21 @@
    "isReserve": false,
    "habitat": 85,
    "density": 65,
+   "light": 50,
+   "lightConfidence": "estimated"
+  },
+  {
+   "rank": 14,
+   "lat": 1.4005,
+   "lng": 103.7515,
+   "score": 54,
+   "band": "high",
+   "place": "Rail Corridor",
+   "metres": 97,
+   "inside": false,
+   "isReserve": false,
+   "habitat": 78,
+   "density": 71,
    "light": 50,
    "lightConfidence": "estimated"
   },

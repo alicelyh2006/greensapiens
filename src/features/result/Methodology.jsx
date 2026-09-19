@@ -257,6 +257,19 @@ export default function Methodology() {
             card in frame. Until then the lamp classifications on this map were
             made by eye, and every entry records which method produced it.
           </p>
+          <p>
+            The second survey let us check that properly. For eight fixtures we
+            have both a photograph we looked at and a classifier reading, so the
+            two can be compared directly. <strong>It agreed on six of
+            eight.</strong> Its one confident call — a cool-white clinic
+            lightbox at a blue ratio of 0.42 — was correct. Both failures were
+            the same error in the same direction: a visibly amber lamp read as
+            neutral, once a decorative lantern and once an LTA road lamp. That
+            is exactly what auto-white-balance predicts, and it means the
+            classifier does not merely add noise, it is biased toward calling
+            warm lights neutral. Each lamp entry records what the classifier
+            read alongside what we saw, including where they disagree.
+          </p>
         </div>
 
         <div className="methodology-section">
@@ -293,6 +306,15 @@ export default function Methodology() {
             choice we made. We set them at percentiles of the locations we
             assessed rather than at round numbers, so that the label states
             something checkable.
+          </div>
+          <div className="methodology-disclaimer">
+            <strong>Surveying changes the answer in both directions.</strong>{' '}
+            Two sites have been surveyed. At Sembawang Hills the lighting turned
+            out bluer than assumed and the score rose. At Yew Tee it turned out
+            warmer and the score fell, from 56 to 52 — going there made the
+            model <em>less</em> alarmed, not more. Neither result was available
+            from a desk, and an assumed light value is neither conservative nor
+            cautious; it is just an assumption.
           </div>
           <div className="methodology-disclaimer">
             <strong>Lamp coverage is sparse.</strong>{' '}
