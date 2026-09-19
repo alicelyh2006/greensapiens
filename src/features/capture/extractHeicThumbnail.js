@@ -1,10 +1,28 @@
 ﻿/**
- * Instant HEIC thumbnail extractor.
+ * HEIC thumbnail extractor — a fast path that only some files can take.
  *
- * Modern iPhones and HEIC cameras embed a fast preview/thumbnail (JPEG or thumbnail item)
- * directly in the EXIF TIFF (IFD1 / SubIFD) or in the ISOBMFF box hierarchy (item reference `thmb`).
- * Extracting this raw JPEG takes ~5-15ms, completely bypassing the heavy WebAssembly HEVC
- * full-frame decompression of 12-48 megapixel photos.
+ * Some HEIC cameras embed a small JPEG preview in the EXIF TIFF (IFD1 / SubIFD)
+ * or as an ISOBMFF item. Where one exists, lifting it out costs ~5-15 ms and
+ * skips a WebAssembly HEVC decode of a 12-48 megapixel frame entirely. That is
+ * the win this file exists for.
+ *
+ * KNOWN LIMITATION — measured, not assumed. Current iPhones do not write a JPEG
+ * preview. Dumping the container on the 29 photographs from our 19 September
+ * survey gives:
+ *
+ *   items in iinf:  { hvc1: 61, grid: 2, mime: 1, Exif: 1 }
+ *   iref:           dimg thmb dimg auxl cdsc cdsc
+ *
+ * There IS a thumbnail — that is what `thmb` references — but it is another
+ * hvc1 item, HEVC-encoded like the 61 tiles of the full image. There is no
+ * JPEG to lift. So on those files this returns null, correctly, and
+ * sampleLampColour falls back to heic2any. That is not a bug here and it does
+ * not need fixing by adding cases: decoding an HEVC thumbnail still needs an
+ * HEVC decoder, so the 1.3 MB library stays either way and only decode time
+ * would improve. Uploads take a couple of seconds instead of milliseconds.
+ *
+ * Do not assume this path runs. On the most common camera in Singapore it does
+ * not.
  */
 
 function getString(view, offset, len) {
