@@ -170,6 +170,7 @@
 .lamp-type--neutral { color: var(--text-dim); background: var(--surface-3); }
 .lamp-type--cool { color: var(--lamp-cool); background: var(--surface-3); }
 .lamp-type--unknown { color: var(--text-faint); background: var(--surface); }
+.lamp-type--uncertain { color: var(--text-faint); background: var(--surface); border: 1px dashed var(--line-strong); }
 .risk-pill { display: inline-flex; align-items: center; padding: 3px 7px; border-radius: 999px; font-size: var(--text-2xs); font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
 .risk-badge--low { color: var(--risk-low); background: var(--risk-low-bg); border: 1px solid var(--line); }
 .risk-badge--medium { color: var(--risk-moderate); background: var(--risk-moderate-bg); border: 1px solid var(--line); }

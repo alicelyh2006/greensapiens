@@ -21,7 +21,7 @@ import { RiskPill } from '../../components'
 import './LampUpload.css'
 
 const LAMP_LABEL = {
-  hps: {
+  sodium: {
     lamp: 'High-pressure sodium',
     appearance: 'Deep orange',
     cct: '~2000K',
@@ -30,7 +30,7 @@ const LAMP_LABEL = {
     riskBadgeClass: 'risk-badge--low',
     tagClass: 'lamp-type--hps',
   },
-  warm_led: {
+  'warm-led': {
     lamp: 'Warm white LED',
     appearance: 'Yellowish',
     cct: '2700–3000K',
@@ -39,7 +39,7 @@ const LAMP_LABEL = {
     riskBadgeClass: 'risk-badge--low',
     tagClass: 'lamp-type--warm',
   },
-  neutral_led: {
+  'neutral-led': {
     lamp: 'Neutral LED',
     appearance: 'Plain white',
     cct: '~4000K',
@@ -48,7 +48,7 @@ const LAMP_LABEL = {
     riskBadgeClass: 'risk-badge--medium',
     tagClass: 'lamp-type--neutral',
   },
-  cool_led: {
+  'cool-led': {
     lamp: 'Cool white LED',
     appearance: 'Blue-white glare',
     cct: '5000–6500K',
@@ -56,6 +56,15 @@ const LAMP_LABEL = {
     birdRisk: 'High',
     riskBadgeClass: 'risk-badge--high',
     tagClass: 'lamp-type--cool',
+  },
+  uncertain: {
+    lamp: 'Too close to call',
+    appearance: 'Between two types',
+    cct: 'Not determined',
+    blueContent: 'Undetermined',
+    birdRisk: 'Unknown',
+    riskBadgeClass: 'risk-badge--unknown',
+    tagClass: 'lamp-type--uncertain',
   },
   unknown: {
     lamp: 'Unknown',
@@ -425,6 +434,21 @@ function FileCard({ id, file, previewUrl, result, source, onSourceChange, onRemo
                       R:{result.colour.avgR} G:{result.colour.avgG} B:{result.colour.avgB}
                     </dd>
                   </dl>
+                  {/* An abstention is a result, not a failure — say what it
+                      rules out and hand the call to the person who was there. */}
+                  {result.colour.between && (
+                    <p className="lamp-warning lamp-warning--block" role="note">
+                      <span className="lamp-warning__title">
+                        Between {(LAMP_LABEL[result.colour.between[0]] || LAMP_LABEL.unknown).lamp} and{' '}
+                        {(LAMP_LABEL[result.colour.between[1]] || LAMP_LABEL.unknown).lamp}
+                      </span>
+                      <span className="lamp-warning__body">
+                        Your phone white-balances a photo before saving it, which removes
+                        much of the colour cast we read. At this blue ratio the two types
+                        are not separable — set it from what the lamp looked like to you.
+                      </span>
+                    </p>
+                  )}
                   {result.colour.warning && (
                     <p className="lamp-warning" role="note">{result.colour.warning}</p>
                   )}
@@ -533,10 +557,10 @@ export default function LampUpload({ dataReady = true }) {
                 onChange={(e) => setLampTypeFilter(e.target.value)}
               >
                 <option value="all">All Lamp Types</option>
-                <option value="hps">High-pressure sodium (~2000K)</option>
-                <option value="warm_led">Warm white LED (2700–3000K)</option>
-                <option value="neutral_led">Neutral LED (~4000K)</option>
-                <option value="cool_led">Cool white LED (5000–6500K)</option>
+                <option value="sodium">High-pressure sodium (~2000K)</option>
+                <option value="warm-led">Warm white LED (2700–3000K)</option>
+                <option value="neutral-led">Neutral LED (~4000K)</option>
+                <option value="cool-led">Cool white LED (5000–6500K)</option>
                 <option value="unknown">Unknown / Unclassified</option>
               </select>
 
