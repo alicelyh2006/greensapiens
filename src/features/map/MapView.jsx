@@ -120,6 +120,15 @@ function SearchControl({ onSelect, onMessage }) {
         return
       }
 
+      // Pressing Enter used to fetch the list and stop there, so the map did
+      // not move and nothing on screen said why — you had to know to click a
+      // row. With one result there is nothing to choose between, so take it.
+      if (data.length === 1) {
+        setResults([])
+        choose(data[0])
+        return
+      }
+
       setResults(data)
     } catch {
       setError('Search is temporarily unavailable. You can still click the map.')
@@ -175,7 +184,12 @@ function SearchControl({ onSelect, onMessage }) {
             <li
               key={`${item.place_id}-${item.lat}-${item.lon}`}
               className="map-search__result"
+              role="button"
+              tabIndex={0}
               onMouseDown={() => choose(item)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(item) }
+              }}
             >
               <div className="map-search__result-title">
                 {item.name || item.display_name.split(',')[0]}

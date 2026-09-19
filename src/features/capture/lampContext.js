@@ -12,7 +12,7 @@
  * building density until the photographer says what kind of light it is.
  */
 import { nearestGreenSpace, scoreLocation, densityAt } from '../../lib/score.js'
-import { AGENCIES, LAMP_OWNER } from '../../lib/config.js'
+import { AGENCIES, LAMP_OWNER, DATA } from '../../lib/config.js'
 
 /** What the photographer can tell us. Keys are AGENCIES keys. */
 export const LIGHT_SOURCES = [
@@ -40,12 +40,52 @@ const SOURCE_REASON = {
  *   owner: { key: string, name: string, confidence: 'confirmed'|'likely'|'guess', reason: string } | null,
  * }}
  */
+/**
+ * The risk grid, so a photograph can be scored at the same resolution the map
+ * draws. Loaded once, lazily, and never awaited by lampContext itself — until
+ * it arrives we simply do not snap.
+ */
+let riskGrid = null
+export function primeRiskGrid() {
+  if (riskGrid) return Promise.resolve(riskGrid)
+  return fetch(DATA.riskGrid)
+    .then((r) => (r.ok ? r.json() : null))
+    .then((grid) => { riskGrid = grid; return grid })
+    .catch(() => null)
+}
+
+/**
+ * Move a point to the centre of the risk-grid cell containing it.
+ *
+ * Without this the lamp card scored the exact EXIF position while the map
+ * scored the cell centre, and the two disagreed by up to 28 points at the same
+ * coordinates — 0 against 28 for one of our own Yew Tee photographs. The map is
+ * the one to follow: the model's resolution IS 333 m, and reporting a score for
+ * an exact point claims a precision it does not have.
+ */
+function snapToGrid(lat, lng) {
+  if (!riskGrid?.bbox || !riskGrid?.cell || !riskGrid?.cols || !riskGrid?.rows) return { lat, lng }
+  const [minLng, minLat] = riskGrid.bbox
+  const col = Math.floor((lng - minLng) / riskGrid.cell)
+  const row = Math.floor((lat - minLat) / riskGrid.cell)
+  if (col < 0 || row < 0 || col >= riskGrid.cols || row >= riskGrid.rows) return { lat, lng }
+  return {
+    lat: minLat + (row + 0.5) * riskGrid.cell,
+    lng: minLng + (col + 0.5) * riskGrid.cell,
+  }
+}
+
 export function lampContext(gps, source) {
   if (!gps) return null
 
+  // Where the photograph was taken decides which green space you are standing
+  // in, and that stays on the exact position — it is a fact about the place.
+  // The score is snapped, because that is a model output at the model's
+  // resolution.
   const place = nearestGreenSpace(gps.lat, gps.lng)
-  const risk = scoreLocation(gps.lat, gps.lng)
-  const density = densityAt(gps.lat, gps.lng)
+  const scored = snapToGrid(gps.lat, gps.lng)
+  const risk = scoreLocation(scored.lat, scored.lng)
+  const density = densityAt(scored.lat, scored.lng)
 
   let owner = null
   if (source && AGENCIES[source]) {
@@ -68,6 +108,11 @@ export function lampContext(gps, source) {
 
   return {
     place: place ? { name: formatPlaceName(place.name), metres: place.metres, inside: place.inside, isReserve: place.isReserve } : null,
+    // What the score is actually reacting to, which is often not the nearest
+    // patch of grass. Standing inside a 0.3 ha playground 150 m from a 3,040 ha
+    // reserve, "inside Leban Park" and "153 m from Central Catchment" are both
+    // true and only the second explains the number.
+    habitatNote: risk?.factors?.habitat?.note ?? null,
     risk: risk && !risk.unavailable ? { total: risk.total, band: risk.band } : null,
     owner,
   }

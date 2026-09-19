@@ -16,7 +16,7 @@ import { heicToJpeg } from './heicConvert.js'
 import { readExifGps } from './exifGps.js'
 import { sampleLampColour } from './lampColour.js'
 import { extractHeicThumbnail } from './extractHeicThumbnail.js'
-import { lampContext, formatDistance, LIGHT_SOURCES } from './lampContext.js'
+import { lampContext, formatDistance, primeRiskGrid, LIGHT_SOURCES } from './lampContext.js'
 import { RiskPill } from '../../components'
 import './LampUpload.css'
 
@@ -208,7 +208,15 @@ const OWNER_CONFIDENCE_LABEL = {
  * is computed on-device from committed geodata; see lampContext.js.
  */
 function PlaceSection({ gps, source, onSourceChange, dataReady }) {
-  const ctx = useMemo(() => (dataReady ? lampContext(gps, source) : null), [gps, source, dataReady])
+  // The risk grid is what lets a photo be scored at the same resolution the map
+  // draws. Fetched once; re-running the context when it lands.
+  const [gridReady, setGridReady] = useState(false)
+  useEffect(() => { let live = true; primeRiskGrid().then(() => live && setGridReady(true)); return () => { live = false } }, [])
+
+  const ctx = useMemo(
+    () => (dataReady ? lampContext(gps, source) : null),
+    [gps, source, dataReady, gridReady]
+  )
 
   if (!gps) {
     return (
@@ -221,7 +229,7 @@ function PlaceSection({ gps, source, onSourceChange, dataReady }) {
     return <p className="place-block__miss">Loading Nightjar geodata&#8230;</p>
   }
 
-  const { place, risk, owner } = ctx
+  const { place, risk, owner, habitatNote } = ctx
   const selectId = `light-source-${gps.lat.toFixed(5)}-${gps.lng.toFixed(5)}`
 
   return (
@@ -234,10 +242,16 @@ function PlaceSection({ gps, source, onSourceChange, dataReady }) {
               ? <>Inside <strong>{place.name}</strong></>
               : <><strong>{place.name}</strong>, {formatDistance(place.metres)} from its edge</>
             : 'None nearby'}
+          {/* The nearest green space is often not the one driving the score — a
+              pocket playground can sit in front of a nature reserve. Show what
+              the model is actually reacting to when they differ. */}
+          {habitatNote && place && !habitatNote.includes(place.name) && (
+            <span className="place-block__reason">Scored on: {habitatNote}</span>
+          )}
         </dd>
         <dt>Risk here</dt>
         <dd className="place-block__risk">
-          {risk ? <><RiskPill band={risk.band} /> <span className="place-block__risk-total">{risk.total}/100, estimated</span></> : 'Outside the assessed area'}
+          {risk ? <><RiskPill band={risk.band} /> <span className="place-block__risk-total">{risk.total}/100</span></> : 'Outside the assessed area'}
         </dd>
         <dt>Contact</dt>
         <dd>
