@@ -243,7 +243,7 @@ export default function App() {
    * than no list at all.
    */
   function handleOpenSite(site) {
-    const placed = handleSelect({ lat: site.lat, lng: site.lng, label: site.place })
+    const placed = handleSelect({ lat: site.lat, lng: site.lng, label: site.area || site.place })
     if (placed) setActiveTab('risk')
   }
 

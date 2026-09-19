@@ -72,6 +72,13 @@
   overflow-wrap: anywhere;
 }
 
+/* Why the model is interested in this place, under the name of the place. */
+.priority-row__beside {
+  margin: calc(var(--space-1, 4px) * -1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-faint);
+}
+
 /* Factor strip. Tabular figures so the columns line up down the list. */
 .priority-row__factors {
   display: flex;
