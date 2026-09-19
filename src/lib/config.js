@@ -256,6 +256,16 @@ export const LAMP_OWNER = {
   estateDensity: 0.5,
 }
 
+/**
+ * How to draw the risk surface.
+ *
+ * 'contour' — smoothed bands, the way a weather warning map reads. Risk has no
+ *   square edges in the world; the cell boundary is an artefact of sampling.
+ * 'cells'   — the 333 m grid squares themselves. Blockier, but it shows exactly
+ *   what was computed and where the resolution limit is.
+ */
+export const RISK_RENDER = 'contour'
+
 export const MAP_DEFAULT = {
   center: [1.3521, 103.8198],
   zoom: 12,
@@ -291,6 +301,8 @@ export const DATA = {
   lamps: `${BASE}data/lamps.json`,
   /** Precomputed risk surface. Built by scripts/build-risk-grid.mjs. */
   riskGrid: `${BASE}data/risk-grid.json`,
+  /** Smoothed contour bands over that surface. See scripts/build-risk-contours.mjs. */
+  riskContours: `${BASE}data/risk-contours.geojson`,
   /** F13 priority list. Built by scripts/build-hotspots.mjs from the risk grid. */
   hotspots: `${BASE}data/hotspots.json`,
   /** Land mask, also used to reject clicks on water. */

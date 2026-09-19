@@ -98,27 +98,51 @@ const toLngLat = ([x, y]) => [
  * shows.
  */
 const MIN_STEP = 0.0002
-function decimate(ring) {
+/**
+ * The low band is a background wash covering most of the built-up island, and
+ * its outlines are long and wriggly where they follow the coast. It carries no
+ * detail anyone reads at 20 m, so it is thinned three times as hard — which is
+ * most of the difference between a 555 KB file and a 250 KB one.
+ */
+const MIN_STEP_LOW = 0.0006
+function decimate(ring, step = MIN_STEP) {
   const out = [ring[0]]
   for (let i = 1; i < ring.length - 1; i++) {
     const [ax, ay] = out[out.length - 1]
     const [bx, by] = ring[i]
-    if (Math.abs(bx - ax) > MIN_STEP || Math.abs(by - ay) > MIN_STEP) out.push(ring[i])
+    if (Math.abs(bx - ax) > step || Math.abs(by - ay) > step) out.push(ring[i])
   }
   out.push(out[0])
   return out
 }
 
-const thresholds = [BANDS.moderate, BANDS.high]
+/**
+ * Three thresholds, not two.
+ *
+ * Contouring only at moderate and high leaves the rest of the island as bare
+ * basemap, which reads as "not assessed" when what it means is "assessed, and
+ * there is little here". ASSESSED draws the outer edge of everywhere the model
+ * gives any score at all — 2,055 cells of the 6,749 on land — as a faint green
+ * band beneath the other two.
+ *
+ * It is set just above zero rather than at a round number because zero is
+ * exactly what the model returns where habitat or buildings are absent, and
+ * that boundary is the one worth drawing: inside it the two factors overlap,
+ * outside it one of them is missing entirely.
+ */
+const ASSESSED = 1
+const thresholds = [ASSESSED, BANDS.moderate, BANDS.high]
 const generated = contours().size([W, H]).thresholds(thresholds)(up)
 
 const features = []
 for (const c of generated) {
-  const band = c.value >= BANDS.high ? 'high' : 'moderate'
+  const band = c.value >= BANDS.high ? 'high'
+    : c.value >= BANDS.moderate ? 'moderate'
+    : 'low'
   const polygons = c.coordinates
     .map((poly) =>
       poly
-        .map((ring) => decimate(smooth(ring).map(toLngLat)))
+        .map((ring) => decimate(smooth(ring).map(toLngLat), band === 'low' ? MIN_STEP_LOW : MIN_STEP))
         // A ring under ~8 points after smoothing is a single-cell speck.
         .filter((ring) => ring.length >= 8)
     )
