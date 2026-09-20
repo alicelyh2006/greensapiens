@@ -756,3 +756,27 @@
   }
 }
 
+
+/* ── Surveyed lamp popup ──────────────────────────────────────────────────
+   Carries a thumbnail of the photograph the entry was made from, and both
+   readings: what a person saw standing there, and what the classifier made of
+   the photo. Built in layers.jsx. */
+.lamp-popup__thumb {
+  display: block;
+  width: 100%;
+  max-width: 180px;
+  /* Capped and cropped: survey photos are portrait off a phone, and at full
+     height the picture pushed the readings below the fold of the popup. */
+  height: 132px;
+  object-fit: cover;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: var(--surface-2);
+}
+
+/* The two readings are evidence, not description — set apart from the survey
+   note above them so they do not read as more prose. */
+.lamp-popup__reading {
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}

@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import { GeoJSON, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { DATA, BANDS, LAMP_TYPES, RISK_RENDER } from '../../lib/config.js'
+import { DATA, BASE, BANDS, LAMP_TYPES, RISK_RENDER } from '../../lib/config.js'
 
 const REPORTS_STORAGE_KEY = 'nightjar.reports.v1'
 
@@ -138,19 +138,44 @@ export function SurveyedLampsLayer() {
           // text today, but this popup would happily render anything the file
           // contained, and lamps.json is meant to grow by contribution.
           const popup = document.createElement('div')
+          popup.className = 'lamp-popup'
+
+          if (lamp.thumb) {
+            const img = document.createElement('img')
+            img.className = 'lamp-popup__thumb'
+            img.src = `${BASE}${lamp.thumb}`
+            img.alt = `Photograph of the ${type?.label ?? lamp.type} at this location`
+            // Not lazy: a popup is absolutely positioned and re-parented as it
+            // opens, which is enough for the lazy heuristic to decide the image
+            // is off-screen and never fetch it. These are ~10 KB each and only
+            // one popup is open at a time, so there is nothing to defer.
+            img.decoding = 'async'
+            popup.append(img)
+          }
+
           const title = document.createElement('strong')
           title.textContent = type?.label ?? lamp.type
           popup.append(title)
-          const line = (text) => {
+          const line = (text, className) => {
             if (!text) return
             popup.append(document.createElement('br'))
-            popup.append(document.createTextNode(text))
+            if (!className) { popup.append(document.createTextNode(text)); return }
+            const span = document.createElement('span')
+            span.className = className
+            span.textContent = text
+            popup.append(span)
           }
           line(lamp.what)
           line(type?.appearance)
           if (lamp.kind) line(`Fixture: ${lamp.kind}`)
           if (lamp.surveyed) line(`Surveyed ${lamp.surveyed}`)
-          if (lamp.method === 'visual') line('Classified by eye, not by the classifier')
+
+          // Both readings, always: what a person saw standing here, and what
+          // the classifier made of the photograph. They are different kinds of
+          // evidence and the entry is worth more for carrying both — an
+          // abstention especially, which is a result and not a failure.
+          line(`By eye: ${type?.label ?? lamp.type}`, 'lamp-popup__reading')
+          line(classifierLine(lamp.classifier), 'lamp-popup__reading')
           marker.bindPopup(popup)
           marker.addTo(group)
         }
@@ -166,6 +191,33 @@ export function SurveyedLampsLayer() {
   }, [map])
 
   return null
+}
+
+/**
+ * One line describing what the classifier made of a lamp's photograph.
+ *
+ * An abstention is phrased as a reading between two types rather than as a
+ * refusal: it is what the measurement says, and the two candidates are more
+ * useful to a reader than "unknown". See LAMP_COLOUR in config.js for why the
+ * overlap exists at all — a phone white-balances away most of the colour cast
+ * before we ever see a pixel.
+ */
+function classifierLine(reading) {
+  if (!reading) return 'Classifier: not run on this photo'
+  const blue = `${Math.round(reading.blueRatio * 100)}% blue`
+  if (reading.confidence !== 'confident') {
+    const pair = (reading.between ?? [])
+      .map((id) => LAMP_TYPES.find((t) => t.id === id)?.label ?? id)
+      // 'Cool LED 5000-6500K' -> 'Cool LED'. The colour temperature is already
+      // the number beside it; repeating it inside the sentence reads as noise.
+      .map((label) => label.replace(/ [~\d].*$/, ''))
+    return pair.length === 2
+      ? `Classifier: reads between ${pair[0]} and ${pair[1]} (${blue})`
+      : `Classifier: too close to call (${blue})`
+  }
+  return reading.agrees
+    ? `Classifier: agrees, confident (${blue})`
+    : `Classifier: disagrees — reads ${reading.read} (${blue})`
 }
 
 function hexPositions(lat, lng, cell) {
