@@ -79,7 +79,7 @@ changes at standup rather than editing quietly.
 
 ---
 
-## Current state (3 Sep)
+## Current state
 
 **Real and working — two of three factors:**
 
@@ -94,8 +94,8 @@ changes at standup rather than editing quietly.
   lamps within 250 m, and it reports its own `confidence`: `'measured'` when
   two or more surveyed lamps are nearby, `'estimated'` otherwise.
 
-**Waiting on data, not code:** `lamps.json` is **empty on purpose** until the
-field survey. Do NOT seed it with invented entries — the survey is the only
+**Collected, not invented:** `lamps.json` holds 17 lamps from two field surveys
+(10 and 19 September 2026). Do NOT seed it with invented entries — the survey is the only
 dataset nobody else has, and fabricating it would destroy the project's central
 claim. See `public/data/SURVEY.md` for how to collect it. Until then every
 score carries `isMock: true` and the UI must say the light value is estimated.
@@ -114,8 +114,8 @@ Sanity check (`node spike-score.mjs`): Botanic Gardens edge 55 (big green
 space ringed by dense development), Bukit Timah interior 0 (nothing to hit),
 Sungei Buloh 0 (remote), CBD 21 (dense but little habitat).
 
-**Not started:** everything in `src/features/` is an empty shell. Every stub
-carries `TODO(lane · requirement)` comments.
+**Built since:** the map, result panel, priority list, capture flows and
+methodology page are all shipped and deployed.
 
 ---
 
