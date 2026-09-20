@@ -758,18 +758,26 @@
 
 
 /* ── Surveyed lamp popup ──────────────────────────────────────────────────
-   Carries a thumbnail of the photograph the entry was made from, and both
-   readings: what a person saw standing there, and what the classifier made of
-   the photo. Built in layers.jsx. */
+   Text on the left, photograph on the right. Stacked, the picture pushed the
+   readings down far enough that the popup opened off the top of the map on a
+   marker near the edge; side by side it is roughly half the height. Built in
+   layers.jsx. */
+.lamp-popup {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.lamp-popup__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .lamp-popup__thumb {
-  display: block;
-  width: 100%;
-  max-width: 180px;
-  /* Capped and cropped: survey photos are portrait off a phone, and at full
-     height the picture pushed the readings below the fold of the popup. */
-  height: 132px;
+  flex: 0 0 auto;
+  width: 108px;
+  height: 108px;
   object-fit: cover;
-  margin-bottom: 8px;
   border-radius: 6px;
   background: var(--surface-2);
 }
@@ -779,4 +787,10 @@
 .lamp-popup__reading {
   color: var(--text-dim);
   font-variant-numeric: tabular-nums;
+}
+
+/* Narrow map pane: the row has nowhere to go, so stack it again. */
+@media (max-width: 560px) {
+  .lamp-popup { flex-wrap: wrap; }
+  .lamp-popup__thumb { width: 100%; height: 120px; }
 }

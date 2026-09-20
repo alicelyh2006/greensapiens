@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import { GeoJSON, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { DATA, BASE, BANDS, LAMP_TYPES, RISK_RENDER } from '../../lib/config.js'
+import { DATA, BASE, BANDS, LAMP_TYPES, LAMP_POPUP, RISK_RENDER } from '../../lib/config.js'
 
 const REPORTS_STORAGE_KEY = 'nightjar.reports.v1'
 
@@ -140,30 +140,25 @@ export function SurveyedLampsLayer() {
           const popup = document.createElement('div')
           popup.className = 'lamp-popup'
 
-          if (lamp.thumb) {
-            const img = document.createElement('img')
-            img.className = 'lamp-popup__thumb'
-            img.src = `${BASE}${lamp.thumb}`
-            img.alt = `Photograph of the ${type?.label ?? lamp.type} at this location`
-            // Not lazy: a popup is absolutely positioned and re-parented as it
-            // opens, which is enough for the lazy heuristic to decide the image
-            // is off-screen and never fetch it. These are ~10 KB each and only
-            // one popup is open at a time, so there is nothing to defer.
-            img.decoding = 'async'
-            popup.append(img)
-          }
+          // Text first in the DOM, picture after it, laid out as a row: the
+          // words are what a reader needs and they should not have to look
+          // past a photograph to reach them. It also keeps the popup short,
+          // which matters because a tall one opens off the top of the map.
+          const body = document.createElement('div')
+          body.className = 'lamp-popup__body'
+          popup.append(body)
 
           const title = document.createElement('strong')
           title.textContent = type?.label ?? lamp.type
-          popup.append(title)
+          body.append(title)
           const line = (text, className) => {
             if (!text) return
-            popup.append(document.createElement('br'))
-            if (!className) { popup.append(document.createTextNode(text)); return }
+            body.append(document.createElement('br'))
+            if (!className) { body.append(document.createTextNode(text)); return }
             const span = document.createElement('span')
             span.className = className
             span.textContent = text
-            popup.append(span)
+            body.append(span)
           }
           line(lamp.what)
           line(type?.appearance)
@@ -176,7 +171,50 @@ export function SurveyedLampsLayer() {
           // abstention especially, which is a result and not a failure.
           line(`By eye: ${type?.label ?? lamp.type}`, 'lamp-popup__reading')
           line(classifierLine(lamp.classifier), 'lamp-popup__reading')
-          marker.bindPopup(popup)
+
+          if (lamp.thumb) {
+            const img = document.createElement('img')
+            img.className = 'lamp-popup__thumb'
+            img.src = `${BASE}${lamp.thumb}`
+            img.alt = `Photograph of the ${type?.label ?? lamp.type} at this location`
+            // Explicit dimensions so the popup is laid out at its final size
+            // before the file arrives. Without them Leaflet measures a popup
+            // containing a zero-height image, pans the map to fit that, and
+            // then the picture loads and grows the popup off the top of the
+            // map — which looks exactly like the thumbnail never rendered.
+            img.width = LAMP_POPUP.thumbPx
+            img.height = LAMP_POPUP.thumbPx
+            // Not lazy: a popup is absolutely positioned and re-parented as it
+            // opens, which is enough for the lazy heuristic to decide the image
+            // is off-screen and never fetch it. These are ~10 KB each and only
+            // one popup is open at a time, so there is nothing to defer.
+            img.decoding = 'async'
+            popup.append(img)
+          }
+
+          marker.bindPopup(popup, {
+            maxWidth: LAMP_POPUP.maxWidth,
+            autoPanPaddingTopLeft: [LAMP_POPUP.panEdge, LAMP_POPUP.panTop],
+            autoPanPaddingBottomRight: [LAMP_POPUP.panEdge, LAMP_POPUP.panEdge],
+          })
+          // KNOWN LIMITATION: a marker in the top-left corner of the map
+          // opens its popup underneath the search field, which floats there at
+          // z-index 1000 and hides the lamp's name. Raising the popup pane does
+          // not help — Leaflet's panes sit inside .leaflet-map-pane, which is
+          // transformed and so forms its own stacking context, and their
+          // z-indexes only compete with each other. Leaflet's auto-pan does not
+          // help either: it only pans when a popup leaves the map's bounds, and
+          // this one is inside them, merely covered. Panning by hand on
+          // popupopen was tried and did not fire reliably from inside a
+          // LayerGroup. Laying the popup out as a row rather than a column
+          // halved its height, which is what made it rare rather than constant.
+          if (lamp.thumb) {
+            popup.querySelector('img')?.addEventListener('load', () => {
+              const open = marker.getPopup()
+              if (open?.isOpen()) open.update()
+            }, { once: true })
+          }
+
           marker.addTo(group)
         }
 

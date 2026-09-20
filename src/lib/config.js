@@ -388,19 +388,57 @@ export const BASE =
     ? import.meta.env.BASE_URL
     : '/'
 
+/**
+ * Layout numbers for the surveyed-lamp popup on the map.
+ *
+ * `thumbPx` is set here rather than in CSS alone because the <img> needs real
+ * width and height attributes: Leaflet measures a popup and pans the map to
+ * fit it at the moment it opens, and an image with no dimensions measures as
+ * nothing — the popup then grows when the picture arrives and ends up
+ * somewhere it was never panned to fit.
+ *
+ * `panTop` and `panEdge` are Leaflet's auto-pan padding: how much room it
+ * leaves when a popup opens partly outside the map and it has to pan to fit.
+ * `panTop` is larger because the search box floats over the top 49 px. Note
+ * that this only applies when a popup is actually outside the map's bounds —
+ * see the KNOWN LIMITATION in layers.jsx for the corner case it does not
+ * cover.
+ */
+export const LAMP_POPUP = {
+  thumbPx: 108,
+  maxWidth: 360,
+  panTop: 72,
+  panEdge: 24,
+}
+
+/**
+ * Cache stamp for the data files.
+ *
+ * The JS bundle is content-hashed, so a deploy always serves fresh code. The
+ * files under public/data are not — GitHub Pages sends them with a ten-minute
+ * max-age, so for ten minutes after a deploy a returning visitor can run new
+ * code against old data. That is how the lamp thumbnails came out missing:
+ * the code looked for a field the cached lamps.json did not have yet.
+ *
+ * Injected at build time by vite.config.js, with a fallback for Node, where
+ * the offline scripts import this file and read from disk anyway.
+ */
+const STAMP =
+  typeof __BUILD_ID__ !== 'undefined' ? `?v=${__BUILD_ID__}` : ''
+
 /** Where the committed static datasets live. */
 export const DATA = {
-  greenSpaces: `${BASE}data/green-spaces.geojson`,
+  greenSpaces: `${BASE}data/green-spaces.geojson${STAMP}`,
   /** Built by scripts/build-density-grid.mjs. See npm run data:density. */
-  densityGrid: `${BASE}data/density-grid.json`,
+  densityGrid: `${BASE}data/density-grid.json${STAMP}`,
   /** Our own field survey. See public/data/lamps.json for the schema. */
-  lamps: `${BASE}data/lamps.json`,
+  lamps: `${BASE}data/lamps.json${STAMP}`,
   /** Precomputed risk surface. Built by scripts/build-risk-grid.mjs. */
-  riskGrid: `${BASE}data/risk-grid.json`,
+  riskGrid: `${BASE}data/risk-grid.json${STAMP}`,
   /** Smoothed contour bands over that surface. See scripts/build-risk-contours.mjs. */
-  riskContours: `${BASE}data/risk-contours.geojson`,
+  riskContours: `${BASE}data/risk-contours.geojson${STAMP}`,
   /** F13 priority list. Built by scripts/build-hotspots.mjs from the risk grid. */
-  hotspots: `${BASE}data/hotspots.json`,
+  hotspots: `${BASE}data/hotspots.json${STAMP}`,
   /** Land mask, also used to reject clicks on water. */
-  boundary: `${BASE}data/singapore-boundary.geojson`,
+  boundary: `${BASE}data/singapore-boundary.geojson${STAMP}`,
 }
