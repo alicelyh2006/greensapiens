@@ -1,6 +1,6 @@
 # Field survey — how to collect the light data
 
-`lamps.json` is **empty on purpose.** It is the one dataset nobody else has,
+`lamps.json` now holds **17 lamps from two field surveys** (10 and 19 September 2026). It is the one dataset nobody else has,
 and inventing entries would destroy the only claim that makes this project
 worth submitting. Real readings only.
 

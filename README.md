@@ -4,7 +4,9 @@
 
 Built by team Green Sapiens for [NextStep Hacks 2026](https://nextstephacks.com) — theme *Earth Forward*.
 
-> ⚠️ **Status: in development.** The scoring model works against real data; the interface is still being built. Everything here was created during the hackathon window (21 Aug – 13 Sep 2026); the repository was empty before it.
+**▶ [Try it live](https://alicelyh2006.github.io/greensapiens/)**
+
+> Built for NextStep Hacks 2026 during the event window; the repository was empty before it, and its first commit is dated 2 September 2026. Every score on the map is computed from the committed datasets below. The light layer comes from our own field survey and covers seventeen lamps, so most of the island is an estimate and the app says so on every score.
 
 ---
 
@@ -24,7 +26,7 @@ Three layers, each independently useful:
 
 | Layer | Source | Purpose |
 |---|---|---|
-| **Base map** | NParks boundaries, VIIRS nighttime lights, OneMap | A working risk map with zero user input |
+| **Base map** | NParks boundaries, OpenStreetMap buildings, OneMap | A working risk map with zero user input |
 | **Lamp photos** | Community contributions | Ground truth on light *colour* where no inventory exists |
 | **Collision reports** | Community contributions | Evidence that sharpens the map over time |
 
@@ -59,8 +61,7 @@ Contributed photos and collision reports are stored **in the browser only** and 
 | Parks, reserves, park connectors | [data.gov.sg](https://data.gov.sg) (NParks) | Singapore Open Data Licence |
 | Building footprints | [OpenStreetMap](https://www.openstreetmap.org) via Overpass | ODbL |
 | Land-use zoning (superseded) | [data.gov.sg](https://data.gov.sg) (URA Master Plan 2025) | Singapore Open Data Licence |
-| Nighttime lights | VIIRS Day/Night Band | Public domain (NOAA/NASA) |
-| Lamp classifications | Our own field survey | This repository |
+| Lamp colour | Our own field survey, 17 lamps over two nights | This repository |
 
 ## Limitations
 
