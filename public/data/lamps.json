@@ -36,7 +36,13 @@
       "method": "visual",
       "position": "pluscode",
       "photo": "IMG20260910214642.jpg",
-      "surveyed": "2026-09-10"
+      "surveyed": "2026-09-10",
+      "classifier": {
+        "blueRatio": 0.4742,
+        "read": "cool-led",
+        "confidence": "confident",
+        "agrees": true
+      }
     },
     {
       "lat": 1.3727,
@@ -47,7 +53,13 @@
       "method": "visual",
       "position": "pluscode",
       "photo": "IMG20260910214730.jpg",
-      "surveyed": "2026-09-10"
+      "surveyed": "2026-09-10",
+      "classifier": {
+        "blueRatio": 0.4401,
+        "read": "cool-led",
+        "confidence": "confident",
+        "agrees": true
+      }
     },
     {
       "lat": 1.37308,
@@ -58,7 +70,17 @@
       "method": "visual",
       "position": "landmark",
       "photo": "IMG20260910214945.jpg",
-      "surveyed": "2026-09-10"
+      "surveyed": "2026-09-10",
+      "classifier": {
+        "blueRatio": 0.3303,
+        "read": "uncertain",
+        "confidence": "uncertain",
+        "between": [
+          "neutral-led",
+          "cool-led"
+        ],
+        "agrees": null
+      }
     },
     {
       "lat": 1.37294,
@@ -69,7 +91,13 @@
       "method": "visual",
       "position": "landmark",
       "photo": "IMG20260910214532.jpg",
-      "surveyed": "2026-09-10"
+      "surveyed": "2026-09-10",
+      "classifier": {
+        "blueRatio": 0.7218,
+        "read": "cool-led",
+        "confidence": "confident",
+        "agrees": true
+      }
     },
     {
       "lat": 1.37294,
@@ -80,7 +108,17 @@
       "method": "visual",
       "position": "landmark",
       "photo": "IMG20260910214521.jpg",
-      "surveyed": "2026-09-10"
+      "surveyed": "2026-09-10",
+      "classifier": {
+        "blueRatio": 0.3054,
+        "read": "uncertain",
+        "confidence": "uncertain",
+        "between": [
+          "neutral-led",
+          "cool-led"
+        ],
+        "agrees": null
+      }
     },
     {
       "lat": 1.37239,
@@ -91,7 +129,17 @@
       "method": "visual",
       "position": "landmark",
       "photo": "IMG20260910214958.jpg",
-      "surveyed": "2026-09-10"
+      "surveyed": "2026-09-10",
+      "classifier": {
+        "blueRatio": 0.3373,
+        "read": "uncertain",
+        "confidence": "uncertain",
+        "between": [
+          "neutral-led",
+          "cool-led"
+        ],
+        "agrees": null
+      }
     },
     {
       "lat": 1.37279,
@@ -102,7 +150,13 @@
       "method": "visual",
       "position": "landmark",
       "photo": "IMG20260910215007.jpg",
-      "surveyed": "2026-09-10"
+      "surveyed": "2026-09-10",
+      "classifier": {
+        "blueRatio": 0.2432,
+        "read": "warm-led",
+        "confidence": "confident",
+        "agrees": true
+      }
     },
     {
       "lat": 1.37285,
@@ -113,7 +167,13 @@
       "method": "visual",
       "position": "landmark",
       "photo": "IMG20260910215016.jpg",
-      "surveyed": "2026-09-10"
+      "surveyed": "2026-09-10",
+      "classifier": {
+        "blueRatio": 0.2822,
+        "read": "neutral-led",
+        "confidence": "confident",
+        "agrees": true
+      }
     },
     {
       "lat": 1.37265,
@@ -124,7 +184,13 @@
       "method": "visual",
       "position": "landmark",
       "photo": "IMG20260910214957.jpg",
-      "surveyed": "2026-09-10"
+      "surveyed": "2026-09-10",
+      "classifier": {
+        "blueRatio": 0.3041,
+        "read": "neutral-led",
+        "confidence": "confident",
+        "agrees": true
+      }
     },
     {
       "lat": 1.39611,

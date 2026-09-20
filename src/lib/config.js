@@ -240,10 +240,9 @@ export const LAMP_COLOUR = {
       below: 'sodium',
       above: 'warm-led',
       /**
-       * GUESSED. Not one high-pressure sodium lamp appeared in either survey,
-       * so there is nothing to fit to. Placed below the lowest warm LED we
-       * measured (0.206); the uncertainty is a stand-in for "we have never
-       * tested this", not a measurement.
+       * STILL GUESSED. Neither survey found a high-pressure sodium lamp, so
+       * there is nothing to fit to. Placed below the lowest warm LED we have
+       * measured (0.206); the uncertainty stands in for "never tested".
        */
       at: 0.15,
       uncertainty: 0.03,
@@ -252,37 +251,34 @@ export const LAMP_COLOUR = {
       below: 'warm-led',
       above: 'neutral-led',
       /**
-       * FITTED to the eight lamps we photographed and also identified by eye.
-       * Warm readings ran 0.206-0.278 and neutral readings 0.254-0.293: the
-       * classes overlap, so no single line separates them. `at` is the centre
-       * of that overlap and `uncertainty` its half-width, which makes every
-       * reading inside it an abstention.
-       *
-       * Fitted, not validated — these are the same eight lamps that set the
-       * numbers, so the classifier scoring well on them proves nothing. It
-       * needs lamps it has not seen.
+       * FITTED to all 17 surveyed lamps. Warm readings run 0.206-0.278 and
+       * neutral readings 0.254-0.337, so the classes overlap and no single
+       * line separates them. `at` is the centre of that overlap and
+       * `uncertainty` its half-width, rounded out by a hair so the two lamps
+       * sitting exactly on the edges abstain rather than falling one side.
        */
-      at: 0.266,
-      uncertainty: 0.012,
+      at: 0.2659,
+      uncertainty: 0.0125,
     },
     {
       below: 'neutral-led',
       above: 'cool-led',
       /**
-       * UNKNOWN, and the uncertainty says so. We have exactly one cool-white
-       * fixture — a clinic lightbox at 0.484 — and no reading whatsoever
-       * between 0.293 and 0.484. The boundary is somewhere in that gap. `at`
-       * is its midpoint and `uncertainty` spans that gap stopping just short of
-       * the two readings that bound it, so anything landing inside is reported
-       * as undecided — which is the truth — while the lamps we did measure are
-       * still answered.
+       * NOW FITTED, and it moved a long way. It used to sit at 0.388 with a
+       * huge uncertainty, because we had exactly one cool fixture and no
+       * reading at all between 0.293 and 0.484 — so the line was a guess at
+       * the middle of an empty gap.
        *
-       * This is the costly one: neutral and cool differ by 0.4 of the blue
-       * factor, so guessing here would move scores more than any other call
-       * the classifier makes.
+       * Running the first survey's photographs through the classifier filled
+       * that gap in and showed the guess was wrong: cool lamps start at 0.305,
+       * well below where the boundary sat, and neutral lamps reach 0.337. The
+       * real overlap is 0.305-0.337, which is where the line now is.
+       *
+       * This is the costly boundary — neutral and cool differ by 0.4 of the
+       * blue factor — so it is the one most worth having measured.
        */
-      at: 0.388,
-      uncertainty: 0.094,
+      at: 0.3214,
+      uncertainty: 0.0170,
     },
   ],
 
