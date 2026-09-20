@@ -91,9 +91,29 @@ function parseTiffGps(view) {
 
   if (!gps.lat || !gps.lng) throw new Error('GPS IFD present but lat/lng missing')
 
+  const lat = dmsToDecimal(gps.lat, gps.latRef)
+  const lng = dmsToDecimal(gps.lng, gps.lngRef)
+
+  // A GPS block full of zeroes is how a camera says it never got a fix: the
+  // tags are written, the values are empty. The check above does not catch it,
+  // because gps.lat is the array [0, 0, 0], which is perfectly truthy.
+  //
+  // Read literally that is 0°N 0°E, a spot in the Gulf of Guinea, and the app
+  // then does exactly what it was told — scores the location, finds it outside
+  // Singapore, and reports the lamp as 11,529 km from the nearest park. A photo
+  // with no fix should say it has no fix.
+  if (lat === 0 && lng === 0) throw new Error('GPS IFD present but all zeroes')
+
+  // Same idea, one step further out: a coordinate off the globe is a parse
+  // that went wrong, not a place.
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) ||
+      Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+    throw new Error(`GPS IFD out of range: ${lat}, ${lng}`)
+  }
+
   return {
-    lat: dmsToDecimal(gps.lat, gps.latRef),
-    lng: dmsToDecimal(gps.lng, gps.lngRef),
+    lat,
+    lng,
     alt: gps.alt != null ? (gps.altRef === 1 ? -gps.alt : gps.alt) : undefined,
   }
 }
