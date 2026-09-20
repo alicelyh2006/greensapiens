@@ -281,23 +281,32 @@ export default function Methodology() {
           </p>
           <p>
             What worked was giving up on measuring colour temperature and
-            measuring the residue instead. The boundary between warm and neutral
-            was moved to where our own labelled lamps actually divide, and —
-            more usefully — the classifier now <strong>declines to answer</strong>{' '}
-            when a reading falls in the range where the two classes overlap.
-            Against the same eight lamps it now answers five and abstains on
-            three, with no wrong answers. Every error it used to make has become
-            an admission that it cannot tell.
+            measuring the residue instead. The boundaries were moved to where
+            our own labelled lamps actually divide, and — more usefully — the
+            classifier now <strong>declines to answer</strong> when a reading
+            falls in the range where two classes overlap. Across all seventeen
+            surveyed lamps it answers eleven, gets eleven right, and abstains on
+            six. Every error it used to make has become an admission that it
+            cannot tell.
           </p>
           <p>
-            Two warnings about that number. Those eight lamps are what the
-            boundaries were fitted to, so five out of five is{' '}
-            <strong>calibration, not validation</strong> — the classifier has
-            not yet been tested on a lamp it has not seen. And one of the three
-            boundaries rests on a single fixture: we photographed exactly one
-            cool-white source, so the line between neutral and cool sits
-            somewhere in a gap we have no readings in at all. That boundary is
-            set wide enough to abstain across the whole gap.
+            Getting there corrected a mistake worth describing. The nine lamps
+            from our first survey had been recorded by eye and never run through
+            the classifier at all, even though their photographs were still on
+            disk. Putting them through doubled the sample and showed that the
+            boundary between neutral and cool was badly placed: it sat at 0.388,
+            chosen as the midpoint of an empty gap because we had exactly one
+            cool fixture. Cool lamps in fact begin at 0.305, well below it, and
+            neutral lamps reach 0.337. The line now sits on that real overlap,
+            which is worth three more answered lamps and no new errors.
+          </p>
+          <p>
+            One warning about the number. Those seventeen lamps are what the
+            boundaries were fitted to, so eleven out of eleven is{' '}
+            <strong>calibration, not validation</strong> — the classifier still
+            has not been tested on a lamp it has not seen. The sodium boundary
+            is not even calibrated: no high-pressure sodium lamp has turned up
+            in either survey, so that line remains a guess.
           </p>
           <p>
             Each lamp entry records what the classifier read alongside what we

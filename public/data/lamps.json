@@ -42,7 +42,8 @@
         "read": "cool-led",
         "confidence": "confident",
         "agrees": true
-      }
+      },
+      "thumb": "data/lamps/img20260910214642.jpg"
     },
     {
       "lat": 1.3727,
@@ -59,7 +60,8 @@
         "read": "cool-led",
         "confidence": "confident",
         "agrees": true
-      }
+      },
+      "thumb": "data/lamps/img20260910214730.jpg"
     },
     {
       "lat": 1.37308,
@@ -80,7 +82,8 @@
           "cool-led"
         ],
         "agrees": null
-      }
+      },
+      "thumb": "data/lamps/img20260910214945.jpg"
     },
     {
       "lat": 1.37294,
@@ -97,7 +100,8 @@
         "read": "cool-led",
         "confidence": "confident",
         "agrees": true
-      }
+      },
+      "thumb": "data/lamps/img20260910214532.jpg"
     },
     {
       "lat": 1.37294,
@@ -118,7 +122,8 @@
           "cool-led"
         ],
         "agrees": null
-      }
+      },
+      "thumb": "data/lamps/img20260910214521.jpg"
     },
     {
       "lat": 1.37239,
@@ -139,7 +144,8 @@
           "cool-led"
         ],
         "agrees": null
-      }
+      },
+      "thumb": "data/lamps/img20260910214958.jpg"
     },
     {
       "lat": 1.37279,
@@ -156,7 +162,8 @@
         "read": "warm-led",
         "confidence": "confident",
         "agrees": true
-      }
+      },
+      "thumb": "data/lamps/img20260910215007.jpg"
     },
     {
       "lat": 1.37285,
@@ -173,7 +180,8 @@
         "read": "neutral-led",
         "confidence": "confident",
         "agrees": true
-      }
+      },
+      "thumb": "data/lamps/img20260910215016.jpg"
     },
     {
       "lat": 1.37265,
@@ -190,7 +198,8 @@
         "read": "neutral-led",
         "confidence": "confident",
         "agrees": true
-      }
+      },
+      "thumb": "data/lamps/img20260910214957.jpg"
     },
     {
       "lat": 1.39611,
@@ -207,7 +216,8 @@
         "confidence": "confident",
         "agrees": true
       },
-      "surveyed": "2026-09-19"
+      "surveyed": "2026-09-19",
+      "thumb": "data/lamps/img_5704.jpg"
     },
     {
       "lat": 1.39617,
@@ -224,7 +234,8 @@
         "confidence": "confident",
         "agrees": true
       },
-      "surveyed": "2026-09-19"
+      "surveyed": "2026-09-19",
+      "thumb": "data/lamps/img_5706.jpg"
     },
     {
       "lat": 1.39613,
@@ -241,7 +252,8 @@
         "confidence": "confident",
         "agrees": true
       },
-      "surveyed": "2026-09-19"
+      "surveyed": "2026-09-19",
+      "thumb": "data/lamps/img_5701.jpg"
     },
     {
       "lat": 1.3962,
@@ -263,7 +275,8 @@
         "agrees": null,
         "note": "Declines between warm and neutral. Plainly warm to the eye — a decorative lantern. Sits inside the fitted overlap, which is where auto-white-balance puts amber lamps."
       },
-      "surveyed": "2026-09-19"
+      "surveyed": "2026-09-19",
+      "thumb": "data/lamps/img_5707.jpg"
     },
     {
       "lat": 1.39689,
@@ -280,7 +293,8 @@
         "confidence": "confident",
         "agrees": true
       },
-      "surveyed": "2026-09-19"
+      "surveyed": "2026-09-19",
+      "thumb": "data/lamps/img_5708.jpg"
     },
     {
       "lat": 1.39711,
@@ -302,7 +316,8 @@
         "agrees": null,
         "note": "Declines between warm and neutral. Neutral to the eye, and the lowest-reading neutral we have — it is what sets the bottom of the overlap."
       },
-      "surveyed": "2026-09-19"
+      "surveyed": "2026-09-19",
+      "thumb": "data/lamps/img_5710.jpg"
     },
     {
       "lat": 1.39712,
@@ -319,7 +334,8 @@
         "confidence": "confident",
         "agrees": true
       },
-      "surveyed": "2026-09-19"
+      "surveyed": "2026-09-19",
+      "thumb": "data/lamps/img_5711.jpg"
     },
     {
       "lat": 1.39713,
@@ -341,7 +357,8 @@
         "agrees": null,
         "note": "Declines between warm and neutral. Amber to the eye, an LTA road lamp. Same auto-white-balance shift as IMG_5707."
       },
-      "surveyed": "2026-09-19"
+      "surveyed": "2026-09-19",
+      "thumb": "data/lamps/img_5712.jpg"
     }
   ]
 }

@@ -383,7 +383,7 @@ export const MAP_BOUNDS = [
  * for Node: the offline build scripts import this file too, and there
  * import.meta.env does not exist.
  */
-const BASE =
+export const BASE =
   typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL
     ? import.meta.env.BASE_URL
     : '/'

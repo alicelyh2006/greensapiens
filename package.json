@@ -16,6 +16,7 @@
     "data:density:storeys": "node --max-old-space-size=8192 scripts/build-density-grid-osm.mjs",
     "data:contours": "node scripts/build-risk-contours.mjs",
     "data:classify": "node scripts/classify-lamps.mjs",
+    "data:thumbs": "node scripts/build-lamp-thumbnails.mjs",
     "data:hotspots": "node --max-old-space-size=8192 scripts/build-hotspots.mjs"
   },
   "dependencies": {
